@@ -1,0 +1,457 @@
+import type { FastifyInstance, FastifyRequest } from 'fastify';
+import { zodValidator } from '../middleware/validate.js';
+import { authorize } from '../middleware/authorize.js';
+import { SigningService } from '../services/signing.js';
+import {
+  updateOrganizationSchema,
+  inviteUserSchema,
+  updateMemberRoleSchema,
+  INVITATION_EXPIRY_HOURS,
+} from '@vqr/shared';
+import { randomBytes } from 'node:crypto';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Verify that the authenticated user's active org matches the :id route param.
+ * Throws a 403 HTTP error if they differ.
+ */
+function checkOrgAccess(request: FastifyRequest): void {
+  const { id } = request.params as { id: string };
+
+  if (request.user?.orgId !== id) {
+    const err = Object.assign(
+      new Error('Forbidden: you do not have access to this organization.'),
+      { statusCode: 403 },
+    );
+    throw err;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Plugin
+// ---------------------------------------------------------------------------
+
+export default async function organizationRoutes(fastify: FastifyInstance): Promise<void> {
+  const signingService = new SigningService(fastify.prisma);
+  const authenticate = fastify.authenticate;
+
+  // -------------------------------------------------------------------------
+  // GET /:id — Get organization details
+  // -------------------------------------------------------------------------
+
+  fastify.get('/:id', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER', 'MEMBER', 'VIEWER')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+
+    const org = await fastify.prisma.organization.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            qrCodes: true,
+            signingKeys: true,
+            memberships: true,
+          },
+        },
+      },
+    });
+
+    if (!org) {
+      return reply.status(404).send({
+        statusCode: 404,
+        error: 'Not Found',
+        message: `Organization "${id}" not found.`,
+      });
+    }
+
+    return reply.send(org);
+  });
+
+  // -------------------------------------------------------------------------
+  // PATCH /:id — Update organization
+  // -------------------------------------------------------------------------
+
+  fastify.patch('/:id', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+    preValidation: zodValidator({ body: updateOrganizationSchema }),
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+    const body = request.body as {
+      name?: string;
+      email?: string;
+      domain?: string;
+      trustLevel?: string;
+      plan?: string;
+      billingEmail?: string;
+    };
+
+    // Recompute slug when name changes.
+    const slugUpdate = body.name
+      ? {
+          slug: body.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, ''),
+        }
+      : {};
+
+    const org = await fastify.prisma.organization.update({
+      where: { id },
+      data: {
+        ...body,
+        ...slugUpdate,
+        ...(body.trustLevel ? { trustLevel: body.trustLevel as any } : {}),
+        ...(body.plan ? { plan: body.plan as any } : {}),
+      },
+    });
+
+    return reply.send(org);
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /:id/verify — Submit KYC
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:id/verify', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+
+    const org = await fastify.prisma.organization.update({
+      where: { id },
+      data: { kycStatus: 'UNDER_REVIEW' },
+    });
+
+    return reply.send({
+      id: org.id,
+      kycStatus: org.kycStatus,
+      updatedAt: org.updatedAt,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /:id/keys — List signing keys
+  // -------------------------------------------------------------------------
+
+  fastify.get('/:id/keys', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+
+    const keys = await fastify.prisma.signingKey.findMany({
+      where: { organizationId: id },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        keyId: true,
+        algorithm: true,
+        status: true,
+        publicKey: true,
+        createdAt: true,
+        rotatedAt: true,
+        revokedAt: true,
+      },
+    });
+
+    return reply.send({ data: keys, total: keys.length });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /:id/keys/rotate — Rotate active signing key
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:id/keys/rotate', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+
+    const newKey = await signingService.rotateKey(id);
+
+    return reply.status(201).send({
+      id: newKey.id,
+      keyId: newKey.keyId,
+      algorithm: newKey.algorithm,
+      status: newKey.status,
+      publicKey: newKey.publicKey,
+      createdAt: newKey.createdAt,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /:id/members — List members
+  // -------------------------------------------------------------------------
+
+  fastify.get('/:id/members', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+
+    const memberships = await fastify.prisma.membership.findMany({
+      where: { organizationId: id },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { joinedAt: 'asc' },
+    });
+
+    return reply.send({
+      data: memberships.map((m) => ({
+        id: m.id,
+        userId: m.userId,
+        role: m.role,
+        joinedAt: m.joinedAt,
+        user: {
+          id: m.user.id,
+          name: m.user.name,
+          email: m.user.email,
+        },
+      })),
+      total: memberships.length,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /:id/invitations — Invite a user to the organization
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:id/invitations', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+    preValidation: zodValidator({ body: inviteUserSchema }),
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+    const body = request.body as { email: string; role: string };
+
+    // Check whether the invitee is already a member.
+    const existingUser = await fastify.prisma.user.findUnique({
+      where: { email: body.email },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      const existingMembership = await fastify.prisma.membership.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: existingUser.id,
+            organizationId: id,
+          },
+        },
+      });
+
+      if (existingMembership) {
+        return reply.status(409).send({
+          statusCode: 409,
+          error: 'Conflict',
+          message: 'This user is already a member of the organization.',
+        });
+      }
+    }
+
+    const rawToken = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + INVITATION_EXPIRY_HOURS * 60 * 60 * 1000);
+
+    const invitation = await fastify.prisma.invitation.create({
+      data: {
+        organizationId: id,
+        email: body.email,
+        role: body.role as any,
+        token: rawToken,
+        invitedBy: request.user!.id,
+        expiresAt,
+      },
+    });
+
+    // In production this token would be delivered via email.
+    console.log(`[vqr] Invitation token for ${body.email} to org ${id}: ${rawToken}`);
+
+    return reply.status(201).send({
+      id: invitation.id,
+      organizationId: invitation.organizationId,
+      email: invitation.email,
+      role: invitation.role,
+      expiresAt: invitation.expiresAt,
+      createdAt: invitation.createdAt,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /invitations/:token/accept — Accept an invitation (authenticated)
+  // -------------------------------------------------------------------------
+
+  fastify.post('/invitations/:token/accept', {
+    preHandler: [authenticate],
+  }, async (request, reply) => {
+    const { token } = request.params as { token: string };
+
+    const invitation = await fastify.prisma.invitation.findUnique({
+      where: { token },
+    });
+
+    if (!invitation || invitation.acceptedAt !== null || invitation.expiresAt < new Date()) {
+      return reply.status(400).send({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Invitation is invalid, expired, or has already been accepted.',
+      });
+    }
+
+    // Ensure the authenticated user's email matches the invitation.
+    if (request.user!.email !== invitation.email) {
+      return reply.status(403).send({
+        statusCode: 403,
+        error: 'Forbidden',
+        message: 'This invitation was issued to a different email address.',
+      });
+    }
+
+    const [membership] = await fastify.prisma.$transaction([
+      fastify.prisma.membership.create({
+        data: {
+          userId: request.user!.id,
+          organizationId: invitation.organizationId,
+          role: invitation.role,
+          invitedBy: invitation.invitedBy,
+        },
+      }),
+      fastify.prisma.invitation.update({
+        where: { id: invitation.id },
+        data: { acceptedAt: new Date() },
+      }),
+    ]);
+
+    return reply.status(201).send({
+      id: membership.id,
+      userId: membership.userId,
+      organizationId: membership.organizationId,
+      role: membership.role,
+      joinedAt: membership.joinedAt,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // DELETE /:id/members/:userId — Remove a member
+  // -------------------------------------------------------------------------
+
+  fastify.delete('/:id/members/:userId', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id, userId } = request.params as { id: string; userId: string };
+
+    const target = await fastify.prisma.membership.findUnique({
+      where: { userId_organizationId: { userId, organizationId: id } },
+    });
+
+    if (!target) {
+      return reply.status(404).send({
+        statusCode: 404,
+        error: 'Not Found',
+        message: 'Membership not found.',
+      });
+    }
+
+    // Prevent removal of the last OWNER.
+    if (target.role === 'OWNER') {
+      const ownerCount = await fastify.prisma.membership.count({
+        where: { organizationId: id, role: 'OWNER' },
+      });
+
+      if (ownerCount <= 1) {
+        return reply.status(422).send({
+          statusCode: 422,
+          error: 'Unprocessable Entity',
+          message: 'Cannot remove the last owner of an organization.',
+        });
+      }
+    }
+
+    await fastify.prisma.membership.delete({
+      where: { userId_organizationId: { userId, organizationId: id } },
+    });
+
+    return reply.status(204).send();
+  });
+
+  // -------------------------------------------------------------------------
+  // PATCH /:id/members/:userId — Change a member's role
+  // -------------------------------------------------------------------------
+
+  fastify.patch('/:id/members/:userId', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+    preValidation: zodValidator({ body: updateMemberRoleSchema }),
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id, userId } = request.params as { id: string; userId: string };
+    const { role: newRole } = request.body as { role: string };
+
+    // ADMINs cannot promote anyone to OWNER; only OWNERs can.
+    if (newRole === 'OWNER' && request.user!.role !== 'OWNER') {
+      return reply.status(403).send({
+        statusCode: 403,
+        error: 'Forbidden',
+        message: 'Only an OWNER can promote a member to OWNER.',
+      });
+    }
+
+    const target = await fastify.prisma.membership.findUnique({
+      where: { userId_organizationId: { userId, organizationId: id } },
+    });
+
+    if (!target) {
+      return reply.status(404).send({
+        statusCode: 404,
+        error: 'Not Found',
+        message: 'Membership not found.',
+      });
+    }
+
+    // Prevent demoting the last OWNER.
+    if (target.role === 'OWNER' && newRole !== 'OWNER') {
+      const ownerCount = await fastify.prisma.membership.count({
+        where: { organizationId: id, role: 'OWNER' },
+      });
+
+      if (ownerCount <= 1) {
+        return reply.status(422).send({
+          statusCode: 422,
+          error: 'Unprocessable Entity',
+          message: 'Cannot demote the last owner of an organization.',
+        });
+      }
+    }
+
+    const updated = await fastify.prisma.membership.update({
+      where: { userId_organizationId: { userId, organizationId: id } },
+      data: { role: newRole as any },
+    });
+
+    return reply.send({
+      id: updated.id,
+      userId: updated.userId,
+      organizationId: updated.organizationId,
+      role: updated.role,
+      joinedAt: updated.joinedAt,
+    });
+  });
+}

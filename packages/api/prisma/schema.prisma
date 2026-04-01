@@ -1,0 +1,354 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum OrganizationTrustLevel {
+  INDIVIDUAL
+  BUSINESS
+  GOVERNMENT
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+enum KycStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum KeyStatus {
+  ACTIVE
+  ROTATED
+  REVOKED
+}
+
+enum QRCodeStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum FraudType {
+  DUPLICATE_LOCATION
+  PROXY_DETECTED
+  PATTERN_ANOMALY
+  MANUAL_REPORT
+  GEO_IMPOSSIBLE
+}
+
+enum FraudSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Organization {
+  id           String                  @id @default(cuid())
+  name         String
+  slug         String                  @unique
+  email        String                  @unique
+  domain       String?
+  trustLevel   OrganizationTrustLevel  @default(INDIVIDUAL)
+  kycStatus    KycStatus               @default(PENDING)
+  kycData      Json?
+  plan         Plan                    @default(FREE)
+  billingEmail String?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  signingKeys  SigningKey[]
+  qrCodes      QRCode[]
+  apiKeys      ApiKey[]
+  memberships  Membership[]
+  invitations  Invitation[]
+  auditLogs    AuditLog[]
+  apps         App[]
+
+  @@map("organizations")
+}
+
+model SigningKey {
+  id             String    @id @default(cuid())
+  organizationId String
+  publicKey      String
+  keyId          String    @unique
+  algorithm      String    @default("ES256")
+  status         KeyStatus @default(ACTIVE)
+  createdAt      DateTime  @default(now())
+  rotatedAt      DateTime?
+  revokedAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  qrCodes      QRCode[]
+
+  @@index([organizationId, status])
+  @@map("signing_keys")
+}
+
+model QRCode {
+  id             String       @id @default(cuid())
+  token          String       @unique
+  organizationId String
+  signingKeyId   String
+  destinationUrl String
+  label          String?
+  signature      String
+  geoHash        String?
+  latitude       Float?
+  longitude      Float?
+  radiusM        Float        @default(50)
+  status         QRCodeStatus @default(ACTIVE)
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signingKey           SigningKey             @relation(fields: [signingKeyId], references: [id])
+  scans                Scan[]
+  fraudIncidents       FraudIncident[]
+  transparencyLogEntry TransparencyLogEntry?
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("qr_codes")
+}
+
+model Scan {
+  id              String   @id @default(cuid())
+  qrCodeId        String
+  clientIpHash    String
+  clientLat       Float?
+  clientLng       Float?
+  userAgent       String?
+  trustScore      Int      @default(100)
+  proxyDetected   Boolean  @default(false)
+  passkeyVerified Boolean  @default(false)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  qrCode         QRCode          @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  fraudIncidents FraudIncident[]
+
+  @@index([qrCodeId])
+  @@index([createdAt])
+  @@map("scans")
+}
+
+model FraudIncident {
+  id         String        @id @default(cuid())
+  qrCodeId   String
+  scanId     String?
+  type       FraudType
+  severity   FraudSeverity
+  details    Json
+  resolved   Boolean       @default(false)
+  resolvedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  scan   Scan?  @relation(fields: [scanId], references: [id])
+
+  @@index([qrCodeId])
+  @@index([severity])
+  @@index([resolved])
+  @@map("fraud_incidents")
+}
+
+model TransparencyLogEntry {
+  id              String   @id @default(cuid())
+  logIndex        Int      @unique @default(autoincrement())
+  qrCodeId        String   @unique
+  organizationId  String
+  tokenHash       String
+  destinationHash String
+  geoHash         String?
+  previousHash    String?
+  entryHash       String
+  createdAt       DateTime @default(now())
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@index([logIndex])
+  @@map("transparency_log")
+}
+
+model ApiKey {
+  id             String    @id @default(cuid())
+  organizationId String
+  keyHash        String    @unique
+  prefix         String
+  label          String?
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("api_keys")
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  name                 String
+  email                String    @unique
+  passwordHash         String
+  emailVerified        Boolean   @default(false)
+  emailVerifyToken     String?   @unique
+  passwordResetToken   String?   @unique
+  passwordResetExpires DateTime?
+  lastLoginAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  memberships        Membership[]
+  invitationsSent    Invitation[]   @relation("InvitedByUser")
+  invitedMemberships Membership[]   @relation("InvitedByMembership")
+  auditLogs          AuditLog[]
+  authSessions       AuthSession[]
+
+  @@map("users")
+}
+
+model Membership {
+  id             String         @id @default(cuid())
+  userId         String
+  organizationId String
+  role           MembershipRole @default(MEMBER)
+  invitedBy      String?
+  joinedAt       DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User?        @relation("InvitedByMembership", fields: [invitedBy], references: [id])
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id             String         @id @default(cuid())
+  organizationId String
+  email          String
+  role           MembershipRole @default(MEMBER)
+  token          String         @unique
+  invitedBy      String
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation("InvitedByUser", fields: [invitedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitations")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  action         String
+  resource       String
+  resourceId     String
+  metadata       Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+enum AppStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AuthSessionStatus {
+  PENDING
+  SCANNED
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+model App {
+  id               String    @id @default(cuid())
+  organizationId   String
+  name             String
+  slug             String    @unique
+  clientId         String    @unique
+  clientSecretHash String
+  redirectUrls     String[]
+  webhookUrl       String?
+  allowedScopes    String[]  @default(["identity"])
+  logoUrl          String?
+  description      String?
+  status           AppStatus @default(ACTIVE)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  authSessions AuthSession[]
+
+  @@index([organizationId])
+  @@map("apps")
+}
+
+model AuthSession {
+  id           String            @id @default(cuid())
+  appId        String
+  token        String            @unique
+  status       AuthSessionStatus @default(PENDING)
+  scopes       String[]          @default(["identity"])
+  userId       String?
+  userAgent    String?
+  clientIpHash String?
+  geoLat       Float?
+  geoLng       Float?
+  signature    String?
+  redirectUrl  String?
+  metadata     Json?
+  expiresAt    DateTime
+  scannedAt    DateTime?
+  resolvedAt   DateTime?
+  createdAt    DateTime          @default(now())
+
+  app  App   @relation(fields: [appId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([appId])
+  @@index([token])
+  @@index([status, expiresAt])
+  @@map("auth_sessions")
+}

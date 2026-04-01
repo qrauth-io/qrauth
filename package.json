@@ -1,0 +1,25 @@
+{
+  "name": "vqr",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/api",
+    "dev:web": "npm run dev --workspace=packages/web",
+    "dev:all": "npm run dev --workspace=packages/api & npm run dev --workspace=packages/web",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=packages/api && npm run build --workspace=packages/web",
+    "build:web": "npm run build --workspace=packages/web",
+    "test": "npm test --workspaces --if-present",
+    "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "db:migrate": "npm run db:migrate --workspace=packages/api",
+    "db:seed": "npm run db:seed --workspace=packages/api",
+    "test:e2e": "npm test --workspace=packages/e2e",
+    "test:e2e:headed": "npm run test:headed --workspace=packages/e2e",
+    "test:e2e:ui": "npm run test:ui --workspace=packages/e2e"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

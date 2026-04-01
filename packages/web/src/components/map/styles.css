@@ -1,0 +1,72 @@
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+.maplibregl-map {
+  /* Control groups (zoom, compass, etc.) */
+  .maplibregl-ctrl.maplibregl-ctrl-group {
+    border-radius: 8px;
+    box-shadow: 0 8px 16px 0 rgba(var(--palette-grey-500Channel), 0.16);
+
+    /* Add border between stacked buttons in control group */
+    button + button {
+      border-top: 1px solid var(--palette-divider);
+    }
+  }
+
+  /* Scale control */
+  .maplibregl-ctrl.maplibregl-ctrl-scale {
+    border: none;
+    color: #ffffff;
+    padding: 0 4px;
+    font-weight: 600;
+    line-height: 14px;
+    border-radius: 4px;
+    background-image: linear-gradient(to right, #8a2387, #e94057, #f27121);
+  }
+
+  /* Fullscreen control */
+  .maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon,
+  .maplibregl-ctrl-shrink .maplibregl-ctrl-icon {
+    transform: scale(0.75);
+  }
+
+  /* Popup content box */
+  .maplibregl-popup-content {
+    padding: 8px;
+    max-width: 180px;
+    border-radius: 12px;
+    color: var(--palette-text-primary);
+    background-color: var(--palette-background-paper);
+    box-shadow: 0 20px 40px -4px rgba(0, 0, 0, 0.16);
+  }
+
+  /* Popup tip/arrow */
+  .maplibregl-popup-tip {
+    transform: translateY(-1px);
+    border-top-color: var(--palette-background-paper);
+  }
+
+  /* Popup close button */
+  .maplibregl-popup-close-button {
+    top: 4px;
+    right: 4px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    font-size: 20px;
+    border-radius: 50%;
+    position: absolute;
+    color: var(--palette-grey-500);
+    transition: opacity 200ms linear 0s;
+    &:hover {
+      opacity: 1;
+    }
+    &:focus {
+      outline: none;
+    }
+  }
+
+  /* Attribution control */
+  .maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact {
+    display: none;
+  }
+}

@@ -1,0 +1,112 @@
+import { Queue, QueueOptions } from 'bullmq';
+import { Redis } from 'ioredis';
+import { config } from './config.js';
+
+// ---------------------------------------------------------------------------
+// Connection factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a dedicated ioredis connection suitable for BullMQ.
+ *
+ * BullMQ requires its own connection instances – it must not share a
+ * connection that is also used for pub/sub or blocking commands.
+ * Each call to this function returns a fresh connection.
+ */
+export function createQueueConnection(): Redis {
+  return new Redis(config.redis.url, {
+    // BullMQ calls BLPOP and similar blocking commands, so we disable the
+    // ready-check which is incompatible with those command sets.
+    enableReadyCheck: false,
+    maxRetriesPerRequest: null,
+    retryStrategy(times: number) {
+      return Math.min(times * 100, 30_000);
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Shared queue defaults
+// ---------------------------------------------------------------------------
+
+const sharedQueueOptions: Partial<QueueOptions> = {
+  defaultJobOptions: {
+    removeOnComplete: {
+      // Keep last 500 completed jobs for observability.
+      count: 500,
+    },
+    removeOnFail: {
+      // Retain failed jobs for 7 days for post-mortem investigation.
+      age: 7 * 24 * 60 * 60,
+    },
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 1_000,
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Named queues
+// ---------------------------------------------------------------------------
+
+/**
+ * Receives a job for every QR code scan.
+ * Processors run fraud checks, update trust scores, and write Scan records.
+ */
+export const scanQueue = new Queue('vqr-scans', {
+  connection: createQueueConnection(),
+  ...sharedQueueOptions,
+});
+
+/**
+ * Receives fraud-detection jobs triggered by the scan processor or manual
+ * reports. Processors classify, persist FraudIncidents, and may enqueue
+ * alert jobs.
+ */
+export const fraudQueue = new Queue('vqr-fraud', {
+  connection: createQueueConnection(),
+  ...sharedQueueOptions,
+  defaultJobOptions: {
+    ...sharedQueueOptions.defaultJobOptions,
+    // Fraud jobs are higher priority – retry faster.
+    backoff: {
+      type: 'exponential',
+      delay: 500,
+    },
+  },
+});
+
+/**
+ * Handles outbound alert delivery (webhooks, emails, SMS) when fraud
+ * incidents exceed a severity threshold or require issuer notification.
+ */
+export const alertQueue = new Queue('vqr-alerts', {
+  connection: createQueueConnection(),
+  ...sharedQueueOptions,
+  defaultJobOptions: {
+    ...sharedQueueOptions.defaultJobOptions,
+    attempts: 5,
+    backoff: {
+      type: 'exponential',
+      delay: 2_000,
+    },
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Shutdown helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Gracefully close all queue instances and their underlying Redis connections.
+ * Call this during process shutdown before disconnecting the main Redis client.
+ */
+export async function closeQueues(): Promise<void> {
+  await Promise.all([
+    scanQueue.close(),
+    fraudQueue.close(),
+    alertQueue.close(),
+  ]);
+}
