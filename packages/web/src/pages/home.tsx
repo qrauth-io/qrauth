@@ -448,6 +448,58 @@ export default function HomePage() {
       </Box>
 
       {/* ============================================================ */}
+      {/* KEY MESSAGE — The proof is alive */}
+      {/* ============================================================ */}
+      <Box sx={{ py: { xs: 8, md: 10 }, textAlign: 'center' }}>
+        <Container maxWidth="md">
+          <Typography
+            variant="h2"
+            fontWeight={900}
+            sx={{
+              fontSize: { xs: 28, md: 42 },
+              lineHeight: 1.2,
+              mb: 3,
+              background: 'linear-gradient(135deg, #1B2A4A 0%, #00A76F 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Our verification page proves it&apos;s live and personalized to YOU, right NOW.
+            A fake can&apos;t do that.
+          </Typography>
+
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', mb: 5, lineHeight: 1.8 }}>
+            Every time someone scans a vQR code, the verification page shows their city, their device,
+            the exact second, and a cryptographic proof ID unique to that moment. A cloned page shows stale data.
+            A screenshot freezes. Only the real vQR page is alive.
+          </Typography>
+
+          <Grid container spacing={3} sx={{ maxWidth: 700, mx: 'auto' }}>
+            {[
+              { icon: '📍', title: 'Your City', desc: 'Derived from your IP — a clone shows the wrong location' },
+              { icon: '📱', title: 'Your Device', desc: 'Parsed from your browser — a clone can\'t detect your phone' },
+              { icon: '⏱️', title: 'Exact Timestamp', desc: 'To the second — a clone is frozen in the past' },
+              { icon: '🔐', title: 'Proof ID', desc: 'HMAC(secret + token + time + IP) — impossible to forge' },
+            ].map((item) => (
+              <Grid key={item.title} size={{ xs: 6 }}>
+                <Box sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                  <Typography sx={{ fontSize: 28, mb: 0.5 }}>{item.icon}</Typography>
+                  <Typography variant="subtitle2" fontWeight={700}>{item.title}</Typography>
+                  <Typography variant="caption" color="text.secondary">{item.desc}</Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 5 }}>
+            <Chip label="19 automated security tests" sx={{ fontWeight: 600 }} />
+            <Chip label="Penetration tested" sx={{ fontWeight: 600 }} />
+            <Chip label="ECDSA-P256 signed" sx={{ fontWeight: 600 }} />
+          </Stack>
+        </Container>
+      </Box>
+
+      {/* ============================================================ */}
       {/* FOR DEVELOPERS — SDK */}
       {/* ============================================================ */}
       <Box id="developers" sx={{ py: { xs: 8, md: 12 } }}>
