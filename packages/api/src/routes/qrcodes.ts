@@ -36,10 +36,12 @@ const listQRCodesQuerySchema = paginationSchema.extend({
 });
 
 // Extends the shared createQRCodeSchema with optional content-type fields.
-const extendedCreateSchema = createQRCodeSchema.extend({
-  contentType: z.string().optional(),
-  content: z.any().optional(),
-});
+const extendedCreateSchema = createQRCodeSchema
+  .extend({
+    destinationUrl: z.string().url().optional(), // Override: optional for content types
+    contentType: z.string().optional(),
+    content: z.any().optional(),
+  });
 
 // ---------------------------------------------------------------------------
 // Internal helpers
