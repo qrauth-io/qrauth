@@ -79,7 +79,11 @@ export function verifySignature(
     verifier.end();
 
     return verifier.verify(publicKey, signature, 'base64');
-  } catch {
+  } catch (err) {
+    // Log verification failures for monitoring (not an error — just info)
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('[crypto] Signature verification failed:', (err as Error).message);
+    }
     return false;
   }
 }

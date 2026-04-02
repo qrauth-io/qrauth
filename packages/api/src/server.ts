@@ -33,6 +33,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   // 1. Create Fastify instance with structured pino logger.
   // -------------------------------------------------------------------------
   const app = Fastify({
+    bodyLimit: 1048576, // 1MB — prevents oversized payloads
     logger: {
       level: config.server.isDev ? 'debug' : 'info',
       ...(config.server.isDev && {

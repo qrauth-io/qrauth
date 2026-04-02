@@ -464,9 +464,18 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
     let authSessionToken = '';
     try {
       const payload = JSON.parse(Buffer.from(state, 'base64url').toString());
-      returnTo = payload.returnTo || '';
-      authSessionToken = payload.authSessionToken || '';
-    } catch {}
+      // Validate payload structure
+      if (typeof payload === 'object' && payload !== null) {
+        returnTo = typeof payload.returnTo === 'string' ? payload.returnTo : '';
+        authSessionToken = typeof payload.authSessionToken === 'string' ? payload.authSessionToken : '';
+      }
+      // Validate returnTo is a relative path (prevent open redirect)
+      if (returnTo && (!returnTo.startsWith('/') || returnTo.startsWith('//'))) {
+        returnTo = '/dashboard';
+      }
+    } catch {
+      // Invalid state — continue with empty values
+    }
 
     const baseUrl = process.env.WEBAUTHN_ORIGIN || `http://localhost:${config.server.port}`;
     const callbackUrl = `${baseUrl}/api/v1/auth/oauth/${provider}/callback`;

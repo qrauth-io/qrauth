@@ -53,7 +53,7 @@ export function isValidToken(accessToken: string) {
 
 export function tokenExpired(exp: number) {
   const currentTime = Date.now();
-  const timeLeft = exp * 1000 - currentTime;
+  const timeLeft = Math.max(0, exp * 1000 - currentTime);
 
   setTimeout(() => {
     try {

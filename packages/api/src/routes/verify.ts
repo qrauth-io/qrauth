@@ -80,6 +80,13 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
   }, async (request, reply) => {
     const { token } = request.params as { token: string };
     const query = request.query as { clientLat?: number; clientLng?: number };
+    // Clamp geo values to valid ranges
+    if (query.clientLat !== undefined) {
+      query.clientLat = Math.max(-90, Math.min(90, Number(query.clientLat) || 0));
+    }
+    if (query.clientLng !== undefined) {
+      query.clientLng = Math.max(-180, Math.min(180, Number(query.clientLng) || 0));
+    }
 
     const scannedAt = new Date().toISOString();
     const cacheKey = `verify:${token}`;
