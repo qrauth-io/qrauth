@@ -119,16 +119,14 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
         document.getElementById('origin-warning').style.display = 'block';
       }
 
-      // Request GPS and re-verify with location for proximity check
-      if (navigator.geolocation) {
+      // Request GPS only if QR code has a registered location
+      var hasLocation = ${ctx.qrCode.latitude != null && ctx.qrCode.longitude != null ? 'true' : 'false'};
+      if (hasLocation && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(pos) {
-          var lat = pos.coords.latitude;
-          var lng = pos.coords.longitude;
-          // Reload with coordinates to get location match
           var url = new URL(window.location.href);
           if (!url.searchParams.has('clientLat')) {
-            url.searchParams.set('clientLat', lat.toFixed(6));
-            url.searchParams.set('clientLng', lng.toFixed(6));
+            url.searchParams.set('clientLat', pos.coords.latitude.toFixed(6));
+            url.searchParams.set('clientLng', pos.coords.longitude.toFixed(6));
             window.location.replace(url.toString());
           }
         }, function() {}, { timeout: 5000, maximumAge: 60000 });

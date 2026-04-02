@@ -5,6 +5,8 @@ export interface RenderContext {
     content: unknown;
     label?: string | null;
     destinationUrl: string;
+    latitude?: number | null;
+    longitude?: number | null;
     createdAt: Date;
   };
   organization: {

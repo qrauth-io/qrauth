@@ -347,6 +347,8 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
             content: qrCode.content,
             label: qrCode.label,
             destinationUrl: qrCode.destinationUrl,
+            latitude: qrCode.latitude,
+            longitude: qrCode.longitude,
             createdAt: qrCode.createdAt,
           },
           organization: qrCode.organization as RenderContext['organization'],
