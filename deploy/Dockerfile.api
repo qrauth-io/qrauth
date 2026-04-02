@@ -41,6 +41,10 @@ COPY packages/api/public packages/api/public
 RUN mkdir -p /app/keys
 
 WORKDIR /app/packages/api
+
+# Symlink keys volume to working directory so relative path ./keys works
+RUN ln -sf /app/keys /app/packages/api/keys
+
 EXPOSE 3000
 
 CMD ["sh", "-c", "npx prisma migrate deploy --schema=prisma/schema.prisma && node dist/server.js"]
