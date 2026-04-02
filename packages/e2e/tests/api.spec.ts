@@ -69,6 +69,12 @@ test.describe('API', () => {
     });
     const { token } = await signupRes.json();
 
+    // Complete onboarding (creates signing key)
+    await request.post(`${API_URL}/api/v1/auth/onboarding/complete`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { organizationName: 'QR Org', useCase: 'DEVELOPER' },
+    });
+
     // Create QR code
     const createRes = await request.post(`${API_URL}/api/v1/qrcodes`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -105,6 +111,12 @@ test.describe('API', () => {
       },
     });
     const { token: authToken } = await signupRes.json();
+
+    // Complete onboarding
+    await request.post(`${API_URL}/api/v1/auth/onboarding/complete`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+      data: { organizationName: 'Verify Org', useCase: 'DEVELOPER' },
+    });
 
     const createRes = await request.post(`${API_URL}/api/v1/qrcodes`, {
       headers: { Authorization: `Bearer ${authToken}` },

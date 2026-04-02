@@ -15,6 +15,13 @@ async function createUser(request: any, suffix: string) {
     data: { name: `Sec Test ${suffix}`, email, password: 'SecurePass123!', organizationName: `SecTest ${suffix} Org` },
   });
   const body = await res.json();
+
+  // Complete onboarding (creates signing key)
+  await request.post(`${API}/api/v1/auth/onboarding/complete`, {
+    headers: { Authorization: `Bearer ${body.token}` },
+    data: { organizationName: `SecTest ${suffix} Org`, useCase: 'DEVELOPER' },
+  });
+
   return { token: body.token, orgId: body.organization.id, email };
 }
 
@@ -283,7 +290,9 @@ test.describe('Cryptographic Integrity', () => {
     const verifyRes = await request.get(`${API}/v/${qr.token}`, {
       headers: { Accept: 'application/json' },
     });
+    expect(verifyRes.ok()).toBeTruthy();
     const data = await verifyRes.json();
+    expect(data).toHaveProperty('security');
     expect(data.security.signatureValid).toBe(true);
   });
 
