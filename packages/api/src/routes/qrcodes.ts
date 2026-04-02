@@ -94,7 +94,7 @@ async function generateQRCode(
   // Derive destinationUrl for non-URL types (the verify page is the destination).
   const baseUrl = config.server.isDev
     ? `http://localhost:${config.server.port}`
-    : 'https://vqr.io';
+    : (process.env.WEBAUTHN_ORIGIN || 'https://vqr.progressnet.io');
 
   // 2. Get active signing key.
   const signingKey = await signingService.getActiveKey(organizationId);
