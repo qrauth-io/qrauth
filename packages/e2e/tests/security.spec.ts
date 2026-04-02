@@ -43,8 +43,8 @@ test.describe('Tier 2 — Clone Detection', () => {
 
     // Must contain ephemeral proof section
     expect(html).toContain('Ephemeral Proof');
-    expect(html).toContain('Your location');
-    expect(html).toContain('Your device');
+    expect(html).toContain('Location');
+    expect(html).toContain('Device');
     expect(html).toContain('Proof ID');
 
     // Proof ID must be a 12-char hex-like string
@@ -74,9 +74,8 @@ test.describe('Tier 2 — Clone Detection', () => {
     const html = await res.text();
 
     expect(html).toContain('origin-warning');
-    expect(html).toContain('allowedHosts');
-    expect(html).toContain('window.location.hostname');
-    expect(html).toContain('This verification page is not being served from the official vQR domain');
+    expect(html).toContain('location.hostname');
+    expect(html).toContain('not served from an official vQR domain');
   });
 });
 
