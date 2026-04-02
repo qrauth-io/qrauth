@@ -390,16 +390,22 @@ export class FraudDetectionService {
     let score = 100;
 
     // Check for active (unresolved) fraud incidents
+    // Deduct per UNIQUE incident type (not per individual incident)
+    // so duplicate detections don't stack and tank the score
     const activeIncidents = await this.prisma.fraudIncident.findMany({
       where: { qrCodeId, resolved: false },
       select: { severity: true, type: true },
     });
 
+    const seenTypes = new Set<string>();
     for (const incident of activeIncidents) {
+      if (seenTypes.has(incident.type)) continue; // Only count each type once
+      seenTypes.add(incident.type);
+
       switch (incident.severity) {
-        case 'CRITICAL': score -= 40; break;
-        case 'HIGH': score -= 25; break;
-        case 'MEDIUM': score -= 15; break;
+        case 'CRITICAL': score -= 30; break;
+        case 'HIGH': score -= 20; break;
+        case 'MEDIUM': score -= 10; break;
         case 'LOW': score -= 5; break;
       }
     }
@@ -409,10 +415,12 @@ export class FraudDetectionService {
     const recentScans = await this.prisma.scan.count({
       where: { qrCodeId, createdAt: { gte: fiveMinAgo } },
     });
-    if (recentScans > 20) score -= 15;
+    if (recentScans > 20) score -= 10;
     else if (recentScans > 10) score -= 5;
 
-    return Math.max(0, Math.min(100, score));
+    // Floor at 30 — never show "Verification Failed" solely from fraud score
+    // Only signature failure or explicit revocation should block verification
+    return Math.max(30, Math.min(100, score));
   }
 
   /**
