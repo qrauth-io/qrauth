@@ -174,10 +174,9 @@ test.describe('Fraud Detection', () => {
     const res1 = await request.get(`${API}/v/${qr.token}`, {
       headers: { Accept: 'application/json' },
     });
-    expect(res1.ok()).toBeTruthy();
     const data1 = await res1.json();
-    if (!data1.security) {
-      console.log('Trust test data1:', JSON.stringify(data1).slice(0, 300));
+    if (!res1.ok() || !data1.security) {
+      throw new Error(`Verify failed: status=${res1.status()} body=${JSON.stringify(data1).slice(0, 300)}`);
     }
     expect(data1.security).toBeDefined();
     expect(data1.security.trustScore).toBeGreaterThanOrEqual(30);
