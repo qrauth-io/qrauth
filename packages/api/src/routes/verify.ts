@@ -10,6 +10,8 @@ import { DomainService } from '../services/domain.js';
 import { cacheGet, cacheSet } from '../lib/cache.js';
 import { hashString } from '../lib/crypto.js';
 import { scanQueue } from '../lib/queue.js';
+import { collectRequestMetadata } from '../lib/metadata.js';
+import { config } from '../lib/config.js';
 import { CACHE_TTL } from '@vqr/shared';
 import { z } from 'zod';
 
@@ -313,7 +315,17 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
       request.headers.accept?.includes('application/json');
 
     if (!acceptsJson) {
-      return reply.type('text/html').send(renderVerificationPage(response, token, qrCode));
+      // Collect ephemeral proof data — personalized, impossible for a clone to reproduce
+      const meta = await collectRequestMetadata(request);
+      const proofTimestamp = new Date().toISOString();
+      const proofHmac = hashString(`${config.visualProof.secret || 'vqr'}:${token}:${proofTimestamp}:${request.ip}`);
+      const ephemeralProof = {
+        city: meta.ipCity || meta.ipCountry || 'Unknown location',
+        device: `${meta.browser || 'Unknown browser'} on ${meta.os || 'Unknown OS'}`,
+        timestamp: proofTimestamp,
+        fingerprint: proofHmac.slice(0, 12),
+      };
+      return reply.type('text/html').send(renderVerificationPage(response, token, qrCode, ephemeralProof));
     }
 
     return reply.send(response);
@@ -342,6 +354,7 @@ function renderVerificationPage(
   result: VerificationResponse & { domain_warning?: { message: string; similar_to: string; verified_org: string } },
   token: string,
   qrCode: { label?: string | null; destinationUrl: string; createdAt: Date },
+  ephemeralProof?: { city: string; device: string; timestamp: string; fingerprint: string },
 ): string {
   const verified = result.verified;
   const org = result.organization;
@@ -569,6 +582,33 @@ function renderVerificationPage(
         </div>
         ` : ''}
 
+        ${ephemeralProof ? `
+        <div class="section">
+          <div class="section-title">Ephemeral Proof — personalized to you right now</div>
+          <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="color:#919eab;">Your location</span>
+              <strong>${esc(ephemeralProof.city)}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="color:#919eab;">Your device</span>
+              <strong>${esc(ephemeralProof.device)}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="color:#919eab;">Timestamp</span>
+              <strong>${esc(new Date(ephemeralProof.timestamp).toLocaleTimeString('en-US', { hour12: false }))}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#919eab;">Proof ID</span>
+              <span style="font-family:monospace;font-weight:700;color:#00A76F;">${esc(ephemeralProof.fingerprint)}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#919eab;margin-top:6px;">
+            If this info doesn't match your device and location, this page may be cloned.
+          </div>
+        </div>
+        ` : ''}
+
         ${verified ? `
         <a class="cta-btn" href="${esc(qrCode.destinationUrl)}" rel="noopener">
           Continue to ${esc(destinationHostname)}
@@ -580,6 +620,10 @@ function renderVerificationPage(
         `}
 
         <div class="time">Scanned at ${result.scannedAt}</div>
+
+        <div id="origin-warning" style="display:none;margin-top:12px;padding:12px 16px;background:#FFEBEE;border-radius:8px;border-left:4px solid #C62828;color:#C62828;font-size:13px;">
+          <strong>&#9888; WARNING:</strong> This verification page is not being served from the official vQR domain. This may be a cloned phishing page. Do NOT enter any information.
+        </div>
       </div>
 
       <div class="footer">
@@ -587,6 +631,21 @@ function renderVerificationPage(
         <span style="font-size:10px;margin-top:4px;display:inline-block;">Token: ${esc(token)}</span>
       </div>
     </div>
+
+    <script>
+      // Origin integrity check — detect if this page is being served from a clone
+      (function() {
+        var allowedHosts = ['vqr.io', 'vqr.progressnet.io', 'localhost'];
+        var currentHost = window.location.hostname;
+        var isLegit = allowedHosts.some(function(h) { return currentHost === h || currentHost.endsWith('.' + h); });
+        if (!isLegit) {
+          document.getElementById('origin-warning').style.display = 'block';
+          // Also try to disable the CTA button
+          var cta = document.querySelector('.cta-btn');
+          if (cta) { cta.style.pointerEvents = 'none'; cta.style.opacity = '0.3'; }
+        }
+      })();
+    </script>
   </div>
 </body>
 </html>`;
