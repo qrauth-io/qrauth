@@ -375,6 +375,11 @@ export default async function analyticsRoutes(fastify: FastifyInstance): Promise
       scansLast30d,
       activeFraudIncidents,
       avgTrustScoreResult,
+      // Auth session stats
+      totalAuthSessions,
+      authSessionsApproved,
+      authSessionsLast7d,
+      totalApps,
     ] = await Promise.all([
       fastify.prisma.qRCode.count({
         where: { organizationId },
@@ -405,10 +410,26 @@ export default async function analyticsRoutes(fastify: FastifyInstance): Promise
         },
       }),
 
-      // Prisma aggregate for average trust score.
       fastify.prisma.scan.aggregate({
         where: { qrCode: { organizationId } },
         _avg: { trustScore: true },
+      }),
+
+      // Auth sessions
+      fastify.prisma.authSession.count({
+        where: { app: { organizationId } },
+      }),
+
+      fastify.prisma.authSession.count({
+        where: { app: { organizationId }, status: 'APPROVED' },
+      }),
+
+      fastify.prisma.authSession.count({
+        where: { app: { organizationId }, createdAt: { gte: sevenDaysAgo } },
+      }),
+
+      fastify.prisma.app.count({
+        where: { organizationId, status: 'ACTIVE' },
       }),
     ]);
 
@@ -424,6 +445,78 @@ export default async function analyticsRoutes(fastify: FastifyInstance): Promise
       scansLast30d,
       activeFraudIncidents,
       avgTrustScore,
+      // Auth
+      totalAuthSessions,
+      authSessionsApproved,
+      authSessionsLast7d,
+      totalApps,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /auth-sessions — Auth session history for org's apps
+  // -------------------------------------------------------------------------
+
+  fastify.get('/auth-sessions', {
+    config: { rateLimit: rateLimitAuth },
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER', 'MEMBER', 'VIEWER')],
+    preValidation: zodValidator({ querystring: analyticsQuerySchema }),
+  }, async (request, reply) => {
+    const query = request.query as {
+      page: number;
+      pageSize: number;
+      startDate?: string;
+      endDate?: string;
+    };
+    const { page, pageSize, startDate, endDate } = query;
+    const skip = (page - 1) * pageSize;
+    const organizationId = request.user!.orgId;
+
+    const dateFilter =
+      startDate || endDate
+        ? {
+            createdAt: {
+              ...(startDate ? { gte: new Date(startDate) } : {}),
+              ...(endDate ? { lte: new Date(endDate) } : {}),
+            },
+          }
+        : {};
+
+    const where = {
+      app: { organizationId },
+      ...dateFilter,
+    };
+
+    const [data, total] = await Promise.all([
+      fastify.prisma.authSession.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          status: true,
+          scopes: true,
+          ipCountry: true,
+          ipCity: true,
+          deviceFingerprint: true,
+          referrer: true,
+          scannedAt: true,
+          resolvedAt: true,
+          createdAt: true,
+          app: { select: { name: true, clientId: true } },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      fastify.prisma.authSession.count({ where }),
+    ]);
+
+    return reply.send({
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
     });
   });
 }

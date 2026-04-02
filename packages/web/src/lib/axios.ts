@@ -78,6 +78,7 @@ export const endpoints = {
     fraud: '/api/v1/analytics/fraud',
     summary: '/api/v1/analytics/summary',
     fraudRules: '/api/v1/analytics/fraud-rules',
+    authSessions: '/api/v1/analytics/auth-sessions',
   },
   verify: {
     check: (token: string) => `/v/${token}`,
