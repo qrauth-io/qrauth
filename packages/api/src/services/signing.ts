@@ -84,8 +84,9 @@ export class SigningService {
     destinationUrl: string,
     geoHash: string,
     expiresAt: string,
+    contentHash: string = '',
   ): boolean {
-    const payload = hashPayload(token, destinationUrl, geoHash, expiresAt);
+    const payload = hashPayload(token, destinationUrl, geoHash, expiresAt, contentHash);
     return verifySignature(publicKey, signature, payload);
   }
 

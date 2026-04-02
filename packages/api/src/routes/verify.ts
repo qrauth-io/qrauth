@@ -166,6 +166,12 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
     // ------------------------------------------------------------------
     // 4. Cryptographic signature verification
     // ------------------------------------------------------------------
+    // Compute contentHash for verification (must match what was signed)
+    let verifyContentHash = '';
+    if (qrCode.content && qrCode.contentType !== 'url') {
+      verifyContentHash = hashString(JSON.stringify(qrCode.content));
+    }
+
     const signatureValid = signingService.verifyQRCode(
       qrCode.signingKey.publicKey,
       qrCode.signature,
@@ -173,6 +179,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
       qrCode.destinationUrl,
       qrCode.geoHash ?? '',
       qrCode.expiresAt?.toISOString() ?? '',
+      verifyContentHash,
     );
 
     // ------------------------------------------------------------------
