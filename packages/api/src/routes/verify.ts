@@ -6,6 +6,7 @@ import { SigningService } from '../services/signing.js';
 import { GeoService } from '../services/geo.js';
 import { TransparencyLogService } from '../services/transparency.js';
 import { FraudDetectionService } from '../services/fraud.js';
+import { DomainService } from '../services/domain.js';
 import { cacheGet, cacheSet } from '../lib/cache.js';
 import { hashString } from '../lib/crypto.js';
 import { scanQueue } from '../lib/queue.js';
@@ -33,6 +34,7 @@ interface VerificationResponse {
     slug: string;
     trustLevel: string;
     kycStatus: string;
+    domainVerified: boolean;
   };
   destination_url: string;
   location_match: {
@@ -58,6 +60,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
   const geoService = new GeoService(fastify.prisma);
   const transparencyService = new TransparencyLogService(fastify.prisma);
   const fraudService = new FraudDetectionService(fastify.prisma, geoService, null as any);
+  const domainService = new DomainService(fastify.prisma);
 
   // -------------------------------------------------------------------------
   // GET /:token — Core verification (public, no auth)
@@ -94,6 +97,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
             slug: true,
             trustLevel: true,
             kycStatus: true,
+            domainVerified: true,
           },
         },
         signingKey: {
@@ -233,15 +237,36 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
     // Compute real-time trust score based on fraud history
     const trustScore = await fraudService.getQuickTrustScore(qrCode.id);
 
+    // Check if destination domain looks like a known verified domain (phishing defense)
+    const domainWarnings = await domainService.checkUrlAgainstVerifiedDomains(
+      qrCode.destinationUrl,
+      qrCode.organizationId,
+    );
+
+    // Lower trust score if domain is suspiciously similar to a verified one
+    const domainPenalty = domainWarnings.isSuspicious ? 30 : 0;
+    const finalTrustScore = Math.max(0, trustScore - domainPenalty);
+
     const staticParts = {
-      verified: signatureValid && trustScore > 20,
-      ...(signatureValid && trustScore <= 20 ? { reason: 'QR code has a critically low trust score due to detected fraud.' } : {}),
-      organization: qrCode.organization,
+      verified: signatureValid && finalTrustScore > 20,
+      ...(signatureValid && finalTrustScore <= 20 ? { reason: 'QR code has a critically low trust score due to detected fraud.' } : {}),
+      ...(domainWarnings.isSuspicious ? {
+        domain_warning: {
+          message: `This URL looks similar to "${domainWarnings.warnings[0]?.domain}" which belongs to verified organization "${domainWarnings.warnings[0]?.verifiedOrgName}". Proceed with caution.`,
+          similar_to: domainWarnings.warnings[0]?.domain,
+          verified_org: domainWarnings.warnings[0]?.verifiedOrgName,
+          similarity: domainWarnings.warnings[0]?.similarity,
+        },
+      } : {}),
+      organization: {
+        ...qrCode.organization,
+        domainVerified: qrCode.organization.domainVerified,
+      },
       destination_url: qrCode.destinationUrl,
       security: {
         signatureValid,
         proxyDetected: false,
-        trustScore,
+        trustScore: finalTrustScore,
         transparencyLogVerified,
       },
     };
@@ -314,7 +339,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
 // ---------------------------------------------------------------------------
 
 function renderVerificationPage(
-  result: VerificationResponse,
+  result: VerificationResponse & { domain_warning?: { message: string; similar_to: string; verified_org: string } },
   token: string,
   qrCode: { label?: string | null; destinationUrl: string; createdAt: Date },
 ): string {
@@ -322,6 +347,7 @@ function renderVerificationPage(
   const org = result.organization;
   const sec = result.security;
   const loc = result.location_match;
+  const domainWarn = result.domain_warning;
 
   const trustColor = sec.trustScore >= 80 ? '#00A76F' : sec.trustScore >= 50 ? '#FFAB00' : '#FF5630';
   const trustLabel = sec.trustScore >= 80 ? 'High Trust' : sec.trustScore >= 50 ? 'Medium Trust' : 'Low Trust';
@@ -331,6 +357,10 @@ function renderVerificationPage(
     : org.kycStatus === 'UNDER_REVIEW'
       ? '<span class="badge badge-yellow">KYC Pending</span>'
       : '<span class="badge badge-gray">Unverified</span>';
+
+  const domainBadge = org.domainVerified
+    ? '<span class="badge badge-green">Domain Verified</span>'
+    : '<span class="badge badge-gray">Domain Unverified</span>';
 
   const trustLevelBadge = org.trustLevel === 'GOVERNMENT'
     ? '<span class="badge badge-blue">Government</span>'
@@ -465,6 +495,11 @@ function renderVerificationPage(
 
       <div class="body">
         ${!verified && result.reason ? `<div class="warn-banner">&#9888; ${esc(result.reason)}</div>` : ''}
+        ${domainWarn ? `
+        <div class="warn-banner" style="background:#FFEBEE;color:#C62828;border-left:4px solid #C62828;">
+          <strong>&#9888; Phishing Warning:</strong> This URL looks similar to <strong>${esc(domainWarn.similar_to)}</strong> which belongs to the verified organization <strong>${esc(domainWarn.verified_org)}</strong>. Double-check the URL before proceeding.
+        </div>
+        ` : ''}
 
         <div class="section">
           <div class="section-title">Registered By</div>
@@ -472,6 +507,7 @@ function renderVerificationPage(
           <div class="badges">
             ${trustLevelBadge}
             ${kycBadge}
+            ${domainBadge}
           </div>
         </div>
 

@@ -80,6 +80,8 @@ model Organization {
   trustLevel   OrganizationTrustLevel  @default(INDIVIDUAL)
   kycStatus    KycStatus               @default(PENDING)
   kycData      Json?
+  domainVerified     Boolean  @default(false)
+  domainVerifyToken  String?
   plan         Plan                    @default(FREE)
   billingEmail String?
   createdAt    DateTime                @default(now())

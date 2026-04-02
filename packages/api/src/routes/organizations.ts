@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { zodValidator } from '../middleware/validate.js';
 import { authorize } from '../middleware/authorize.js';
 import { SigningService } from '../services/signing.js';
+import { DomainService } from '../services/domain.js';
 import { sendInvitationEmail } from '../lib/email.js';
 import { generateApiKey } from '../lib/crypto.js';
 import {
@@ -43,6 +44,7 @@ function checkOrgAccess(request: FastifyRequest): void {
 
 export default async function organizationRoutes(fastify: FastifyInstance): Promise<void> {
   const signingService = new SigningService(fastify.prisma);
+  const domainService = new DomainService(fastify.prisma);
   const authenticate = fastify.authenticate;
 
   // -------------------------------------------------------------------------
@@ -512,6 +514,47 @@ export default async function organizationRoutes(fastify: FastifyInstance): Prom
     });
 
     return reply.status(204).send();
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /:id/generate-verify-token — Generate DNS verification token
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:id/generate-verify-token', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    if (request.user!.orgId !== id) return reply.status(403).send({ statusCode: 403, error: 'Forbidden', message: 'Access denied' });
+
+    const org = await fastify.prisma.organization.findUnique({ where: { id }, select: { domain: true } });
+    if (!org?.domain) {
+      return reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Set a domain on your organization first (PATCH /organizations/:id)' });
+    }
+
+    const token = await domainService.generateVerifyToken(id);
+    return reply.send({
+      token,
+      instruction: `Add a DNS TXT record to ${org.domain}: vqr-verify=${token}`,
+      dnsRecord: {
+        type: 'TXT',
+        name: org.domain,
+        value: `vqr-verify=${token}`,
+      },
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /:id/verify-domain — Check DNS TXT record and verify domain
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:id/verify-domain', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    if (request.user!.orgId !== id) return reply.status(403).send({ statusCode: 403, error: 'Forbidden', message: 'Access denied' });
+
+    const result = await domainService.verifyDomain(id);
+    return reply.send(result);
   });
 
   // -------------------------------------------------------------------------

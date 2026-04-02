@@ -16,6 +16,7 @@ import {
 import { SigningService } from '../services/signing.js';
 import { GeoService } from '../services/geo.js';
 import { TransparencyLogService } from '../services/transparency.js';
+import { DomainService } from '../services/domain.js';
 import { cacheDel } from '../lib/cache.js';
 import { config } from '../lib/config.js';
 import { z } from 'zod';
@@ -52,6 +53,7 @@ async function generateQRCode(
   signingService: SigningService,
   geoService: GeoService,
   transparencyService: TransparencyLogService,
+  domainService: DomainService,
   organizationId: string,
   input: {
     destinationUrl: string;
@@ -116,6 +118,34 @@ async function generateQRCode(
     fastify.log.warn({ err, qrCodeId: qrCode.id }, 'Failed to append transparency log entry');
   }
 
+  // 7. Check destination domain against verified org domains (non-blocking).
+  const domainCheck = await domainService.checkUrlAgainstVerifiedDomains(
+    input.destinationUrl,
+    organizationId,
+  );
+
+  // Auto-create fraud incident for highly suspicious domain similarity.
+  if (domainCheck.isSuspicious) {
+    try {
+      await fastify.prisma.fraudIncident.create({
+        data: {
+          qrCodeId: qrCode.id,
+          type: 'MANUAL_REPORT',
+          severity: 'HIGH',
+          details: {
+            reason: 'suspicious_domain',
+            destinationDomain: domainService.extractDomain(input.destinationUrl),
+            similarTo: domainCheck.warnings[0]?.domain,
+            verifiedOrg: domainCheck.warnings[0]?.verifiedOrgName,
+            similarity: domainCheck.warnings[0]?.similarity,
+          } as any,
+        },
+      });
+    } catch (err) {
+      fastify.log.warn({ err, qrCodeId: qrCode.id }, 'Failed to create suspicious domain fraud incident');
+    }
+  }
+
   return {
     token: qrCode.token,
     verification_url: buildVerificationUrl(qrCode.token),
@@ -126,6 +156,14 @@ async function generateQRCode(
     created_at: qrCode.createdAt,
     expires_at: qrCode.expiresAt,
     transparency_log_index: transparencyLogIndex,
+    ...(domainCheck.warnings.length > 0 ? {
+      domain_warnings: domainCheck.warnings.map((w) => ({
+        similar_to: w.domain,
+        verified_org: w.verifiedOrgName,
+        similarity: w.similarity,
+        reason: w.reason,
+      })),
+    } : {}),
   };
 }
 
@@ -137,6 +175,7 @@ export default async function qrCodeRoutes(fastify: FastifyInstance): Promise<vo
   const signingService = new SigningService(fastify.prisma);
   const geoService = new GeoService(fastify.prisma);
   const transparencyService = new TransparencyLogService(fastify.prisma);
+  const domainService = new DomainService(fastify.prisma);
   const { authenticate } = fastify;
 
   // -------------------------------------------------------------------------
@@ -160,6 +199,7 @@ export default async function qrCodeRoutes(fastify: FastifyInstance): Promise<vo
       signingService,
       geoService,
       transparencyService,
+      domainService,
       request.user!.orgId,
       body,
     );
@@ -410,6 +450,7 @@ export default async function qrCodeRoutes(fastify: FastifyInstance): Promise<vo
           signingService,
           geoService,
           transparencyService,
+          domainService,
           organizationId,
           item,
         );
