@@ -31,7 +31,11 @@ async function createQR(request: any, token: string, url: string, label?: string
     headers: { Authorization: `Bearer ${token}` },
     data: { destinationUrl: url, label },
   });
-  return res.json();
+  const body = await res.json();
+  if (!res.ok() || !body.token) {
+    throw new Error(`createQR failed: ${res.status()} ${JSON.stringify(body).slice(0, 200)}`);
+  }
+  return body;
 }
 
 // ============================================================
@@ -286,12 +290,20 @@ test.describe('Cryptographic Integrity', () => {
     expect(qr.signature).toBeTruthy();
     expect(qr.signature.length).toBeGreaterThan(50);
 
+    // Verify QR was created successfully
+    expect(qr.token).toBeTruthy();
+    expect(qr.signature).toBeTruthy();
+
     // Verify through the public endpoint
     const verifyRes = await request.get(`${API}/v/${qr.token}`, {
       headers: { Accept: 'application/json' },
     });
     expect(verifyRes.ok()).toBeTruthy();
     const data = await verifyRes.json();
+    // If QR creation failed silently, data won't have security
+    if (!data.security) {
+      console.log('Verify response (no security):', JSON.stringify(data).slice(0, 200));
+    }
     expect(data).toHaveProperty('security');
     expect(data.security.signatureValid).toBe(true);
   });
