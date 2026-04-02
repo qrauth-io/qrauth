@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
@@ -35,261 +36,220 @@ const DEFAULT_STYLE: QRStyle = {
 
 // ----------------------------------------------------------------------
 
-function VCardPreview({ content }: { content: Record<string, any> }) {
-  const fullName =
-    [content.firstName, content.lastName].filter(Boolean).join(' ') || 'Your Name';
-  const initial = fullName.charAt(0).toUpperCase();
-
+function PreviewVerifyBar() {
   return (
-    <Box
-      sx={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        fontSize: 13,
-      }}
-    >
-      {/* Verified bar */}
-      <Box
-        sx={{
-          px: 2,
-          py: 1,
-          bgcolor: '#00A76F',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          fontSize: 12,
-          fontWeight: 600,
-        }}
-      >
-        <span>&#10003;</span> Verified by vQR
-      </Box>
+    <Box sx={{ px: 2, py: 1, bgcolor: '#00A76F', color: 'white', display: 'flex', alignItems: 'center', gap: 1, fontSize: 12, fontWeight: 600 }}>
+      <span>&#10003;</span> Verified by vQR
+    </Box>
+  );
+}
 
-      {/* Contact card */}
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        {content.photoUrl ? (
-          <Box
-            component="img"
-            src={content.photoUrl}
-            sx={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              objectFit: 'cover',
-              mx: 'auto',
-              mb: 1,
-              border: '2px solid #f0f0f0',
-            }}
-            onError={(e: any) => {
-              e.target.style.display = 'none';
-            }}
-          />
-        ) : (
-          <Box
-            sx={{
-              width: 64,
-              height: 64,
-              borderRadius: '50%',
-              mx: 'auto',
-              mb: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: '#E3F2FD',
-              color: '#0D47A1',
-              fontSize: 24,
-              fontWeight: 700,
-            }}
-          >
-            {initial}
-          </Box>
-        )}
-        <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#1B2A4A' }}>
-          {fullName}
-        </Typography>
-        {content.title && (
-          <Typography variant="caption" color="text.secondary" display="block">
-            {content.title}
-          </Typography>
-        )}
-        {content.company && (
-          <Typography variant="caption" color="text.secondary" display="block">
-            {content.company}
-          </Typography>
-        )}
-        {content.summary && (
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-            {content.summary}
-          </Typography>
-        )}
-      </Box>
+function PreviewFooter() {
+  return (
+    <Box sx={{ p: 1.5, textAlign: 'center', borderTop: '1px solid #f0f0f0', fontSize: 10, color: '#919eab' }}>
+      Secured by <strong>vQR</strong>
+    </Box>
+  );
+}
 
-      {/* Contact fields */}
-      <Box sx={{ px: 2 }}>
-        {content.email && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              py: 1.5,
-              borderBottom: '1px solid #f5f5f5',
-            }}
-          >
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                bgcolor: '#E3F2FD',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-              }}
-            >
-              &#9993;
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Email
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#0D47A1' }}>
-                {content.email}
-              </Typography>
-            </Box>
-          </Box>
-        )}
-        {content.phone && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              py: 1.5,
-              borderBottom: '1px solid #f5f5f5',
-            }}
-          >
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                bgcolor: '#E8F5E9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-              }}
-            >
-              &#9742;
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Phone
-              </Typography>
-              <Typography variant="body2">{content.phone}</Typography>
-            </Box>
-          </Box>
-        )}
-        {content.mobile && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              py: 1.5,
-              borderBottom: '1px solid #f5f5f5',
-            }}
-          >
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                bgcolor: '#E8F5E9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-              }}
-            >
-              &#128241;
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Mobile
-              </Typography>
-              <Typography variant="body2">{content.mobile}</Typography>
-            </Box>
-          </Box>
-        )}
-        {content.website && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              py: 1.5,
-              borderBottom: '1px solid #f5f5f5',
-            }}
-          >
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                bgcolor: '#FFF3E0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 14,
-              }}
-            >
-              &#127760;
-            </Box>
-            <Box>
-              <Typography variant="caption" color="text.secondary" display="block">
-                Website
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#0D47A1' }}>
-                {content.website}
-              </Typography>
-            </Box>
-          </Box>
-        )}
+function PreviewFieldRow({ icon, iconBg, label, value }: { icon: string; iconBg: string; label: string; value: string }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.5, borderBottom: '1px solid #f5f5f5', px: 2 }}>
+      <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
+        {icon}
       </Box>
-
-      {/* Save contact button */}
-      <Box sx={{ p: 2, mt: 1 }}>
-        <Box
-          sx={{
-            py: 1.5,
-            textAlign: 'center',
-            bgcolor: '#1B2A4A',
-            color: 'white',
-            borderRadius: 1.5,
-            fontWeight: 600,
-            fontSize: 14,
-          }}
-        >
-          Save Contact
-        </Box>
-      </Box>
-
-      {/* Footer */}
-      <Box
-        sx={{
-          p: 1.5,
-          textAlign: 'center',
-          borderTop: '1px solid #f0f0f0',
-          fontSize: 10,
-          color: '#919eab',
-        }}
-      >
-        Secured by <strong>vQR</strong>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" color="text.secondary" display="block">{label}</Typography>
+        <Typography variant="body2" noWrap>{value}</Typography>
       </Box>
     </Box>
   );
+}
+
+function ContentPagePreview({ type, content }: { type: string; content: Record<string, any> }) {
+  switch (type) {
+    case 'url':
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          <Box sx={{ p: 3 }}>
+            {content.destinationUrl ? (
+              <>
+                <Box sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: 1, mb: 2, wordBreak: 'break-all', fontSize: 13, color: '#0D47A1' }}>
+                  {content.destinationUrl}
+                </Box>
+                <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#00A76F', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>
+                  Continue to {(() => { try { return new URL(content.destinationUrl).hostname; } catch { return 'website'; } })()}
+                </Box>
+              </>
+            ) : (
+              <Typography variant="body2" color="text.secondary" textAlign="center">Enter a URL to see preview</Typography>
+            )}
+          </Box>
+          <PreviewFooter />
+        </Box>
+      );
+
+    case 'vcard': {
+      const fullName = [content.firstName, content.lastName].filter(Boolean).join(' ') || 'Your Name';
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', mx: 'auto', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#E3F2FD', color: '#0D47A1', fontSize: 24, fontWeight: 700 }}>
+              {fullName.charAt(0).toUpperCase()}
+            </Box>
+            <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#1B2A4A' }}>{fullName}</Typography>
+            {content.title && <Typography variant="caption" color="text.secondary" display="block">{content.title}</Typography>}
+            {content.company && <Typography variant="caption" color="text.secondary" display="block">{content.company}</Typography>}
+          </Box>
+          {content.email && <PreviewFieldRow icon="&#9993;" iconBg="#E3F2FD" label="Email" value={content.email} />}
+          {content.phone && <PreviewFieldRow icon="&#9742;" iconBg="#E8F5E9" label="Phone" value={content.phone} />}
+          {content.website && <PreviewFieldRow icon="&#127760;" iconBg="#FFF3E0" label="Website" value={content.website} />}
+          <Box sx={{ p: 2 }}>
+            <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#1B2A4A', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>Save Contact</Box>
+          </Box>
+          <PreviewFooter />
+        </Box>
+      );
+    }
+
+    case 'coupon':
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          {content.imageUrl && <Box component="img" src={content.imageUrl} sx={{ width: '100%', height: 140, objectFit: 'cover' }} onError={(e: any) => { e.target.style.display = 'none'; }} />}
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            {content.discountBadge && <Box sx={{ display: 'inline-block', px: 2, py: 0.5, bgcolor: '#FF5630', color: 'white', borderRadius: 1, fontWeight: 700, fontSize: 14, mb: 1 }}>{content.discountBadge}</Box>}
+            <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.headline || 'Your Offer'}</Typography>
+            {content.company && <Typography variant="caption" color="text.secondary" display="block">{content.company}</Typography>}
+            {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
+            {content.expiresAt && <Typography variant="caption" color="error.main" display="block" sx={{ mt: 1 }}>Expires: {content.expiresAt}</Typography>}
+          </Box>
+          {content.redemptionUrl && (
+            <Box sx={{ px: 2, pb: 2 }}>
+              <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#FF5630', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>GET COUPON</Box>
+            </Box>
+          )}
+          <PreviewFooter />
+        </Box>
+      );
+
+    case 'event':
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          {content.imageUrl && <Box component="img" src={content.imageUrl} sx={{ width: '100%', height: 140, objectFit: 'cover' }} onError={(e: any) => { e.target.style.display = 'none'; }} />}
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.title || 'Event Title'}</Typography>
+            {content.organizer && <Typography variant="caption" color="text.secondary" display="block">by {content.organizer}</Typography>}
+            {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
+          </Box>
+          {content.startDate && <PreviewFieldRow icon="&#128197;" iconBg="#E3F2FD" label="When" value={content.startDate} />}
+          {content.location && <PreviewFieldRow icon="&#128205;" iconBg="#F3E5F5" label="Where" value={`${content.location}${content.address ? `, ${content.address}` : ''}`} />}
+          {content.contactEmail && <PreviewFieldRow icon="&#9993;" iconBg="#E3F2FD" label="Contact" value={content.contactEmail} />}
+          <Box sx={{ px: 2, py: 2 }}>
+            <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#0065DB', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>Add to Calendar</Box>
+          </Box>
+          <PreviewFooter />
+        </Box>
+      );
+
+    case 'pdf':
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Box sx={{ fontSize: 48, mb: 1 }}>&#128196;</Box>
+            <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.title || 'Document'}</Typography>
+            {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
+          </Box>
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#1B2A4A', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>View PDF</Box>
+          </Box>
+          <PreviewFooter />
+        </Box>
+      );
+
+    case 'business':
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: 2, mx: 'auto', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#E3F2FD', color: '#0D47A1', fontSize: 24, fontWeight: 700 }}>
+              {(content.name || 'B').charAt(0).toUpperCase()}
+            </Box>
+            <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.name || 'Business Name'}</Typography>
+            {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
+          </Box>
+          {content.phone && <PreviewFieldRow icon="&#9742;" iconBg="#E8F5E9" label="Phone" value={content.phone} />}
+          {content.email && <PreviewFieldRow icon="&#9993;" iconBg="#E3F2FD" label="Email" value={content.email} />}
+          {content.website && <PreviewFieldRow icon="&#127760;" iconBg="#FFF3E0" label="Website" value={content.website} />}
+          {content.address && <PreviewFieldRow icon="&#128205;" iconBg="#F3E5F5" label="Address" value={content.address} />}
+          {content.hours && <PreviewFieldRow icon="&#128340;" iconBg="#FFF8E1" label="Hours" value={content.hours} />}
+          <PreviewFooter />
+        </Box>
+      );
+
+    case 'social': {
+      const links = content.links || [];
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', mx: 'auto', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#E3F2FD', color: '#0D47A1', fontSize: 24, fontWeight: 700 }}>
+              {(content.name || 'S').charAt(0).toUpperCase()}
+            </Box>
+            <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.name || 'Your Name'}</Typography>
+            {content.bio && <Typography variant="caption" color="text.secondary" display="block">{content.bio}</Typography>}
+          </Box>
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Stack spacing={1}>
+              {links.filter((l: any) => l.platform || l.url).map((link: any, i: number) => (
+                <Box key={i} sx={{ py: 1.5, textAlign: 'center', bgcolor: '#f5f5f5', borderRadius: 1.5, fontWeight: 600, fontSize: 13, color: '#1B2A4A' }}>
+                  {link.platform || link.url || 'Link'}
+                </Box>
+              ))}
+              {links.length === 0 && (
+                <Typography variant="body2" color="text.secondary" textAlign="center">Add social links to see preview</Typography>
+              )}
+            </Stack>
+          </Box>
+          <PreviewFooter />
+        </Box>
+      );
+    }
+
+    case 'feedback':
+      return (
+        <Box>
+          <PreviewVerifyBar />
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.title || 'How was your experience?'}</Typography>
+            {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
+            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ fontSize: 32, color: '#FFAB00', cursor: 'pointer' }}>&#9733;</Box>
+              ))}
+            </Stack>
+            <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, fontSize: 12, color: '#919eab', textAlign: 'left' }}>
+              Leave a comment...
+            </Box>
+          </Box>
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#00A76F', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>Submit Feedback</Box>
+          </Box>
+          <PreviewFooter />
+        </Box>
+      );
+
+    default:
+      return (
+        <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+          <Typography variant="body2">Preview not available for this type yet</Typography>
+        </Box>
+      );
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -332,8 +292,15 @@ export default function QRCodesCreatePage() {
         payload.destinationUrl = contentValues.destinationUrl;
       } else {
         payload.content = contentValues;
-        // For non-URL types, destinationUrl is auto-generated by the API
-        payload.destinationUrl = 'https://placeholder.vqr.io'; // API will override
+      }
+
+      // Location binding
+      if (contentValues._latitude && contentValues._longitude) {
+        payload.location = {
+          lat: parseFloat(contentValues._latitude),
+          lng: parseFloat(contentValues._longitude),
+          radiusM: parseFloat(contentValues._radiusM) || 50,
+        };
       }
 
       const res = await axios.post(endpoints.qrcodes.create, payload);
@@ -490,6 +457,46 @@ export default function QRCodesCreatePage() {
           </Card>
 
           <Card>
+            <CardHeader
+              title="Location Binding"
+              subheader="Optional — bind this QR code to a physical location"
+            />
+            <CardContent>
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  label="Latitude"
+                  type="number"
+                  value={contentValues._latitude || ''}
+                  onChange={(e) => handleContentChange('_latitude', e.target.value)}
+                  fullWidth
+                  size="small"
+                  placeholder="40.6321"
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <TextField
+                  label="Longitude"
+                  type="number"
+                  value={contentValues._longitude || ''}
+                  onChange={(e) => handleContentChange('_longitude', e.target.value)}
+                  fullWidth
+                  size="small"
+                  placeholder="22.9414"
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <TextField
+                  label="Radius (m)"
+                  type="number"
+                  value={contentValues._radiusM || 50}
+                  onChange={(e) => handleContentChange('_radiusM', e.target.value)}
+                  fullWidth
+                  size="small"
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardHeader title="QR Code Style" />
             <CardContent>
               <QRStylePicker value={qrStyle} onChange={setQrStyle} />
@@ -557,30 +564,14 @@ export default function QRCodesCreatePage() {
             {previewTab === 'qr' ? (
               <Box sx={{ p: 3 }} ref={qrRef}>
                 <QRPreview
-                  value={
-                    contentValues.destinationUrl ||
-                    contentValues.website ||
-                    'https://vqr.io/v/preview'
-                  }
+                  value={contentValues.destinationUrl || contentValues.website || 'https://vqr.io/v/preview'}
                   style={qrStyle}
                   size={260}
                 />
               </Box>
             ) : (
               <Box sx={{ height: 520, overflow: 'auto', bgcolor: '#f5f5f5' }}>
-                {selectedType === 'vcard' && contentValues.firstName ? (
-                  <VCardPreview content={contentValues} />
-                ) : selectedType === 'url' ? (
-                  <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
-                    <Typography variant="body2">
-                      URL QR codes redirect to the destination — no hosted page.
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
-                    <Typography variant="body2">Fill in the form to see a live preview</Typography>
-                  </Box>
-                )}
+                <ContentPagePreview type={selectedType || 'url'} content={contentValues} />
               </Box>
             )}
           </Card>
