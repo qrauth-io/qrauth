@@ -11,17 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run agent on production server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          command_timeout: 10m
-          envs: ANTHROPIC_API_KEY,ADMIN_EMAIL
-          script: |
-            cd ~/vqr
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: |
+          # Set up SSH key
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-            # Pull latest code
+          # Run agent on server via SSH
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" bash -s "$ANTHROPIC_API_KEY" "$ADMIN_EMAIL" << 'REMOTE_SCRIPT'
+            cd ~/vqr
             git pull origin main
 
             # Install deps if needed
@@ -32,13 +37,13 @@ jobs:
             cd packages/api
             npx prisma generate
 
-            # Run agent with DB access via Docker network
-            DATABASE_URL="postgresql://vqr:$(grep POSTGRES_PASSWORD ~/vqr/deploy/.env | head -1 | cut -d= -f2)@localhost:5433/vqr" \
+            # Run agent
+            PGPASS=$(grep POSTGRES_PASSWORD ~/vqr/deploy/.env | head -1 | cut -d= -f2)
+            DATABASE_URL="postgresql://vqr:${PGPASS}@localhost:5433/vqr" \
             REDIS_URL="redis://localhost:6382" \
             JWT_SECRET="agent-run-does-not-need-jwt-but-config-requires-32chars" \
-            ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
-            ADMIN_EMAIL="${ADMIN_EMAIL}" \
+            ANTHROPIC_API_KEY="$1" \
+            ADMIN_EMAIL="$2" \
             npx tsx src/agent/daily-analysis.ts
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          REMOTE_SCRIPT
+        timeout-minutes: 10
