@@ -77,7 +77,7 @@ export function JwtSignUpView() {
       });
       await checkUserSession?.();
 
-      router.refresh();
+      router.push(paths.onboarding);
     } catch (error) {
       console.error(error);
       const feedbackMessage = getErrorMessage(error);

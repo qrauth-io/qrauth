@@ -91,4 +91,7 @@ export const endpoints = {
     details: (id: string) => `/api/v1/apps/${id}`,
     rotateSecret: (id: string) => `/api/v1/apps/${id}/rotate-secret`,
   },
+  onboarding: {
+    complete: '/api/v1/auth/onboarding/complete',
+  },
 } as const;

@@ -11,6 +11,7 @@ import {
   switchOrgSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  onboardingCompleteSchema,
   ACCOUNT_LOCKOUT_MINUTES,
 } from '@vqr/shared';
 import { getEnabledProviderNames, buildAuthUrl, exchangeCodeForUser, generateOAuthState } from '../lib/oauth.js';
@@ -479,6 +480,7 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
       }
 
       // Find existing user by providerId or email
+      let isNewUser = false;
       let user = await fastify.prisma.user.findFirst({
         where: {
           OR: [
@@ -524,6 +526,7 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
           },
         });
       } else {
+        isNewUser = true;
         // Create new user + default organization
         // Use the user's name for the org, cleaned up
         const orgName = `${oauthUser.name}'s Organization`;
@@ -597,7 +600,7 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
       }
 
       // For normal sign-in, redirect to dashboard with JWT in fragment
-      const redirectTarget = returnTo || '/dashboard';
+      const redirectTarget = returnTo || (isNewUser ? '/onboarding' : '/dashboard');
       return reply.redirect(`${baseUrl}${redirectTarget}#jwt=${token}`);
 
     } catch (err: any) {
@@ -635,6 +638,7 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
         name: true,
         email: true,
         emailVerified: true,
+        onboardedAt: true,
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
@@ -664,6 +668,7 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
         name: user.name,
         email: user.email,
         emailVerified: user.emailVerified,
+        onboardedAt: user.onboardedAt,
         role: activeMembership?.role ?? null,
         organization: activeMembership
           ? {
@@ -679,6 +684,54 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
         })),
       },
     });
+  });
+
+  // -----------------------------------------------------------------------
+  // POST /onboarding/complete — Finish onboarding (set org name + use case)
+  // -----------------------------------------------------------------------
+  fastify.post('/onboarding/complete', {
+    preHandler: [authenticate],
+    preValidation: zodValidator({ body: onboardingCompleteSchema }),
+  }, async (request, reply) => {
+    const { organizationName, useCase } = request.body as { organizationName: string; useCase: string };
+    const userId = request.user!.id;
+    const orgId = request.user!.orgId;
+
+    // Map use case to trust level
+    const trustLevelMap: Record<string, string> = {
+      MUNICIPALITY: 'GOVERNMENT',
+      PARKING: 'GOVERNMENT',
+      FINANCE: 'BUSINESS',
+      RESTAURANT: 'BUSINESS',
+      DEVELOPER: 'INDIVIDUAL',
+      OTHER: 'INDIVIDUAL',
+    };
+    const trustLevel = trustLevelMap[useCase] || 'INDIVIDUAL';
+
+    // Generate slug from org name
+    const baseSlug = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const existingSlug = await fastify.prisma.organization.findFirst({
+      where: { slug: baseSlug, id: { not: orgId } },
+    });
+    const slug = existingSlug ? `${baseSlug}-${randomBytes(2).toString('hex')}` : baseSlug;
+
+    // Update org
+    await fastify.prisma.organization.update({
+      where: { id: orgId },
+      data: {
+        name: organizationName,
+        slug,
+        trustLevel: trustLevel as any,
+      },
+    });
+
+    // Mark user as onboarded
+    await fastify.prisma.user.update({
+      where: { id: userId },
+      data: { onboardedAt: new Date() },
+    });
+
+    return reply.send({ success: true });
   });
 
   // -------------------------------------------------------------------------

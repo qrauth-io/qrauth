@@ -242,3 +242,9 @@ export const createAuthSessionSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 export type CreateAuthSessionInput = z.infer<typeof createAuthSessionSchema>;
+
+export const onboardingCompleteSchema = z.object({
+  organizationName: z.string().min(2).max(100),
+  useCase: z.enum(['MUNICIPALITY', 'PARKING', 'FINANCE', 'RESTAURANT', 'DEVELOPER', 'OTHER']),
+});
+export type OnboardingCompleteInput = z.infer<typeof onboardingCompleteSchema>;

@@ -23,7 +23,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { authenticated, loading } = useAuthContext();
+  const { authenticated, loading, user } = useAuthContext();
 
   const [isChecking, setIsChecking] = useState(true);
 
@@ -45,6 +45,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
       router.replace(redirectPath);
 
+      return;
+    }
+
+    // Redirect to onboarding if user hasn't completed it
+    if (user && !(user as any).onboardedAt && !pathname.startsWith('/onboarding')) {
+      router.replace('/onboarding');
       return;
     }
 

@@ -9,6 +9,7 @@ const ROOTS = {
 
 export const paths = {
   home: '/',
+  onboarding: '/onboarding',
   auth: {
     jwt: {
       signIn: `${ROOTS.AUTH}/jwt/sign-in`,

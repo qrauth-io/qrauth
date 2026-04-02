@@ -228,6 +228,7 @@ model User {
   avatarUrl            String?
   failedLoginAttempts  Int          @default(0)
   lockedUntil          DateTime?
+  onboardedAt          DateTime?
   emailVerified        Boolean      @default(false)
   emailVerifyToken     String?      @unique
   passwordResetToken   String?      @unique
