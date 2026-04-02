@@ -173,54 +173,6 @@ function ContentPagePreview({ type, content }: { type: string; content: Record<s
         </Box>
       );
 
-    case 'business':
-      return (
-        <Box>
-          <PreviewVerifyBar />
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Box sx={{ width: 64, height: 64, borderRadius: 2, mx: 'auto', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#E3F2FD', color: '#0D47A1', fontSize: 24, fontWeight: 700 }}>
-              {(content.name || 'B').charAt(0).toUpperCase()}
-            </Box>
-            <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.name || 'Business Name'}</Typography>
-            {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
-          </Box>
-          {content.phone && <PreviewFieldRow icon="&#9742;" iconBg="#E8F5E9" label="Phone" value={content.phone} />}
-          {content.email && <PreviewFieldRow icon="&#9993;" iconBg="#E3F2FD" label="Email" value={content.email} />}
-          {content.website && <PreviewFieldRow icon="&#127760;" iconBg="#FFF3E0" label="Website" value={content.website} />}
-          {content.address && <PreviewFieldRow icon="&#128205;" iconBg="#F3E5F5" label="Address" value={content.address} />}
-          {content.hours && <PreviewFieldRow icon="&#128340;" iconBg="#FFF8E1" label="Hours" value={content.hours} />}
-          <PreviewFooter />
-        </Box>
-      );
-
-    case 'social': {
-      const links = content.links || [];
-      return (
-        <Box>
-          <PreviewVerifyBar />
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Box sx={{ width: 64, height: 64, borderRadius: '50%', mx: 'auto', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#E3F2FD', color: '#0D47A1', fontSize: 24, fontWeight: 700 }}>
-              {(content.name || 'S').charAt(0).toUpperCase()}
-            </Box>
-            <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.name || 'Your Name'}</Typography>
-            {content.bio && <Typography variant="caption" color="text.secondary" display="block">{content.bio}</Typography>}
-          </Box>
-          <Box sx={{ px: 2, pb: 2 }}>
-            <Stack spacing={1}>
-              {links.filter((l: any) => l.platform || l.url).map((link: any, i: number) => (
-                <Box key={i} sx={{ py: 1.5, textAlign: 'center', bgcolor: '#f5f5f5', borderRadius: 1.5, fontWeight: 600, fontSize: 13, color: '#1B2A4A' }}>
-                  {link.platform || link.url || 'Link'}
-                </Box>
-              ))}
-              {links.length === 0 && (
-                <Typography variant="body2" color="text.secondary" textAlign="center">Add social links to see preview</Typography>
-              )}
-            </Stack>
-          </Box>
-          <PreviewFooter />
-        </Box>
-      );
-    }
 
     case 'feedback':
       return (

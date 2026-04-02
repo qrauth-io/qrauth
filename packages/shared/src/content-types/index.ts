@@ -7,6 +7,4 @@ import './vcard.js';
 import './coupon.js';
 import './event.js';
 import './pdf.js';
-import './business.js';
-import './social.js';
 import './feedback.js';
