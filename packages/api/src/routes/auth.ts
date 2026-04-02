@@ -566,6 +566,10 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
           return { user: newUser, org, membership: null as any };
         });
 
+        // Auto-create signing key for the new org
+        const signingService = new SigningService(fastify.prisma);
+        await signingService.createKeyPair(result.org.id).catch(() => {});
+
         // Reload user with memberships
         user = await fastify.prisma.user.findUnique({
           where: { id: result.user.id },
@@ -724,6 +728,15 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
         trustLevel: trustLevel as any,
       },
     });
+
+    // Auto-create signing key if org doesn't have one
+    const existingKey = await fastify.prisma.signingKey.findFirst({
+      where: { organizationId: orgId, status: 'ACTIVE' },
+    });
+    if (!existingKey) {
+      const signingService = new SigningService(fastify.prisma);
+      await signingService.createKeyPair(orgId);
+    }
 
     // Mark user as onboarded
     await fastify.prisma.user.update({
