@@ -698,7 +698,7 @@ export default function HomePage() {
                   __html: [
                     '<span style="color:#637381">&lt;!-- Add to any website --&gt;</span>',
                     '<span style="color:#00A76F">&lt;div</span> <span style="color:#FFAB00">id</span>=<span style="color:#FF8A65">&quot;vqr-auth&quot;</span><span style="color:#00A76F">&gt;&lt;/div&gt;</span>',
-                    '<span style="color:#00A76F">&lt;script</span> <span style="color:#FFAB00">src</span>=<span style="color:#FF8A65">&quot;https://vqr.progressnet.io/sdk/vqr-auth.js&quot;</span><span style="color:#00A76F">&gt;&lt;/script&gt;</span>',
+                    '<span style="color:#00A76F">&lt;script</span> <span style="color:#FFAB00">src</span>=<span style="color:#FF8A65">&quot;https://qrauth.io/sdk/vqr-auth.js&quot;</span><span style="color:#00A76F">&gt;&lt;/script&gt;</span>',
                     '',
                     '<span style="color:#00A76F">&lt;script&gt;</span>',
                     '  <span style="color:#7C4DFF">new</span> <span style="color:#FFAB00">VQRAuth</span>({',
@@ -942,7 +942,7 @@ export default function HomePage() {
               Create Free Account
             </Button>
             <Button
-              href="https://vqr.progressnet.io/sdk/demo.html"
+              href="https://qrauth.io/sdk/demo.html"
               target="_blank"
               variant="outlined"
               size="large"

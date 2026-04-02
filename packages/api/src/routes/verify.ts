@@ -717,7 +717,7 @@ function renderVerificationPage(
     <script>
       // Origin integrity check — detect if this page is being served from a clone
       (function() {
-        var allowedHosts = ['vqr.io', 'vqr.progressnet.io', 'localhost'];
+        var allowedHosts = ['qrauth.io', 'vqr.io', 'vqr.progressnet.io', 'localhost'];
         var currentHost = window.location.hostname;
         var isLegit = allowedHosts.some(function(h) { return currentHost === h || currentHost.endsWith('.' + h); });
         if (!isLegit) {

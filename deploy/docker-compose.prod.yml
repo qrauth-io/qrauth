@@ -60,7 +60,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.web
       args:
-        VITE_SERVER_URL: https://vqr.progressnet.io
+        VITE_SERVER_URL: https://qrauth.io
     container_name: vqr-web
     restart: unless-stopped
     ports:

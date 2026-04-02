@@ -24,7 +24,7 @@ if (config.server.isDev || !process.env.SMTP_HOST) {
   });
 }
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'vQR <noreply@vqr.io>';
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'vQR <noreply@qrauth.io>';
 
 // ---------------------------------------------------------------------------
 // Email templates

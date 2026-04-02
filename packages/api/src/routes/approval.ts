@@ -436,7 +436,7 @@ export default async function approvalRoutes(fastify: FastifyInstance): Promise<
     `}
 
     <div class="footer">
-      Secured by <a href="https://vqr.io">vQR</a> &mdash; Verified QR Code Security Platform
+      Secured by <a href="https://qrauth.io">vQR</a> &mdash; Verified QR Code Security Platform
     </div>
   </div>
 </body>

@@ -532,7 +532,7 @@ export default function QRCodesCreatePage() {
             {/* QR — always rendered for export ref, hidden when on page tab */}
             <Box sx={{ p: 3, display: previewTab === 'qr' ? 'block' : 'none' }} ref={qrRef}>
               <QRPreview
-                value={contentValues.destinationUrl || contentValues.website || 'https://vqr.io/v/preview'}
+                value={contentValues.destinationUrl || contentValues.website || 'https://qrauth.io/v/preview'}
                 style={qrStyle}
                 size={260}
               />

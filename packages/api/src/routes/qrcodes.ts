@@ -52,7 +52,7 @@ function buildVerificationUrl(token: string): string {
   if (config.server.isDev) {
     return `http://localhost:${config.server.port}/v/${token}`;
   }
-  const baseUrl = process.env.WEBAUTHN_ORIGIN || 'https://vqr.progressnet.io';
+  const baseUrl = process.env.WEBAUTHN_ORIGIN || 'https://qrauth.io';
   return `${baseUrl}/v/${token}`;
 }
 
@@ -96,7 +96,7 @@ async function generateQRCode(
   // Derive destinationUrl for non-URL types (the verify page is the destination).
   const baseUrl = config.server.isDev
     ? `http://localhost:${config.server.port}`
-    : (process.env.WEBAUTHN_ORIGIN || 'https://vqr.progressnet.io');
+    : (process.env.WEBAUTHN_ORIGIN || 'https://qrauth.io');
 
   // 2. Get active signing key.
   const signingKey = await signingService.getActiveKey(organizationId);

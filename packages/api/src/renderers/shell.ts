@@ -110,14 +110,14 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
 
     <!-- Footer -->
     <div class="footer">
-      Secured by <a href="https://vqr.progressnet.io"><strong>vQR</strong></a> &middot; Token: ${esc(ctx.qrCode.token)} &middot; ${esc(scannedAt)}
+      Secured by <a href="https://qrauth.io"><strong>vQR</strong></a> &middot; Token: ${esc(ctx.qrCode.token)} &middot; ${esc(scannedAt)}
     </div>
   </div>
 
   <script>
     (function() {
       // Origin integrity check
-      var h = ['vqr.io', 'vqr.progressnet.io', 'localhost'];
+      var h = ['qrauth.io', 'vqr.io', 'vqr.progressnet.io', 'localhost'];
       if (!h.some(function(d) { return location.hostname === d || location.hostname.endsWith('.' + d); })) {
         document.getElementById('origin-warning').style.display = 'block';
       }

@@ -4,7 +4,7 @@
  *
  * Usage:
  *   <div id="vqr-auth"></div>
- *   <script src="https://vqr.progressnet.io/sdk/vqr-auth.js"></script>
+ *   <script src="https://qrauth.io/sdk/vqr-auth.js"></script>
  *   <script>
  *     const auth = new VQRAuth({
  *       clientId: 'vqr_app_xxx',
@@ -18,7 +18,7 @@
 (function (global) {
   'use strict';
 
-  var API_BASE = 'https://vqr.progressnet.io';
+  var API_BASE = 'https://qrauth.io';
 
   // ---- QR Code Generator (minimal QR encoder, sufficient for URLs) ----
   // We use a <img> tag pointing to a QR API to avoid bundling a full QR lib
@@ -181,7 +181,7 @@
       '</div>' +
       '<div class="vqr-status" id="vqr-status">Waiting for scan...</div>' +
       '<div class="vqr-timer" id="vqr-timer"></div>' +
-      '<div class="vqr-footer">Secured by <a href="https://vqr.progressnet.io" target="_blank"><strong>vQR</strong></a></div>';
+      '<div class="vqr-footer">Secured by <a href="https://qrauth.io" target="_blank"><strong>vQR</strong></a></div>';
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);

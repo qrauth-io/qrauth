@@ -17,7 +17,7 @@ type Props = {
 };
 
 export function QRPreview({ value, style, size = 260, token }: Props) {
-  const previewUrl = value || 'https://vqr.io/v/preview';
+  const previewUrl = value || 'https://qrauth.io/v/preview';
 
   return (
     <Box sx={{ textAlign: 'center' }}>

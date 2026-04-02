@@ -33,7 +33,7 @@ export type ConfigValue = {
 export const CONFIG: ConfigValue = {
   appName: 'vQR',
   appVersion: packageJson.version,
-  serverUrl: import.meta.env.VITE_SERVER_URL ?? 'http://localhost:3000',
+  serverUrl: import.meta.env.VITE_SERVER_URL ?? 'https://qrauth.io',
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
   /**
    * Auth
