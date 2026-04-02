@@ -529,15 +529,15 @@ export default function QRCodesCreatePage() {
               </Stack>
             </Box>
 
-            {previewTab === 'qr' ? (
-              <Box sx={{ p: 3 }} ref={qrRef}>
-                <QRPreview
-                  value={contentValues.destinationUrl || contentValues.website || 'https://vqr.io/v/preview'}
-                  style={qrStyle}
-                  size={260}
-                />
-              </Box>
-            ) : (
+            {/* QR — always rendered for export ref, hidden when on page tab */}
+            <Box sx={{ p: 3, display: previewTab === 'qr' ? 'block' : 'none' }} ref={qrRef}>
+              <QRPreview
+                value={contentValues.destinationUrl || contentValues.website || 'https://vqr.io/v/preview'}
+                style={qrStyle}
+                size={260}
+              />
+            </Box>
+            {previewTab === 'page' && (
               <Box sx={{ height: 520, overflow: 'auto', bgcolor: '#f5f5f5' }}>
                 <ContentPagePreview type={selectedType || 'url'} content={contentValues} />
               </Box>

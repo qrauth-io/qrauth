@@ -54,15 +54,6 @@ export function QRPreview({ value, style, size = 260, token }: Props) {
         />
       </Box>
 
-      {token && (
-        <Typography
-          variant="subtitle1"
-          sx={{ mt: 1.5, fontFamily: 'monospace', fontWeight: 700, letterSpacing: 2 }}
-        >
-          {token}
-        </Typography>
-      )}
-
       {style.captionText && (
         <Typography
           variant="body2"
