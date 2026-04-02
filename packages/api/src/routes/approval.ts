@@ -360,20 +360,11 @@ export default async function approvalRoutes(fastify: FastifyInstance): Promise<
           var jwt = sessionStorage.getItem(JWT_KEY);
           if (!jwt) { showAuthForm(); return; }
 
-          var geoLat, geoLng;
-          try {
-            var pos = await new Promise(function(resolve, reject) {
-              navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
-            });
-            geoLat = pos.coords.latitude;
-            geoLng = pos.coords.longitude;
-          } catch(e) {}
-
           try {
             var res = await fetch(API + '/api/v1/auth-sessions/' + TOKEN + '/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
-              body: JSON.stringify({ geoLat: geoLat, geoLng: geoLng, fingerprint: DEVICE_FINGERPRINT })
+              body: JSON.stringify({ fingerprint: DEVICE_FINGERPRINT })
             });
             if (res.ok) {
               document.getElementById('actions').style.display = 'none';
