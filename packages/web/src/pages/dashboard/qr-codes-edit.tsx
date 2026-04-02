@@ -28,7 +28,7 @@ import { ContentForm } from 'src/components/content-form';
 import { QRPreview, QRExportMenu, QRStylePicker } from 'src/components/qr-code';
 
 // Reuse the preview components from create page
-import { PreviewVerifyBar } from './qr-codes-create';
+import { ContentPagePreview } from './qr-codes-create';
 
 // ----------------------------------------------------------------------
 
@@ -314,14 +314,7 @@ export default function QRCodesEditPage() {
               </Box>
             ) : (
               <Box sx={{ height: 520, overflow: 'auto', bgcolor: '#f5f5f5' }}>
-                <Box>
-                  <PreviewVerifyBar />
-                  <Box sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Live preview of the scanned page
-                    </Typography>
-                  </Box>
-                </Box>
+                <ContentPagePreview type={contentType} content={contentValues} />
               </Box>
             )}
           </Card>

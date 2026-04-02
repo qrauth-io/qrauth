@@ -24,6 +24,7 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/qr-codes`,
       create: `${ROOTS.DASHBOARD}/qr-codes/create`,
       edit: (token: string) => `${ROOTS.DASHBOARD}/qr-codes/${token}/edit`,
+      feedback: (token: string) => `${ROOTS.DASHBOARD}/qr-codes/${token}/feedback`,
       bulk: `${ROOTS.DASHBOARD}/qr-codes/bulk`,
     },
     analytics: `${ROOTS.DASHBOARD}/analytics`,

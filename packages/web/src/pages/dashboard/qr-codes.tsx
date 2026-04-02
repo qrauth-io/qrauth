@@ -3,11 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import Drawer from '@mui/material/Drawer';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -34,13 +32,6 @@ import { useSnackbar } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
-type FeedbackEntry = {
-  id: string;
-  rating: number;
-  comment?: string;
-  createdAt: string;
-};
-
 type QRCode = {
   id: string;
   token: string;
@@ -60,11 +51,6 @@ export default function QRCodesPage() {
   const [revokeToken, setRevokeToken] = useState<string | null>(null);
   const [revoking, setRevoking] = useState(false);
 
-  // Feedback drawer
-  const [feedbackToken, setFeedbackToken] = useState<string | null>(null);
-  const [feedbackData, setFeedbackData] = useState<FeedbackEntry[]>([]);
-  const [feedbackAvg, setFeedbackAvg] = useState<number | null>(null);
-  const [loadingFeedback, setLoadingFeedback] = useState(false);
 
   const fetchQRCodes = useCallback(async () => {
     try {
@@ -76,21 +62,6 @@ export default function QRCodesPage() {
       setLoading(false);
     }
   }, [showError]);
-
-  const handleViewFeedback = async (token: string) => {
-    setFeedbackToken(token);
-    setLoadingFeedback(true);
-    try {
-      const res = await axios.get(`${endpoints.analytics.fraud.replace('/fraud', '/feedback')}/${token}`);
-      setFeedbackData(res.data.data ?? []);
-      setFeedbackAvg(res.data.avgRating ?? null);
-    } catch {
-      setFeedbackData([]);
-      setFeedbackAvg(null);
-    } finally {
-      setLoadingFeedback(false);
-    }
-  };
 
   useEffect(() => {
     fetchQRCodes();
@@ -172,7 +143,7 @@ export default function QRCodesPage() {
                           size="small"
                           color="info"
                           title="View Responses"
-                          onClick={() => handleViewFeedback(qr.token)}
+                          onClick={() => router.push(paths.dashboard.qrcodes.feedback(qr.token))}
                         >
                           <Iconify icon="solar:chat-round-dots-bold" />
                         </IconButton>
@@ -233,66 +204,6 @@ export default function QRCodesPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Feedback Responses Drawer */}
-      <Drawer
-        anchor="right"
-        open={Boolean(feedbackToken)}
-        onClose={() => setFeedbackToken(null)}
-        PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}
-      >
-        <Box sx={{ p: 3 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-            <Typography variant="h6">Feedback Responses</Typography>
-            <IconButton onClick={() => setFeedbackToken(null)}>
-              <Iconify icon="mingcute:close-line" />
-            </IconButton>
-          </Stack>
-
-          {feedbackAvg !== null && (
-            <Box sx={{ textAlign: 'center', mb: 3, p: 2, bgcolor: 'background.neutral', borderRadius: 2 }}>
-              <Typography variant="h2" color="warning.main">{feedbackAvg}</Typography>
-              <Stack direction="row" justifyContent="center" spacing={0.5} sx={{ mt: 0.5 }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Typography key={s} sx={{ fontSize: 20, color: s <= Math.round(feedbackAvg) ? '#FFAB00' : '#dfe3e8' }}>
-                    &#9733;
-                  </Typography>
-                ))}
-              </Stack>
-              <Typography variant="caption" color="text.secondary">{feedbackData.length} responses</Typography>
-            </Box>
-          )}
-
-          {loadingFeedback ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}><CircularProgress size={24} /></Box>
-          ) : feedbackData.length === 0 ? (
-            <Typography color="text.secondary" textAlign="center">No responses yet.</Typography>
-          ) : (
-            <Stack spacing={2}>
-              {feedbackData.map((fb) => (
-                <Box key={fb.id} sx={{ p: 2, borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Stack direction="row" spacing={0.3}>
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Typography key={s} sx={{ fontSize: 16, color: s <= fb.rating ? '#FFAB00' : '#dfe3e8' }}>
-                          &#9733;
-                        </Typography>
-                      ))}
-                    </Stack>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatDate(fb.createdAt)}
-                    </Typography>
-                  </Stack>
-                  {fb.comment && (
-                    <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-                      {fb.comment}
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Stack>
-          )}
-        </Box>
-      </Drawer>
     </>
   );
 }

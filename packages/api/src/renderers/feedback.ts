@@ -5,13 +5,19 @@ function renderFeedbackContent(ctx: RenderContext): string {
   const c = ctx.qrCode.content as any;
   if (!c) return '<p>No feedback form.</p>';
 
+  const collectName = c.collectName === true || c.collectName === 'true';
+  const collectEmail = c.collectEmail === true || c.collectEmail === 'true';
+  const collectPhone = c.collectPhone === true || c.collectPhone === 'true';
+
   return `
     <style>
       .fb-title { font-size: 22px; font-weight: 800; color: #1B2A4A; text-align: center; margin-bottom: 8px; }
       .fb-desc { font-size: 14px; color: #637381; text-align: center; margin-bottom: 24px; line-height: 1.6; }
       .fb-stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
-      .fb-star { font-size: 36px; cursor: pointer; color: #dfe3e8; transition: color 0.2s; }
+      .fb-star { font-size: 36px; cursor: pointer; color: #dfe3e8; transition: color 0.2s; user-select: none; }
       .fb-star.active, .fb-star:hover { color: #FFAB00; }
+      .fb-input { width: 100%; padding: 10px 14px; border: 1px solid #dfe3e8; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box; margin-bottom: 10px; }
+      .fb-input:focus { outline: none; border-color: #00A76F; }
       .fb-textarea { width: 100%; padding: 12px; border: 1px solid #dfe3e8; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; box-sizing: border-box; }
       .fb-textarea:focus { outline: none; border-color: #00A76F; }
       .fb-submit { display: block; width: 100%; padding: 14px; margin-top: 16px; background: #00A76F; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
@@ -26,8 +32,12 @@ function renderFeedbackContent(ctx: RenderContext): string {
       ${c.description ? `<div class="fb-desc">${esc(c.description)}</div>` : ''}
 
       <div class="fb-stars" id="fb-stars">
-        ${[1, 2, 3, 4, 5].map(n => `<span class="fb-star" data-rating="${n}" onclick="setRating(${n})">&#9733;</span>`).join('')}
+        ${[1,2,3,4,5].map(n => `<span class="fb-star" data-rating="${n}" onclick="setRating(${n})">&#9733;</span>`).join('')}
       </div>
+
+      ${collectName ? '<input class="fb-input" id="fb-name" placeholder="Your name" />' : ''}
+      ${collectEmail ? '<input class="fb-input" id="fb-email" type="email" placeholder="Your email" />' : ''}
+      ${collectPhone ? '<input class="fb-input" id="fb-phone" type="tel" placeholder="Your phone" />' : ''}
 
       <textarea class="fb-textarea" id="fb-comment" placeholder="Leave a comment (optional)..."></textarea>
 
@@ -54,10 +64,18 @@ function renderFeedbackContent(ctx: RenderContext): string {
         btn.disabled = true;
         btn.textContent = 'Submitting...';
         var comment = document.getElementById('fb-comment').value;
+        var nameEl = document.getElementById('fb-name');
+        var emailEl = document.getElementById('fb-email');
+        var phoneEl = document.getElementById('fb-phone');
+        var payload = { rating: selectedRating };
+        if (comment) payload.comment = comment;
+        if (nameEl && nameEl.value) payload.name = nameEl.value;
+        if (emailEl && emailEl.value) payload.email = emailEl.value;
+        if (phoneEl && phoneEl.value) payload.phone = phoneEl.value;
         fetch(window.location.pathname + '/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rating: selectedRating, comment: comment || undefined })
+          body: JSON.stringify(payload)
         })
         .then(function() {
           document.getElementById('fb-form').style.display = 'none';

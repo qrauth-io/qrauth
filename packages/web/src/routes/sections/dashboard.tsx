@@ -19,6 +19,7 @@ const QRCodesPage = lazy(() => import('src/pages/dashboard/qr-codes'));
 const QRCodesCreatePage = lazy(() => import('src/pages/dashboard/qr-codes-create'));
 const QRCodesEditPage = lazy(() => import('src/pages/dashboard/qr-codes-edit'));
 const QRCodesBulkPage = lazy(() => import('src/pages/dashboard/qr-codes-bulk'));
+const QRCodesFeedbackPage = lazy(() => import('src/pages/dashboard/qr-codes-feedback'));
 const AnalyticsPage = lazy(() => import('src/pages/dashboard/analytics'));
 const FraudPage = lazy(() => import('src/pages/dashboard/fraud'));
 const TeamPage = lazy(() => import('src/pages/dashboard/team'));
@@ -52,6 +53,7 @@ export const dashboardRoutes: RouteObject[] = [
       { path: 'qr-codes/create', element: <QRCodesCreatePage /> },
       { path: 'qr-codes/bulk', element: <QRCodesBulkPage /> },
       { path: 'qr-codes/:token/edit', element: <QRCodesEditPage /> },
+      { path: 'qr-codes/:token/feedback', element: <QRCodesFeedbackPage /> },
       { path: 'analytics', element: <AnalyticsPage /> },
       { path: 'fraud', element: <FraudPage /> },
       { path: 'team', element: <TeamPage /> },

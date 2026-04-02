@@ -68,7 +68,7 @@ export function PreviewFieldRow({ icon, iconBg, label, value }: { icon: string; 
   );
 }
 
-function ContentPagePreview({ type, content }: { type: string; content: Record<string, any> }) {
+export function ContentPagePreview({ type, content }: { type: string; content: Record<string, any> }) {
   switch (type) {
     case 'url':
       return (

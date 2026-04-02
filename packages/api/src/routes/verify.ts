@@ -394,7 +394,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
     config: { rateLimit: rateLimitPublic },
   }, async (request, reply) => {
     const { token } = request.params as { token: string };
-    const body = request.body as { rating?: number; comment?: string };
+    const body = request.body as { rating?: number; comment?: string; name?: string; email?: string; phone?: string };
 
     if (!body.rating || body.rating < 1 || body.rating > 5) {
       return reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Rating must be 1-5' });
@@ -416,6 +416,9 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
         qrCodeId: qrCode.id,
         rating: body.rating,
         comment: body.comment?.slice(0, 1000) || null,
+        name: body.name?.slice(0, 200) || null,
+        email: body.email?.slice(0, 200) || null,
+        phone: body.phone?.slice(0, 50) || null,
         ipHash,
         userAgent: request.headers['user-agent'] || null,
       },

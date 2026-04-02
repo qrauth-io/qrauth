@@ -478,6 +478,9 @@ model FeedbackSubmission {
   qrCodeId  String
   rating    Int
   comment   String?
+  name      String?
+  email     String?
+  phone     String?
   ipHash    String?
   userAgent String?
   createdAt DateTime @default(now())
