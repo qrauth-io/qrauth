@@ -21,6 +21,7 @@ import { DomainService } from '../services/domain.js';
 import { cacheDel } from '../lib/cache.js';
 import { config } from '../lib/config.js';
 import { createHash } from 'node:crypto';
+import { stableStringify } from '../lib/crypto.js';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -88,7 +89,8 @@ async function generateQRCode(
     if (!parseResult.success) {
       throw new Error(`Invalid content for type ${resolvedContentType}: ${parseResult.error.message}`);
     }
-    contentHash = createHash('sha256').update(JSON.stringify(input.content)).digest('hex');
+    // Deterministic JSON for hashing (PostgreSQL JSONB reorders keys alphabetically)
+    contentHash = createHash('sha256').update(stableStringify(input.content)).digest('hex');
   }
 
   // Derive destinationUrl for non-URL types (the verify page is the destination).

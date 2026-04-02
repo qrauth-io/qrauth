@@ -111,3 +111,19 @@ export function generateApiKey(): ApiKeyResult {
 export function hashString(input: string): string {
   return createHash('sha256').update(input, 'utf8').digest('hex');
 }
+
+/**
+ * Deterministic JSON serialization with sorted keys at all nesting levels.
+ * Required because PostgreSQL JSONB reorders object keys alphabetically,
+ * so the hash of the content must be order-independent.
+ */
+export function stableStringify(value: unknown): string {
+  if (value === null || value === undefined) return 'null';
+  if (typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    return '[' + value.map(stableStringify).join(',') + ']';
+  }
+  const obj = value as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  return '{' + keys.map((k) => JSON.stringify(k) + ':' + stableStringify(obj[k])).join(',') + '}';
+}

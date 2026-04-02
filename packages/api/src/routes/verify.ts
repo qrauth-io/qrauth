@@ -8,7 +8,7 @@ import { TransparencyLogService } from '../services/transparency.js';
 import { FraudDetectionService } from '../services/fraud.js';
 import { DomainService } from '../services/domain.js';
 import { cacheGet, cacheSet } from '../lib/cache.js';
-import { hashString } from '../lib/crypto.js';
+import { hashString, stableStringify } from '../lib/crypto.js';
 import { scanQueue } from '../lib/queue.js';
 import { collectRequestMetadata } from '../lib/metadata.js';
 import { config } from '../lib/config.js';
@@ -169,7 +169,8 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
     // Compute contentHash for verification (must match what was signed)
     let verifyContentHash = '';
     if (qrCode.content && qrCode.contentType !== 'url') {
-      verifyContentHash = hashString(JSON.stringify(qrCode.content));
+      // Deterministic JSON for hashing (PostgreSQL JSONB reorders keys alphabetically)
+      verifyContentHash = hashString(stableStringify(qrCode.content));
     }
 
     const signatureValid = signingService.verifyQRCode(
