@@ -33,6 +33,267 @@ const DEFAULT_STYLE: QRStyle = {
   captionText: 'vQR Verified',
 };
 
+// ----------------------------------------------------------------------
+
+function VCardPreview({ content }: { content: Record<string, any> }) {
+  const fullName =
+    [content.firstName, content.lastName].filter(Boolean).join(' ') || 'Your Name';
+  const initial = fullName.charAt(0).toUpperCase();
+
+  return (
+    <Box
+      sx={{
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: 13,
+      }}
+    >
+      {/* Verified bar */}
+      <Box
+        sx={{
+          px: 2,
+          py: 1,
+          bgcolor: '#00A76F',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          fontSize: 12,
+          fontWeight: 600,
+        }}
+      >
+        <span>&#10003;</span> Verified by vQR
+      </Box>
+
+      {/* Contact card */}
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        {content.photoUrl ? (
+          <Box
+            component="img"
+            src={content.photoUrl}
+            sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              mx: 'auto',
+              mb: 1,
+              border: '2px solid #f0f0f0',
+            }}
+            onError={(e: any) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              mx: 'auto',
+              mb: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: '#E3F2FD',
+              color: '#0D47A1',
+              fontSize: 24,
+              fontWeight: 700,
+            }}
+          >
+            {initial}
+          </Box>
+        )}
+        <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#1B2A4A' }}>
+          {fullName}
+        </Typography>
+        {content.title && (
+          <Typography variant="caption" color="text.secondary" display="block">
+            {content.title}
+          </Typography>
+        )}
+        {content.company && (
+          <Typography variant="caption" color="text.secondary" display="block">
+            {content.company}
+          </Typography>
+        )}
+        {content.summary && (
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+            {content.summary}
+          </Typography>
+        )}
+      </Box>
+
+      {/* Contact fields */}
+      <Box sx={{ px: 2 }}>
+        {content.email && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              py: 1.5,
+              borderBottom: '1px solid #f5f5f5',
+            }}
+          >
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                bgcolor: '#E3F2FD',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+              }}
+            >
+              &#9993;
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Email
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#0D47A1' }}>
+                {content.email}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+        {content.phone && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              py: 1.5,
+              borderBottom: '1px solid #f5f5f5',
+            }}
+          >
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                bgcolor: '#E8F5E9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+              }}
+            >
+              &#9742;
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Phone
+              </Typography>
+              <Typography variant="body2">{content.phone}</Typography>
+            </Box>
+          </Box>
+        )}
+        {content.mobile && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              py: 1.5,
+              borderBottom: '1px solid #f5f5f5',
+            }}
+          >
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                bgcolor: '#E8F5E9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+              }}
+            >
+              &#128241;
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Mobile
+              </Typography>
+              <Typography variant="body2">{content.mobile}</Typography>
+            </Box>
+          </Box>
+        )}
+        {content.website && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              py: 1.5,
+              borderBottom: '1px solid #f5f5f5',
+            }}
+          >
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                bgcolor: '#FFF3E0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+              }}
+            >
+              &#127760;
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary" display="block">
+                Website
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#0D47A1' }}>
+                {content.website}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      {/* Save contact button */}
+      <Box sx={{ p: 2, mt: 1 }}>
+        <Box
+          sx={{
+            py: 1.5,
+            textAlign: 'center',
+            bgcolor: '#1B2A4A',
+            color: 'white',
+            borderRadius: 1.5,
+            fontWeight: 600,
+            fontSize: 14,
+          }}
+        >
+          Save Contact
+        </Box>
+      </Box>
+
+      {/* Footer */}
+      <Box
+        sx={{
+          p: 1.5,
+          textAlign: 'center',
+          borderTop: '1px solid #f0f0f0',
+          fontSize: 10,
+          color: '#919eab',
+        }}
+      >
+        Secured by <strong>vQR</strong>
+      </Box>
+    </Box>
+  );
+}
+
+// ----------------------------------------------------------------------
+
 export default function QRCodesCreatePage() {
   const router = useRouter();
   const { showSuccess, showError } = useSnackbar();
@@ -45,6 +306,7 @@ export default function QRCodesCreatePage() {
   const [qrStyle, setQrStyle] = useState<QRStyle>(DEFAULT_STYLE);
   const [createdQR, setCreatedQR] = useState<any>(null);
   const [creating, setCreating] = useState(false);
+  const [previewTab, setPreviewTab] = useState<'qr' | 'page'>('qr');
 
   const typeDef = selectedType ? getContentType(selectedType) : null;
 
@@ -247,29 +509,80 @@ export default function QRCodesCreatePage() {
           </Button>
         </Stack>
 
-        {/* Right — Live preview */}
+        {/* Right — Tabbed preview */}
         <Box
-          ref={qrRef}
           sx={{
-            width: { xs: '100%', md: 360 },
+            width: { xs: '100%', md: 380 },
             position: { md: 'sticky' },
             top: { md: 88 },
             alignSelf: 'flex-start',
           }}
         >
-          <Card sx={{ p: 4 }}>
-            <Typography variant="subtitle1" sx={{ mb: 2, textAlign: 'center' }}>
-              Live Preview
-            </Typography>
-            <QRPreview
-              value={
-                contentValues.destinationUrl ||
-                contentValues.website ||
-                'https://vqr.io/v/preview'
-              }
-              style={qrStyle}
-              size={260}
-            />
+          <Card>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Stack direction="row" spacing={0}>
+                <Button
+                  fullWidth
+                  variant="text"
+                  onClick={() => setPreviewTab('qr')}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 0,
+                    borderBottom: '2px solid',
+                    borderColor: previewTab === 'qr' ? 'primary.main' : 'transparent',
+                    color: previewTab === 'qr' ? 'primary.main' : 'text.secondary',
+                    fontWeight: previewTab === 'qr' ? 700 : 400,
+                  }}
+                >
+                  QR Code
+                </Button>
+                <Button
+                  fullWidth
+                  variant="text"
+                  onClick={() => setPreviewTab('page')}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 0,
+                    borderBottom: '2px solid',
+                    borderColor: previewTab === 'page' ? 'primary.main' : 'transparent',
+                    color: previewTab === 'page' ? 'primary.main' : 'text.secondary',
+                    fontWeight: previewTab === 'page' ? 700 : 400,
+                  }}
+                >
+                  Page Preview
+                </Button>
+              </Stack>
+            </Box>
+
+            {previewTab === 'qr' ? (
+              <Box sx={{ p: 3 }} ref={qrRef}>
+                <QRPreview
+                  value={
+                    contentValues.destinationUrl ||
+                    contentValues.website ||
+                    'https://vqr.io/v/preview'
+                  }
+                  style={qrStyle}
+                  size={260}
+                />
+              </Box>
+            ) : (
+              <Box sx={{ height: 520, overflow: 'auto', bgcolor: '#f5f5f5' }}>
+                {selectedType === 'vcard' && contentValues.firstName ? (
+                  <VCardPreview content={contentValues} />
+                ) : selectedType === 'url' ? (
+                  <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+                    <Typography variant="body2">
+                      URL QR codes redirect to the destination — no hosted page.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+                    <Typography variant="body2">Fill in the form to see a live preview</Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
           </Card>
         </Box>
       </Stack>
