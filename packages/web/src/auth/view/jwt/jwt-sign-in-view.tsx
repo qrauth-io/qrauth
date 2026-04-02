@@ -12,8 +12,8 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
+import { useRouter, useSearchParams } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
 import { Form, Field, schemaUtils } from 'src/components/hook-form';
@@ -22,6 +22,7 @@ import { useAuthContext } from '../../hooks';
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
 import { signInWithPassword } from '../../context/jwt';
+import { SocialLoginButtons } from '../../components/social-login-buttons';
 
 // ----------------------------------------------------------------------
 
@@ -39,6 +40,8 @@ export const SignInSchema = z.object({
 
 export function JwtSignInView() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
 
   const showPassword = useBoolean();
 
@@ -66,7 +69,7 @@ export function JwtSignInView() {
       await signInWithPassword({ email: data.email, password: data.password });
       await checkUserSession?.();
 
-      router.refresh();
+      router.push(returnTo || paths.dashboard.root);
     } catch (error) {
       console.error(error);
       const feedbackMessage = getErrorMessage(error);
@@ -81,7 +84,7 @@ export function JwtSignInView() {
       <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column' }}>
         <Link
           component={RouterLink}
-          href="#"
+          href={paths.auth.jwt.forgotPassword}
           variant="body2"
           color="inherit"
           sx={{ alignSelf: 'flex-end' }}
@@ -139,6 +142,8 @@ export function JwtSignInView() {
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />
+
+      <SocialLoginButtons />
 
       {!!errorMessage && (
         <Alert severity="error" sx={{ mb: 3 }}>

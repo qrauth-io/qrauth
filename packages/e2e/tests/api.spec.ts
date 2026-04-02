@@ -115,8 +115,10 @@ test.describe('API', () => {
     });
     const qr = await createRes.json();
 
-    // Verify (public endpoint)
-    const verifyRes = await request.get(`${API_URL}/v/${qr.token}`);
+    // Verify (public endpoint — request JSON explicitly)
+    const verifyRes = await request.get(`${API_URL}/v/${qr.token}`, {
+      headers: { Accept: 'application/json' },
+    });
     expect(verifyRes.ok()).toBeTruthy();
     const verification = await verifyRes.json();
     expect(verification.verified).toBe(true);

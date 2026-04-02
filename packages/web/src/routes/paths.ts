@@ -8,10 +8,13 @@ const ROOTS = {
 // ----------------------------------------------------------------------
 
 export const paths = {
+  home: '/',
   auth: {
     jwt: {
       signIn: `${ROOTS.AUTH}/jwt/sign-in`,
       signUp: `${ROOTS.AUTH}/jwt/sign-up`,
+      forgotPassword: `${ROOTS.AUTH}/jwt/forgot-password`,
+      resetPassword: `${ROOTS.AUTH}/jwt/reset-password`,
     },
   },
   dashboard: {
@@ -20,6 +23,7 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/qr-codes`,
       create: `${ROOTS.DASHBOARD}/qr-codes/create`,
       edit: (token: string) => `${ROOTS.DASHBOARD}/qr-codes/${token}/edit`,
+      bulk: `${ROOTS.DASHBOARD}/qr-codes/bulk`,
     },
     analytics: `${ROOTS.DASHBOARD}/analytics`,
     fraud: `${ROOTS.DASHBOARD}/fraud`,

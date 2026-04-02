@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build shared package
+        run: npm run build --workspace=packages/shared
+
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=packages/api/prisma/schema.prisma
+
+      - name: Typecheck API
+        run: npx tsc --noEmit --project packages/api/tsconfig.json
+
+      - name: Typecheck Web
+        run: cd packages/web && npx tsc --noEmit
+
+      - name: Lint
+        run: |
+          cd packages/web && npx eslint "src/**/*.{ts,tsx}" --max-warnings=0
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build shared
+        run: npm run build --workspace=packages/shared
+
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=packages/api/prisma/schema.prisma
+
+      - name: Build API
+        run: npm run build --workspace=packages/api
+
+      - name: Build Web
+        run: npm run build --workspace=packages/web
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: vqr
+          POSTGRES_PASSWORD: vqr
+          POSTGRES_DB: vqr
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U vqr"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://vqr:vqr@localhost:5432/vqr
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-secret-must-be-at-least-32-characters
+      NODE_ENV: test
+      PORT: 3000
+      HOST: 0.0.0.0
+      KMS_PROVIDER: local
+      ECDSA_PRIVATE_KEY_PATH: ./keys
+      VISUAL_PROOF_SECRET: ci-visual-proof-secret-for-testing-64-characters-long-string
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build shared
+        run: npm run build --workspace=packages/shared
+
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=packages/api/prisma/schema.prisma
+
+      - name: Run migrations
+        run: npx prisma migrate deploy --schema=packages/api/prisma/schema.prisma
+
+      - name: Install Playwright
+        run: npx --workspace=packages/e2e playwright install --with-deps chromium
+
+      - name: Create API env file
+        run: |
+          cat > packages/api/.env << 'EOF'
+          DATABASE_URL=postgresql://vqr:vqr@localhost:5432/vqr
+          REDIS_URL=redis://localhost:6379
+          JWT_SECRET=ci-test-secret-must-be-at-least-32-characters
+          NODE_ENV=test
+          PORT=3000
+          HOST=0.0.0.0
+          KMS_PROVIDER=local
+          ECDSA_PRIVATE_KEY_PATH=./keys
+          VISUAL_PROOF_SECRET=ci-visual-proof-secret-for-testing-64-characters-long-string
+          EOF
+          sed -i 's/^          //' packages/api/.env
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: packages/e2e/playwright-report/
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: packages/e2e/test-results/
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: e2e
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ~/vqr
+            git pull origin main
+            cd deploy
+            docker compose -f docker-compose.prod.yml build --no-cache
+            docker compose -f docker-compose.prod.yml up -d
+            echo "Deployed $(date)"

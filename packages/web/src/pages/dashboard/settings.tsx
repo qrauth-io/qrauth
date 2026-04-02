@@ -4,13 +4,20 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import TableRow from '@mui/material/TableRow';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
+import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import axios, { endpoints } from 'src/lib/axios';
@@ -61,6 +68,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [rotating, setRotating] = useState(false);
+  const [apiKeys, setApiKeys] = useState<any[]>([]);
+  const [newApiKey, setNewApiKey] = useState<string | null>(null);
+  const [apiKeyLabel, setApiKeyLabel] = useState('');
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [loginHistory, setLoginHistory] = useState<any[]>([]);
 
   // Form state
   const [name, setName] = useState('');
@@ -70,9 +82,11 @@ export default function SettingsPage() {
   const fetchData = useCallback(async () => {
     if (!orgId) return;
     try {
-      const [orgRes, keysRes] = await Promise.all([
+      const [orgRes, keysRes, apiKeysRes, loginHistoryRes] = await Promise.all([
         axios.get(endpoints.organizations.details(orgId)),
         axios.get(endpoints.organizations.keys(orgId)),
+        axios.get(`${endpoints.organizations.details(orgId)}/api-keys`),
+        axios.get('/api/v1/auth/login-history').catch(() => ({ data: { data: [] } })),
       ]);
       const orgData: Organization = orgRes.data;
       setOrg(orgData);
@@ -80,6 +94,8 @@ export default function SettingsPage() {
       setDomain(orgData.domain || '');
       setBillingEmail(orgData.billingEmail || '');
       setKeys(keysRes.data.data ?? keysRes.data ?? []);
+      setApiKeys(apiKeysRes.data.data ?? apiKeysRes.data ?? []);
+      setLoginHistory(loginHistoryRes.data.data ?? []);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load settings';
       showError(message);
@@ -202,6 +218,66 @@ export default function SettingsPage() {
                   </Button>
                 )}
               </Stack>
+            </CardContent>
+          </Card>
+
+          <Card sx={{ mt: 3 }}>
+            <CardHeader title="Login History" subheader="Last 50 sign-in events" />
+            <CardContent>
+              {loginHistory.length === 0 ? (
+                <Typography color="text.secondary" variant="body2">
+                  No login history.
+                </Typography>
+              ) : (
+                <TableContainer sx={{ maxHeight: 400 }}>
+                  <Table size="small" stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Time</TableCell>
+                        <TableCell>Provider</TableCell>
+                        <TableCell>Device</TableCell>
+                        <TableCell>Location</TableCell>
+                        <TableCell>Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {loginHistory.map((event: any) => (
+                        <TableRow key={event.id} hover>
+                          <TableCell>
+                            <Typography variant="caption">
+                              {new Date(event.createdAt).toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip label={event.provider} size="small" variant="outlined" />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption">
+                              {event.browser || '—'} / {event.os || '—'}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {event.deviceType || '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption">
+                              {[event.ipCity, event.ipCountry].filter(Boolean).join(', ') || '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={event.success ? 'Success' : 'Failed'}
+                              size="small"
+                              color={event.success ? 'success' : 'error'}
+                              variant={event.success ? 'outlined' : 'filled'}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -336,6 +412,109 @@ export default function SettingsPage() {
                     ))}
                   </Stack>
                 )}
+              </CardContent>
+            </Card>
+            {/* API Keys */}
+            <Card>
+              <CardHeader
+                title="API Keys"
+                action={
+                  canEdit && (
+                    <Button
+                      size="small"
+                      startIcon={<Iconify icon="mingcute:add-line" />}
+                      onClick={async () => {
+                        setCreatingKey(true);
+                        try {
+                          const res = await axios.post(
+                            `${endpoints.organizations.details(orgId!)}/api-keys`,
+                            { label: apiKeyLabel || undefined }
+                          );
+                          setNewApiKey(res.data.key);
+                          setApiKeyLabel('');
+                          fetchData();
+                          showSuccess('API key created');
+                        } catch (err: unknown) {
+                          showError((err as Error).message || 'Failed to create API key');
+                        } finally {
+                          setCreatingKey(false);
+                        }
+                      }}
+                      disabled={creatingKey}
+                    >
+                      Create
+                    </Button>
+                  )
+                }
+              />
+              <CardContent>
+                <Stack spacing={1.5}>
+                  {canEdit && (
+                    <TextField
+                      size="small"
+                      label="Key label (optional)"
+                      value={apiKeyLabel}
+                      onChange={(e) => setApiKeyLabel(e.target.value)}
+                      placeholder="production-server"
+                      fullWidth
+                      slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                  )}
+
+                  {newApiKey && (
+                    <Alert severity="warning" onClose={() => setNewApiKey(null)} sx={{ wordBreak: 'break-all' }}>
+                      <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                        {newApiKey}
+                      </Typography>
+                      <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'warning.dark' }}>
+                        Copy now — this key will not be shown again.
+                      </Typography>
+                    </Alert>
+                  )}
+
+                  {apiKeys.length === 0 ? (
+                    <Typography color="text.secondary" variant="body2">No API keys.</Typography>
+                  ) : (
+                    apiKeys.map((ak: any) => (
+                      <Box
+                        key={ak.id}
+                        sx={{
+                          p: 1.5, borderRadius: 1, border: '1px solid', borderColor: 'divider',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        }}
+                      >
+                        <Box>
+                          <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                            {ak.prefix}••••••••
+                          </Typography>
+                          {ak.label && (
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {ak.label}
+                            </Typography>
+                          )}
+                        </Box>
+                        {canEdit && !ak.revokedAt && (
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={async () => {
+                              if (!window.confirm('Revoke this API key? It will stop working immediately.')) return;
+                              try {
+                                await axios.delete(`${endpoints.organizations.details(orgId!)}/api-keys/${ak.id}`);
+                                showSuccess('API key revoked');
+                                fetchData();
+                              } catch (err: unknown) {
+                                showError((err as Error).message || 'Failed to revoke');
+                              }
+                            }}
+                          >
+                            Revoke
+                          </Button>
+                        )}
+                      </Box>
+                    ))
+                  )}
+                </Stack>
               </CardContent>
             </Card>
           </Stack>

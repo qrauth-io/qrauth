@@ -1,8 +1,16 @@
 node_modules/
 dist/
 .env
+.env.prod
 *.pem
 *.key
+*.p8
 .DS_Store
 coverage/
 *.tsbuildinfo
+docs/
+packages/api/keys/
+packages/e2e/test-results/
+packages/e2e/playwright-report/
+deploy/.env
+deploy/.env.prod

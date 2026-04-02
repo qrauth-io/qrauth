@@ -18,9 +18,9 @@ test.describe('Dashboard', () => {
   });
 
   test('should show dashboard overview', async ({ page }) => {
-    await expect(page.getByText('Dashboard')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByText('Total QR Codes')).toBeVisible();
-    await expect(page.getByText('Scans (30d)')).toBeVisible();
+    await expect(page.getByText('Total Scans')).toBeVisible();
     await expect(page.getByText('Fraud Alerts')).toBeVisible();
   });
 

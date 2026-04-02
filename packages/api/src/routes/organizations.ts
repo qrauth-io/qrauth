@@ -1,7 +1,10 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
+import { z } from 'zod';
 import { zodValidator } from '../middleware/validate.js';
 import { authorize } from '../middleware/authorize.js';
 import { SigningService } from '../services/signing.js';
+import { sendInvitationEmail } from '../lib/email.js';
+import { generateApiKey } from '../lib/crypto.js';
 import {
   updateOrganizationSchema,
   inviteUserSchema,
@@ -9,6 +12,10 @@ import {
   INVITATION_EXPIRY_HOURS,
 } from '@vqr/shared';
 import { randomBytes } from 'node:crypto';
+
+const createApiKeySchema = z.object({
+  label: z.string().max(100).optional(),
+});
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -280,8 +287,20 @@ export default async function organizationRoutes(fastify: FastifyInstance): Prom
       },
     });
 
-    // In production this token would be delivered via email.
-    console.log(`[vqr] Invitation token for ${body.email} to org ${id}: ${rawToken}`);
+    const org = await fastify.prisma.organization.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
+    sendInvitationEmail(
+      body.email,
+      request.user!.email || 'A team member',
+      org?.name ?? id,
+      body.role,
+      rawToken,
+    ).catch((err) => {
+      fastify.log.error({ err, email: body.email }, 'Failed to send invitation email');
+    });
 
     return reply.status(201).send({
       id: invitation.id,
@@ -387,6 +406,109 @@ export default async function organizationRoutes(fastify: FastifyInstance): Prom
 
     await fastify.prisma.membership.delete({
       where: { userId_organizationId: { userId, organizationId: id } },
+    });
+
+    return reply.status(204).send();
+  });
+
+  // -------------------------------------------------------------------------
+  // GET /:id/api-keys — List API keys for the org
+  // -------------------------------------------------------------------------
+
+  fastify.get('/:id/api-keys', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+    const { includeRevoked } = request.query as { includeRevoked?: string };
+
+    const keys = await fastify.prisma.apiKey.findMany({
+      where: {
+        organizationId: id,
+        ...(includeRevoked !== 'true' ? { revokedAt: null } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        prefix: true,
+        label: true,
+        lastUsedAt: true,
+        revokedAt: true,
+        createdAt: true,
+      },
+    });
+
+    return reply.send({ data: keys, total: keys.length });
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /:id/api-keys — Create a new API key
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:id/api-keys', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+    preValidation: zodValidator({ body: createApiKeySchema }),
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id } = request.params as { id: string };
+    const body = request.body as { label?: string };
+
+    const { fullKey, prefix, hash } = generateApiKey();
+
+    const apiKey = await fastify.prisma.apiKey.create({
+      data: {
+        organizationId: id,
+        keyHash: hash,
+        prefix,
+        label: body.label,
+      },
+    });
+
+    return reply.status(201).send({
+      id: apiKey.id,
+      key: fullKey,
+      prefix: apiKey.prefix,
+      label: apiKey.label,
+      createdAt: apiKey.createdAt,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // DELETE /:id/api-keys/:keyId — Revoke an API key
+  // -------------------------------------------------------------------------
+
+  fastify.delete('/:id/api-keys/:keyId', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    checkOrgAccess(request);
+
+    const { id, keyId } = request.params as { id: string; keyId: string };
+
+    const apiKey = await fastify.prisma.apiKey.findUnique({
+      where: { id: keyId },
+    });
+
+    if (!apiKey || apiKey.organizationId !== id) {
+      return reply.status(404).send({
+        statusCode: 404,
+        error: 'Not Found',
+        message: 'API key not found.',
+      });
+    }
+
+    if (apiKey.revokedAt !== null) {
+      return reply.status(409).send({
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'API key is already revoked.',
+      });
+    }
+
+    await fastify.prisma.apiKey.update({
+      where: { id: keyId },
+      data: { revokedAt: new Date() },
     });
 
     return reply.status(204).send();

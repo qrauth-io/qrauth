@@ -23,6 +23,7 @@ import { useAuthContext } from '../../hooks';
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
 import { SignUpTerms } from '../../components/sign-up-terms';
+import { SocialLoginButtons } from '../../components/social-login-buttons';
 
 // ----------------------------------------------------------------------
 
@@ -147,6 +148,8 @@ export function JwtSignUpView() {
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />
+
+      <SocialLoginButtons />
 
       {!!errorMessage && (
         <Alert severity="error" sx={{ mb: 3 }}>

@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { Job, Queue } from 'bullmq';
+import { sendFraudAlertEmail } from '../lib/email.js';
 
 // ---------------------------------------------------------------------------
 // Job payload shapes
@@ -80,5 +81,17 @@ export class AlertService {
         `for organization ${organization.name} (${organization.email}) — ` +
         `incident ${incident.id} on QR code ${incident.qrCodeId}`,
     );
+
+    if (organization.email) {
+      await sendFraudAlertEmail(
+        organization.email,
+        organization.name,
+        {
+          type: incident.type,
+          severity: incident.severity,
+          qrCodeToken: incident.qrCodeId,
+        },
+      );
+    }
   }
 }

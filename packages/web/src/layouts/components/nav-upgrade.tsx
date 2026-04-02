@@ -12,12 +12,12 @@ import { CONFIG } from 'src/global-config';
 
 import { Label } from 'src/components/label';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
 export function NavUpgrade({ sx, ...other }: BoxProps) {
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
 
   return (
     <Box
@@ -26,8 +26,8 @@ export function NavUpgrade({ sx, ...other }: BoxProps) {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <Box sx={{ position: 'relative' }}>
-          <Avatar src={user?.photoURL} alt={user?.displayName} sx={{ width: 48, height: 48 }}>
-            {user?.displayName?.charAt(0).toUpperCase()}
+          <Avatar src={user?.photoURL} alt={user?.name || user?.displayName || 'User'} sx={{ width: 48, height: 48 }}>
+            {(user?.name || user?.displayName || 'User')?.charAt(0).toUpperCase()}
           </Avatar>
 
           <Label
@@ -52,7 +52,7 @@ export function NavUpgrade({ sx, ...other }: BoxProps) {
             noWrap
             sx={{ mb: 1, color: 'var(--layout-nav-text-primary-color)' }}
           >
-            {user?.displayName}
+            {user?.name || user?.displayName || 'User'}
           </Typography>
 
           <Typography

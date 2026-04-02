@@ -273,6 +273,17 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
         fastify.log.warn({ err, token }, 'Failed to enqueue scan recording');
       });
 
+    // ------------------------------------------------------------------
+    // 9. Content negotiation: HTML for browsers, JSON for API clients
+    // ------------------------------------------------------------------
+    const acceptsJson =
+      request.headers['x-client-id'] ||
+      request.headers.accept?.includes('application/json');
+
+    if (!acceptsJson) {
+      return reply.type('text/html').send(renderVerificationPage(response, token, qrCode));
+    }
+
     return reply.send(response);
   });
 
@@ -289,4 +300,260 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
       message: 'WebAuthn verification coming in Phase 2.',
     });
   });
+}
+
+// ---------------------------------------------------------------------------
+// HTML renderer for browser-based QR scans
+// ---------------------------------------------------------------------------
+
+function renderVerificationPage(
+  result: VerificationResponse,
+  token: string,
+  qrCode: { label?: string | null; destinationUrl: string; createdAt: Date },
+): string {
+  const verified = result.verified;
+  const org = result.organization;
+  const sec = result.security;
+  const loc = result.location_match;
+
+  const trustColor = sec.trustScore >= 80 ? '#00A76F' : sec.trustScore >= 50 ? '#FFAB00' : '#FF5630';
+  const trustLabel = sec.trustScore >= 80 ? 'High Trust' : sec.trustScore >= 50 ? 'Medium Trust' : 'Low Trust';
+
+  const kycBadge = org.kycStatus === 'VERIFIED'
+    ? '<span class="badge badge-green">KYC Verified</span>'
+    : org.kycStatus === 'UNDER_REVIEW'
+      ? '<span class="badge badge-yellow">KYC Pending</span>'
+      : '<span class="badge badge-gray">Unverified</span>';
+
+  const trustLevelBadge = org.trustLevel === 'GOVERNMENT'
+    ? '<span class="badge badge-blue">Government</span>'
+    : org.trustLevel === 'BUSINESS'
+      ? '<span class="badge badge-blue">Business</span>'
+      : '<span class="badge badge-gray">Individual</span>';
+
+  let destinationHostname: string;
+  try {
+    destinationHostname = new URL(qrCode.destinationUrl).hostname;
+  } catch {
+    destinationHostname = qrCode.destinationUrl;
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vQR Verification — ${esc(token)}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: ${verified ? '#f0fdf4' : '#fef2f2'};
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 480px; margin: 0 auto; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .header {
+      padding: 32px 24px 24px;
+      text-align: center;
+      background: ${verified ? '#00A76F' : '#FF5630'};
+      color: white;
+    }
+    .header svg { width: 64px; height: 64px; margin-bottom: 16px; }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .header p { font-size: 14px; opacity: 0.9; }
+    .body { padding: 24px; }
+    .section { margin-bottom: 20px; }
+    .section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #919eab; margin-bottom: 8px;
+    }
+    .org-name { font-size: 18px; font-weight: 700; color: #212b36; }
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-green { background: #E8F5E9; color: #1B5E20; }
+    .badge-yellow { background: #FFF8E1; color: #F57F17; }
+    .badge-blue { background: #E3F2FD; color: #0D47A1; }
+    .badge-gray { background: #F5F5F5; color: #616161; }
+    .badge-red { background: #FFEBEE; color: #C62828; }
+    .dest-url {
+      display: block; padding: 12px 16px; background: #f8f9fa;
+      border-radius: 8px; color: #0D47A1; text-decoration: none;
+      font-size: 14px; word-break: break-all; transition: background 0.2s;
+    }
+    .dest-url:hover { background: #e3f2fd; }
+    .trust-meter { margin-top: 12px; }
+    .trust-bar {
+      height: 8px; border-radius: 4px; background: #f0f0f0;
+      overflow: hidden; margin-bottom: 6px;
+    }
+    .trust-fill {
+      height: 100%; border-radius: 4px; transition: width 0.5s ease;
+      background: ${trustColor};
+    }
+    .trust-label { display: flex; justify-content: space-between; font-size: 13px; }
+    .trust-score { font-weight: 700; color: ${trustColor}; }
+    .check-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; font-size: 14px; color: #212b36;
+    }
+    .check-icon { font-size: 18px; }
+    .check-pass { color: #00A76F; }
+    .check-fail { color: #FF5630; }
+    .check-warn { color: #FFAB00; }
+    .location-info {
+      padding: 12px 16px; background: ${loc.matched ? '#E8F5E9' : '#FFF8E1'};
+      border-radius: 8px; font-size: 13px; margin-top: 8px;
+    }
+    .divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+    .footer {
+      text-align: center; padding: 16px 24px 24px;
+      font-size: 11px; color: #919eab;
+    }
+    .footer a { color: #637381; text-decoration: none; }
+    .cta-btn {
+      display: block; width: 100%; padding: 14px; margin-top: 16px;
+      background: ${verified ? '#00A76F' : '#637381'}; color: white;
+      border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+      cursor: pointer; text-align: center; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .cta-btn:hover { opacity: 0.9; }
+    .warn-banner {
+      padding: 12px 16px; background: #FFF3E0; border-radius: 8px;
+      font-size: 13px; color: #E65100; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .time { font-family: monospace; font-size: 12px; color: #919eab; text-align: center; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 8L16 28v32c0 28 18.7 54.2 44 60 25.3-5.8 44-32 44-60V28L60 8z" fill="rgba(255,255,255,0.2)"/>
+          <path d="M60 16L24 33v25c0 23.5 15.3 45.5 36 50.4 20.7-4.9 36-26.9 36-50.4V33L60 16z" fill="rgba(255,255,255,0.15)"/>
+          ${verified
+            ? '<circle cx="60" cy="56" r="24" fill="rgba(255,255,255,0.3)"/><path d="M50 56l7 7 13-14" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
+            : '<circle cx="60" cy="56" r="24" fill="rgba(255,255,255,0.3)"/><path d="M52 48l16 16M68 48L52 64" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
+          }
+          <text x="60" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">vQR</text>
+        </svg>
+        <h1>${verified ? 'Verified QR Code' : 'Verification Failed'}</h1>
+        <p>${verified
+          ? 'This QR code is authentic and registered on the vQR platform.'
+          : (result.reason || 'This QR code could not be verified.')
+        }</p>
+      </div>
+
+      <div class="body">
+        ${!verified && result.reason ? `<div class="warn-banner">&#9888; ${esc(result.reason)}</div>` : ''}
+
+        <div class="section">
+          <div class="section-title">Registered By</div>
+          <div class="org-name">${esc(org.name)}</div>
+          <div class="badges">
+            ${trustLevelBadge}
+            ${kycBadge}
+          </div>
+        </div>
+
+        ${qrCode.label ? `
+        <div class="section">
+          <div class="section-title">Label</div>
+          <div style="font-size:14px;color:#212b36;">${esc(qrCode.label)}</div>
+        </div>
+        ` : ''}
+
+        <div class="section">
+          <div class="section-title">Destination</div>
+          <a class="dest-url" href="${esc(qrCode.destinationUrl)}" rel="noopener">${esc(qrCode.destinationUrl)}</a>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section">
+          <div class="section-title">Security Checks</div>
+          <div class="check-row">
+            <span class="check-icon ${sec.signatureValid ? 'check-pass' : 'check-fail'}">
+              ${sec.signatureValid ? '&#10003;' : '&#10007;'}
+            </span>
+            Digital Signature (ECDSA-P256)
+          </div>
+          <div class="check-row">
+            <span class="check-icon ${sec.transparencyLogVerified ? 'check-pass' : 'check-fail'}">
+              ${sec.transparencyLogVerified ? '&#10003;' : '&#10007;'}
+            </span>
+            Transparency Log
+          </div>
+          <div class="check-row">
+            <span class="check-icon ${sec.proxyDetected ? 'check-fail' : 'check-pass'}">
+              ${sec.proxyDetected ? '&#10007;' : '&#10003;'}
+            </span>
+            Proxy Detection ${sec.proxyDetected ? '— <strong style="color:#FF5630">PROXY DETECTED</strong>' : '— Clean'}
+          </div>
+
+          <div class="trust-meter">
+            <div class="trust-bar">
+              <div class="trust-fill" style="width:${sec.trustScore}%"></div>
+            </div>
+            <div class="trust-label">
+              <span>${trustLabel}</span>
+              <span class="trust-score">${sec.trustScore}/100</span>
+            </div>
+          </div>
+        </div>
+
+        ${loc.distanceM !== null ? `
+        <div class="section">
+          <div class="section-title">Location</div>
+          <div class="location-info">
+            ${loc.matched
+              ? `&#128205; You are within the registered area (${loc.distanceM}m away)`
+              : `&#128205; You are ${loc.distanceM}m from the registered location`
+            }
+          </div>
+        </div>
+        ` : ''}
+
+        ${verified ? `
+        <a class="cta-btn" href="${esc(qrCode.destinationUrl)}" rel="noopener">
+          Continue to ${esc(destinationHostname)}
+        </a>
+        ` : `
+        <div class="cta-btn" style="background:#637381;cursor:default;">
+          Do not proceed — this QR code is not verified
+        </div>
+        `}
+
+        <div class="time">Scanned at ${result.scannedAt}</div>
+      </div>
+
+      <div class="footer">
+        Secured by <a href="https://vqr.io"><strong>vQR</strong></a> — Verified QR Code Security Platform<br>
+        <span style="font-size:10px;margin-top:4px;display:inline-block;">Token: ${esc(token)}</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function esc(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

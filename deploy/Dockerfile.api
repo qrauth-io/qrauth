@@ -1,0 +1,46 @@
+FROM node:22-alpine AS build
+WORKDIR /app
+
+# Install ALL deps (need devDeps for build)
+COPY package.json package-lock.json ./
+COPY packages/shared/package.json packages/shared/
+COPY packages/api/package.json packages/api/
+RUN npm ci --ignore-scripts
+
+# Build shared
+COPY packages/shared/ packages/shared/
+COPY tsconfig.base.json ./
+RUN npm run build --workspace=packages/shared
+
+# Copy API source + Prisma schema
+COPY packages/api/ packages/api/
+
+# Generate Prisma client + build API
+RUN npx prisma generate --schema=packages/api/prisma/schema.prisma
+RUN npm run build --workspace=packages/api
+
+# Production image — only runtime deps
+FROM node:22-alpine
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY packages/shared/package.json packages/shared/
+COPY packages/api/package.json packages/api/
+RUN npm ci --omit=dev --ignore-scripts
+
+# Copy built artifacts
+COPY --from=build /app/packages/shared/dist packages/shared/dist
+COPY --from=build /app/packages/api/dist packages/api/dist
+COPY --from=build /app/packages/api/prisma packages/api/prisma
+COPY --from=build /app/node_modules/.prisma node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma node_modules/@prisma
+
+# Copy public static files (SDK, etc.)
+COPY packages/api/public packages/api/public
+
+RUN mkdir -p /app/keys
+
+WORKDIR /app/packages/api
+EXPOSE 3000
+
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=prisma/schema.prisma && node dist/server.js"]

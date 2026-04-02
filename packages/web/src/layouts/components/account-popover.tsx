@@ -13,10 +13,12 @@ import { paths } from 'src/routes/paths';
 import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import axios from 'src/lib/axios';
+
 import { Label } from 'src/components/label';
 import { CustomPopover } from 'src/components/custom-popover';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useAuthContext } from 'src/auth/hooks';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
@@ -37,24 +39,75 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
   const { open, anchorEl, onClose, onOpen } = usePopover();
 
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
+
+  const displayName = user?.name || user?.displayName || 'User';
+  const email = user?.email || '';
+  const orgName = (user as any)?.organization?.name;
 
   const renderMenuActions = () => (
     <CustomPopover
       open={open}
       anchorEl={anchorEl}
       onClose={onClose}
-      slotProps={{ paper: { sx: { p: 0, width: 200 } } }}
+      slotProps={{ paper: { sx: { p: 0, width: 220 } } }}
     >
       <Box sx={{ p: 2, pb: 1.5 }}>
         <Typography variant="subtitle2" noWrap>
-          {user?.displayName}
+          {displayName}
         </Typography>
 
         <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-          {user?.email}
+          {email}
         </Typography>
+
+        {orgName && (
+          <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 0.5 }} noWrap>
+            {orgName}
+          </Typography>
+        )}
       </Box>
+
+      {/* Org switcher — only show if user has multiple memberships */}
+      {(user as any)?.memberships?.length > 1 && (
+        <>
+          <Divider sx={{ borderStyle: 'dashed' }} />
+          <Box sx={{ p: 1 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
+              Switch organization
+            </Typography>
+            <MenuList sx={{ '& li': { p: 0 } }}>
+              {(user as any).memberships.map((m: any) => (
+                <MenuItem
+                  key={m.organizationId}
+                  selected={m.organizationId === (user as any)?.organization?.id}
+                  onClick={async () => {
+                    try {
+                      const res = await axios.post('/api/v1/auth/switch-org', {
+                        organizationId: m.organizationId,
+                      });
+                      // Update the JWT in session storage
+                      const { JWT_STORAGE_KEY } = await import('src/auth/context/jwt/constant');
+                      sessionStorage.setItem(JWT_STORAGE_KEY, res.data.token);
+                      window.location.reload(); // Full reload to refresh all data
+                    } catch {
+                      // silently fail
+                    }
+                    onClose();
+                  }}
+                >
+                  <Box sx={{ px: 1, py: 0.75, width: 1 }}>
+                    <Typography variant="body2" fontWeight={m.organizationId === (user as any)?.organization?.id ? 700 : 400}>
+                      {m.organizationName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">{m.role}</Typography>
+                  </Box>
+                </MenuItem>
+              ))}
+            </MenuList>
+          </Box>
+        </>
+      )}
 
       <Divider sx={{ borderStyle: 'dashed' }} />
 
@@ -118,7 +171,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       <AccountButton
         onClick={onOpen}
         photoURL={user?.photoURL}
-        displayName={user?.displayName}
+        displayName={displayName}
         sx={sx}
         {...other}
       />

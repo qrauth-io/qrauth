@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: imresamu/postgis:16-3.4-alpine
+    container_name: vqr-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vqr
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: vqr
+    ports:
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U vqr']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vqr-redis
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:6382:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    container_name: vqr-api
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3200:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    environment:
+      DATABASE_URL: postgresql://vqr:${POSTGRES_PASSWORD}@postgres:5432/vqr
+      REDIS_URL: redis://redis:6379
+      PORT: 3000
+      HOST: 0.0.0.0
+      NODE_ENV: production
+    volumes:
+      - keys:/app/keys
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+      args:
+        VITE_SERVER_URL: https://vqr.progressnet.io
+    container_name: vqr-web
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3201:80'
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:
+  keys:

@@ -230,6 +230,12 @@ export type CreateAppInput = z.infer<typeof createAppSchema>;
 export const updateAppSchema = createAppSchema.partial();
 export type UpdateAppInput = z.infer<typeof updateAppSchema>;
 
+export const oauthCallbackSchema = z.object({
+  code: z.string().min(1),
+  state: z.string().min(1),
+});
+export type OAuthCallbackInput = z.infer<typeof oauthCallbackSchema>;
+
 export const createAuthSessionSchema = z.object({
   scopes: z.array(z.enum(['identity', 'email', 'organization'])).min(1).default(['identity']),
   redirectUrl: z.string().url().optional(),

@@ -9,6 +9,14 @@ datasource db {
   extensions = [postgis]
 }
 
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  GITHUB
+  MICROSOFT
+  APPLE
+}
+
 enum OrganizationTrustLevel {
   INDIVIDUAL
   BUSINESS
@@ -211,25 +219,54 @@ model ApiKey {
 }
 
 model User {
-  id                   String    @id @default(cuid())
+  id                   String       @id @default(cuid())
   name                 String
-  email                String    @unique
+  email                String       @unique
   passwordHash         String
-  emailVerified        Boolean   @default(false)
-  emailVerifyToken     String?   @unique
-  passwordResetToken   String?   @unique
+  provider             AuthProvider @default(EMAIL)
+  providerId           String?      @unique
+  avatarUrl            String?
+  failedLoginAttempts  Int          @default(0)
+  lockedUntil          DateTime?
+  emailVerified        Boolean      @default(false)
+  emailVerifyToken     String?      @unique
+  passwordResetToken   String?      @unique
   passwordResetExpires DateTime?
   lastLoginAt          DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   memberships        Membership[]
   invitationsSent    Invitation[]   @relation("InvitedByUser")
   invitedMemberships Membership[]   @relation("InvitedByMembership")
   auditLogs          AuditLog[]
   authSessions       AuthSession[]
+  loginEvents        LoginEvent[]
 
   @@map("users")
+}
+
+model LoginEvent {
+  id          String       @id @default(cuid())
+  userId      String
+  success     Boolean
+  provider    AuthProvider @default(EMAIL)
+  ipAddress   String?
+  ipCountry   String?
+  ipCity      String?
+  userAgent   String?
+  deviceType  String?
+  browser     String?
+  os          String?
+  fingerprint String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([ipAddress])
+  @@map("login_events")
 }
 
 model Membership {
@@ -332,9 +369,13 @@ model AuthSession {
   status       AuthSessionStatus @default(PENDING)
   scopes       String[]          @default(["identity"])
   userId       String?
-  userAgent    String?
-  clientIpHash String?
-  geoLat       Float?
+  userAgent         String?
+  clientIpHash      String?
+  deviceFingerprint String?
+  ipCountry         String?
+  ipCity            String?
+  referrer          String?
+  geoLat            Float?
   geoLng       Float?
   signature    String?
   redirectUrl  String?

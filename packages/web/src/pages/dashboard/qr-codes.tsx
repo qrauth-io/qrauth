@@ -5,6 +5,7 @@ import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,6 +13,9 @@ import TableHead from '@mui/material/TableHead';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -38,9 +42,11 @@ type QRCode = {
 
 export default function QRCodesPage() {
   const router = useRouter();
-  const { showError } = useSnackbar();
+  const { showError, showSuccess } = useSnackbar();
   const [qrCodes, setQrCodes] = useState<QRCode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [revokeToken, setRevokeToken] = useState<string | null>(null);
+  const [revoking, setRevoking] = useState(false);
 
   const fetchQRCodes = useCallback(async () => {
     try {
@@ -61,14 +67,24 @@ export default function QRCodesPage() {
     <>
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h4">QR Codes</Typography>
-        <Button
-          component={RouterLink}
-          href={paths.dashboard.qrcodes.create}
-          variant="contained"
-          startIcon={<Iconify icon="mingcute:add-line" />}
-        >
-          New QR Code
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            component={RouterLink}
+            href={paths.dashboard.qrcodes.bulk}
+            variant="outlined"
+            startIcon={<Iconify icon="solar:copy-bold" />}
+          >
+            Bulk Create
+          </Button>
+          <Button
+            component={RouterLink}
+            href={paths.dashboard.qrcodes.create}
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            New QR Code
+          </Button>
+        </Box>
       </Box>
 
       <Card>
@@ -126,6 +142,15 @@ export default function QRCodesPage() {
                       >
                         <Iconify icon="solar:pen-bold" />
                       </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        title="Revoke"
+                        onClick={() => setRevokeToken(qr.token)}
+                        disabled={qr.status !== 'ACTIVE'}
+                      >
+                        <Iconify icon="solar:close-circle-bold" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -134,6 +159,38 @@ export default function QRCodesPage() {
           </TableContainer>
         )}
       </Card>
+
+      <Dialog open={Boolean(revokeToken)} onClose={() => setRevokeToken(null)}>
+        <DialogTitle>Revoke QR Code</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to revoke <strong>{revokeToken}</strong>? This action cannot be undone. The QR code will show as invalid when scanned.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRevokeToken(null)}>Cancel</Button>
+          <Button
+            color="error"
+            variant="contained"
+            disabled={revoking}
+            onClick={async () => {
+              setRevoking(true);
+              try {
+                await axios.delete(endpoints.qrcodes.details(revokeToken!));
+                showSuccess('QR code revoked');
+                setRevokeToken(null);
+                fetchQRCodes();
+              } catch (err: unknown) {
+                showError((err as Error).message || 'Failed to revoke');
+              } finally {
+                setRevoking(false);
+              }
+            }}
+          >
+            {revoking ? 'Revoking...' : 'Revoke'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

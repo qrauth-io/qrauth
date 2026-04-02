@@ -1,9 +1,6 @@
 import type { RouteObject } from 'react-router';
 
 import { lazy } from 'react';
-import { Navigate } from 'react-router';
-
-import { CONFIG } from 'src/global-config';
 
 import { authRoutes } from './auth';
 import { dashboardRoutes } from './dashboard';
@@ -11,11 +8,12 @@ import { dashboardRoutes } from './dashboard';
 // ----------------------------------------------------------------------
 
 const Page404 = lazy(() => import('src/pages/error/404'));
+const HomePage = lazy(() => import('src/pages/home'));
 
 export const routesSection: RouteObject[] = [
   {
     path: '/',
-    element: <Navigate to={CONFIG.auth.redirectPath} replace />,
+    element: <HomePage />,
   },
 
   // Auth

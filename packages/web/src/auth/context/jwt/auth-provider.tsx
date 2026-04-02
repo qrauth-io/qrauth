@@ -26,6 +26,19 @@ export function AuthProvider({ children }: Props) {
 
   const checkUserSession = useCallback(async () => {
     try {
+      // Check for JWT in URL fragment (from OAuth redirect)
+      if (typeof window !== 'undefined') {
+        const hash = window.location.hash;
+        if (hash?.includes('jwt=')) {
+          const jwtFromHash = hash.split('jwt=')[1]?.split('&')[0];
+          if (jwtFromHash) {
+            sessionStorage.setItem(JWT_STORAGE_KEY, jwtFromHash);
+            // Clean the hash
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }
+      }
+
       const accessToken = sessionStorage.getItem(JWT_STORAGE_KEY);
 
       if (accessToken && isValidToken(accessToken)) {

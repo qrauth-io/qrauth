@@ -181,3 +181,15 @@ export type AuthSessionStatus = (typeof AuthSessionStatus)[keyof typeof AuthSess
 export const AUTH_SESSION_EXPIRY_SECONDS = 300; // 5 minutes
 export const ALLOWED_SCOPES = ['identity', 'email', 'organization'] as const;
 export type AuthScope = (typeof ALLOWED_SCOPES)[number];
+
+export const AuthProvider = {
+  EMAIL: 'EMAIL',
+  GOOGLE: 'GOOGLE',
+  GITHUB: 'GITHUB',
+  MICROSOFT: 'MICROSOFT',
+  APPLE: 'APPLE',
+} as const;
+export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider];
+
+export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+export const ACCOUNT_LOCKOUT_MINUTES = 15;

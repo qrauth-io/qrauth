@@ -1,4 +1,6 @@
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { config } from './lib/config.js';
 import { db, disconnectDb } from './lib/db.js';
 import { redis, disconnectCache } from './lib/cache.js';
@@ -140,18 +142,36 @@ export async function buildServer(): Promise<FastifyInstance> {
   // 4. Security plugins
   // -------------------------------------------------------------------------
 
+  // Parse application/x-www-form-urlencoded (needed for Apple OAuth form_post)
+  app.addContentTypeParser('application/x-www-form-urlencoded', function (request, payload, done) {
+    let body = '';
+    payload.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+    payload.on('end', () => {
+      done(null, Object.fromEntries(new URLSearchParams(body)));
+    });
+  });
+
   await app.register(import('@fastify/cors'), {
     // In development allow any origin for convenience. In production this
     // should be locked down to the issuer dashboard domain.
-    origin: config.server.isDev ? true : (process.env.CORS_ORIGIN ?? false),
+    origin: true, // SDK is embedded cross-origin
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   await app.register(import('@fastify/helmet'), {
-    // Content-Security-Policy is intentionally relaxed here because the API
-    // returns JSON, not HTML. Tighten this when serving any embedded UI.
     contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false, // Managed per-route below
+    crossOriginOpenerPolicy: false,
+  });
+
+  // Allow cross-origin loading of SDK files
+  app.addHook('onSend', (request, reply, _payload, done) => {
+    if (request.url.startsWith('/sdk/')) {
+      reply.header('Cross-Origin-Resource-Policy', 'cross-origin');
+      reply.header('Access-Control-Allow-Origin', '*');
+    }
+    done();
   });
 
   // -------------------------------------------------------------------------
@@ -159,6 +179,16 @@ export async function buildServer(): Promise<FastifyInstance> {
   // -------------------------------------------------------------------------
 
   await app.register(import('@fastify/sensible'));
+
+  // -------------------------------------------------------------------------
+  // Static SDK files (/sdk/*)
+  // -------------------------------------------------------------------------
+
+  await app.register(import('@fastify/static'), {
+    root: join(dirname(fileURLToPath(import.meta.url)), '..', 'public'),
+    prefix: '/',
+    decorateReply: false,
+  });
 
   // -------------------------------------------------------------------------
   // 6. Decorate the Fastify instance with shared singletons.

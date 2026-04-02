@@ -36,9 +36,29 @@ export interface User {
   name: string;
   email: string;
   emailVerified: boolean;
+  provider: string;
+  providerId?: string;
+  avatarUrl?: string;
   lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface LoginEvent {
+  id: string;
+  userId: string;
+  success: boolean;
+  provider: string;
+  ipAddress?: string;
+  ipCountry?: string;
+  ipCity?: string;
+  userAgent?: string;
+  deviceType?: string;
+  browser?: string;
+  os?: string;
+  fingerprint?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
 }
 
 export interface Membership {

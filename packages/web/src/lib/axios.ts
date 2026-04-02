@@ -70,6 +70,7 @@ export const endpoints = {
     members: (id: string) => `/api/v1/organizations/${id}/members`,
     invitations: (id: string) => `/api/v1/organizations/${id}/invitations`,
     keys: (id: string) => `/api/v1/organizations/${id}/keys`,
+    apiKeys: (id: string) => `/api/v1/organizations/${id}/api-keys`,
   },
   analytics: {
     scans: '/api/v1/analytics/scans',

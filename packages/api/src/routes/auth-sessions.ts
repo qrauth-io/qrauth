@@ -4,6 +4,7 @@ import { createAuthSessionSchema } from '@vqr/shared';
 import { AppService } from '../services/app.js';
 import { AuthSessionService, subscribeToSession } from '../services/auth-session.js';
 import { hashString } from '../lib/crypto.js';
+import { collectRequestMetadata } from '../lib/metadata.js';
 
 /**
  * Authenticate a request using app credentials (Basic auth or X-Client-Id/X-Client-Secret headers).
@@ -228,6 +229,8 @@ export default async function authSessionRoutes(fastify: FastifyInstance): Promi
       return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Session not found or expired' });
     }
 
+    const meta = await collectRequestMetadata(request);
+
     try {
       const result = await sessionService.approveSession(
         session.id,
@@ -235,6 +238,18 @@ export default async function authSessionRoutes(fastify: FastifyInstance): Promi
         body?.geoLat,
         body?.geoLng,
       );
+
+      // Update session with metadata
+      await fastify.prisma.authSession.update({
+        where: { id: session.id },
+        data: {
+          deviceFingerprint: (request.body as any)?.fingerprint || meta.fingerprint,
+          ipCountry: meta.ipCountry,
+          ipCity: meta.ipCity,
+          referrer: meta.referrer,
+        },
+      });
+
       return reply.send(result);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -262,6 +277,51 @@ export default async function authSessionRoutes(fastify: FastifyInstance): Promi
       const message = err instanceof Error ? err.message : 'Unknown error';
       return reply.status(400).send({ statusCode: 400, error: 'Bad Request', message });
     }
+  });
+
+  // -----------------------------------------------------------------------
+  // POST /verify-result — Verify an auth session result (public, for third-party backends)
+  // -----------------------------------------------------------------------
+  fastify.post('/verify-result', async (request, reply) => {
+    const body = request.body as { sessionId: string; signature: string };
+
+    if (!body.sessionId || !body.signature) {
+      return reply.status(400).send({
+        statusCode: 400, error: 'Bad Request',
+        message: 'sessionId and signature are required',
+      });
+    }
+
+    const session = await fastify.prisma.authSession.findUnique({
+      where: { id: body.sessionId },
+      include: {
+        app: { select: { name: true, clientId: true, organizationId: true } },
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    if (!session) {
+      return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Session not found' });
+    }
+
+    const signatureMatch = session.signature === body.signature;
+
+    return reply.send({
+      valid: signatureMatch && session.status === 'APPROVED',
+      session: {
+        id: session.id,
+        status: session.status,
+        appName: session.app.name,
+        scopes: session.scopes,
+        user: session.user ? {
+          id: session.user.id,
+          ...(session.scopes.includes('identity') ? { name: session.user.name } : {}),
+          ...(session.scopes.includes('email') ? { email: session.user.email } : {}),
+        } : null,
+        signature: session.signature,
+        resolvedAt: session.resolvedAt?.toISOString(),
+      },
+    });
   });
 }
 
