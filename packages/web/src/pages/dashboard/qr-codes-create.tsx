@@ -291,7 +291,12 @@ export default function QRCodesCreatePage() {
       if (selectedType === 'url') {
         payload.destinationUrl = contentValues.destinationUrl;
       } else {
-        payload.content = contentValues;
+        // Strip location fields (prefixed with _) from content before sending
+        const content: Record<string, any> = {};
+        for (const [key, val] of Object.entries(contentValues)) {
+          if (!key.startsWith('_')) content[key] = val;
+        }
+        payload.content = content;
       }
 
       // Location binding
