@@ -89,6 +89,9 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
       ${contentBody}
     </div>
 
+    <!-- Location result (populated dynamically via GPS) -->
+    <div id="location-result" style="display:none;margin:0 20px 12px;padding:12px 16px;border-radius:8px;font-size:13px;"></div>
+
     <!-- Ephemeral proof -->
     ${ephemeralProof ? `
     <div class="ephemeral" style="margin:0 20px 16px;">
@@ -121,14 +124,29 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
 
       // Request GPS only if QR code has a registered location
       var hasLocation = ${ctx.qrCode.latitude != null && ctx.qrCode.longitude != null ? 'true' : 'false'};
-      if (hasLocation && navigator.geolocation) {
+      if (hasLocation && navigator.geolocation && !new URLSearchParams(window.location.search).has('clientLat')) {
         navigator.geolocation.getCurrentPosition(function(pos) {
-          var url = new URL(window.location.href);
-          if (!url.searchParams.has('clientLat')) {
-            url.searchParams.set('clientLat', pos.coords.latitude.toFixed(6));
-            url.searchParams.set('clientLng', pos.coords.longitude.toFixed(6));
-            window.location.replace(url.toString());
-          }
+          var lat = pos.coords.latitude.toFixed(6);
+          var lng = pos.coords.longitude.toFixed(6);
+          // Fetch updated verification with location (no reload — preserves one-time permission)
+          fetch(window.location.pathname + '?clientLat=' + lat + '&clientLng=' + lng, {
+            headers: { 'Accept': 'application/json' }
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            var loc = data.location_match;
+            if (loc && loc.distanceM !== null) {
+              var el = document.getElementById('location-result');
+              if (el) {
+                el.style.display = 'block';
+                el.style.background = loc.matched ? '#E8F5E9' : '#FFF8E1';
+                el.innerHTML = loc.matched
+                  ? '&#128205; You are within the registered area (' + loc.distanceM + 'm away)'
+                  : '&#128205; You are ' + loc.distanceM + 'm from the registered location';
+              }
+            }
+          })
+          .catch(function() {});
         }, function() {}, { timeout: 5000, maximumAge: 60000 });
       }
     })();
