@@ -2,29 +2,25 @@ import { test, expect } from '@playwright/test';
 
 // Helper to create an authenticated session
 async function signUp(page: import('@playwright/test').Page) {
+  // Use API directly to create user + complete onboarding (faster, no browser flakiness)
   const email = `dash-${Date.now()}@example.com`;
-  await page.goto('/auth/jwt/sign-up');
-  await page.getByLabel('Full name').fill('Dashboard Tester');
-  await page.getByLabel('Organization name').fill('Dashboard Test Org');
-  await page.getByLabel('Email address').fill(email);
-  await page.getByLabel('Password').fill('TestPass123!');
-  await page.getByRole('button', { name: 'Create account' }).click();
 
-  // Complete onboarding if redirected there
-  try {
-    await expect(page).toHaveURL(/\/onboarding/, { timeout: 5000 });
-    // Step 1: org name is pre-filled, click Continue
-    await page.getByRole('button', { name: 'Continue' }).click();
-    // Step 2: select use case
-    await page.getByText('Developer').click();
-    await page.getByRole('button', { name: 'Continue' }).click();
-    // Step 3: skip QR creation
-    await page.getByRole('button', { name: 'Skip' }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
-  } catch {
-    // If already on dashboard (onboarding was skipped), continue
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
-  }
+  const signupRes = await page.request.post('http://localhost:3000/api/v1/auth/signup', {
+    data: { name: 'Dashboard Tester', email, password: 'TestPass123!', organizationName: 'Dashboard Test Org' },
+  });
+  const { token } = await signupRes.json();
+
+  // Complete onboarding via API
+  await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
+  });
+
+  // Set JWT in browser and navigate to dashboard
+  await page.goto('/dashboard');
+  await page.evaluate((t) => sessionStorage.setItem('jwt_access_token', t), token);
+  await page.goto('/dashboard');
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
 }
 
 test.describe('Dashboard', () => {
