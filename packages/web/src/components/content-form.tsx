@@ -3,11 +3,13 @@ import type { ContentFieldDef } from '@vqr/shared';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -263,6 +265,27 @@ export function ContentForm({ fields, values, onChange }: Props) {
           </Box>
         );
       }
+
+      case 'switch':
+        return (
+          <FormControlLabel
+            key={field.name}
+            control={
+              <Switch
+                checked={!!value}
+                onChange={(e) => onChange(field.name, e.target.checked)}
+              />
+            }
+            label={
+              <Box>
+                <Typography variant="body2">{field.label}</Typography>
+                {field.helpText && (
+                  <Typography variant="caption" color="text.secondary">{field.helpText}</Typography>
+                )}
+              </Box>
+            }
+          />
+        );
 
       default:
         return (

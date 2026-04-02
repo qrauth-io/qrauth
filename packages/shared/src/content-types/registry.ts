@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export interface ContentFieldDef {
   name: string;
-  type: 'text' | 'textarea' | 'url' | 'email' | 'phone' | 'date' | 'datetime' | 'number' | 'image' | 'file' | 'select' | 'address' | 'social-links';
+  type: 'text' | 'textarea' | 'url' | 'email' | 'phone' | 'date' | 'datetime' | 'number' | 'image' | 'file' | 'select' | 'switch' | 'address' | 'social-links';
   label: string;
   placeholder?: string;
   required?: boolean;

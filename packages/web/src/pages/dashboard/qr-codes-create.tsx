@@ -183,15 +183,24 @@ export function ContentPagePreview({ type, content }: { type: string; content: R
             {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
             <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ fontSize: 32, color: '#FFAB00', cursor: 'pointer' }}>&#9733;</Box>
+                <Box key={star} sx={{ fontSize: 32, color: '#FFAB00' }}>&#9733;</Box>
               ))}
             </Stack>
-            <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, fontSize: 12, color: '#919eab', textAlign: 'left' }}>
+          </Box>
+          <Box sx={{ px: 2 }}>
+            {content.collectName && (
+              <Box sx={{ mb: 1, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, fontSize: 13, color: '#919eab' }}>Your name</Box>
+            )}
+            {content.collectEmail && (
+              <Box sx={{ mb: 1, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, fontSize: 13, color: '#919eab' }}>Your email</Box>
+            )}
+            {content.collectPhone && (
+              <Box sx={{ mb: 1, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, fontSize: 13, color: '#919eab' }}>Your phone</Box>
+            )}
+            <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, fontSize: 13, color: '#919eab' }}>
               Leave a comment...
             </Box>
-          </Box>
-          <Box sx={{ px: 2, pb: 2 }}>
-            <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: '#00A76F', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>Submit Feedback</Box>
+            <Box sx={{ py: 1.5, mb: 2, textAlign: 'center', bgcolor: '#00A76F', color: 'white', borderRadius: 1.5, fontWeight: 600, fontSize: 14 }}>Submit Feedback</Box>
           </Box>
           <PreviewFooter />
         </Box>
