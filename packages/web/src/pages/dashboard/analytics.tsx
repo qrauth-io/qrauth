@@ -17,6 +17,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { formatDateTime } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { Iconify } from 'src/components/iconify';
@@ -291,7 +293,7 @@ export default function AnalyticsPage() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="caption">{new Date(scan.createdAt).toLocaleString()}</Typography>
+                          <Typography variant="caption">{formatDateTime(scan.createdAt)}</Typography>
                         </TableCell>
                       </TableRow>
                     ))

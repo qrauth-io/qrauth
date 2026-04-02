@@ -30,6 +30,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { formatDateTime } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { Iconify } from 'src/components/iconify';
@@ -436,7 +438,7 @@ export default function FraudPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="caption">
-                            {new Date(incident.createdAt).toLocaleString()}
+                            {formatDateTime(incident.createdAt)}
                           </Typography>
                         </TableCell>
                         <TableCell align="right" onClick={(e) => e.stopPropagation()}>
@@ -633,7 +635,7 @@ export default function FraudPage() {
                         Scanned At
                       </Typography>
                       <Typography variant="caption">
-                        {new Date(selectedIncident.scan.createdAt).toLocaleString()}
+                        {formatDateTime(selectedIncident.scan.createdAt)}
                       </Typography>
                     </Box>
                   </Stack>
@@ -669,7 +671,7 @@ export default function FraudPage() {
                     Resolution
                   </Typography>
                   <Typography variant="body2">
-                    Resolved {new Date(selectedIncident.resolvedAt!).toLocaleString()}
+                    Resolved {formatDateTime(selectedIncident.resolvedAt)}
                   </Typography>
                   {selectedIncident.resolutionNote && (
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -686,16 +688,16 @@ export default function FraudPage() {
               </Typography>
               <Stack spacing={1}>
                 <Typography variant="caption">
-                  Detected: {new Date(selectedIncident.createdAt).toLocaleString()}
+                  Detected: {formatDateTime(selectedIncident.createdAt)}
                 </Typography>
                 {selectedIncident.acknowledgedAt && (
                   <Typography variant="caption">
-                    Acknowledged: {new Date(selectedIncident.acknowledgedAt).toLocaleString()}
+                    Acknowledged: {formatDateTime(selectedIncident.acknowledgedAt)}
                   </Typography>
                 )}
                 {selectedIncident.resolvedAt && (
                   <Typography variant="caption">
-                    Resolved: {new Date(selectedIncident.resolvedAt).toLocaleString()}
+                    Resolved: {formatDateTime(selectedIncident.resolvedAt)}
                   </Typography>
                 )}
               </Stack>

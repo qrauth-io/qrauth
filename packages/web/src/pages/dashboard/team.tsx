@@ -26,6 +26,8 @@ import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { formatDate } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { Iconify } from 'src/components/iconify';
@@ -211,7 +213,7 @@ export default function TeamPage() {
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption">
-                          {new Date(member.joinedAt).toLocaleDateString()}
+                          {formatDate(member.joinedAt)}
                         </Typography>
                       </TableCell>
                       {canManage && (

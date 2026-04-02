@@ -16,6 +16,8 @@ import CardContent from '@mui/material/CardContent';
 import TableContainer from '@mui/material/TableContainer';
 import LinearProgress from '@mui/material/LinearProgress';
 
+import { formatDateTime } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { Iconify } from 'src/components/iconify';
@@ -281,7 +283,7 @@ export default function OverviewPage() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="caption" color="text.secondary">
-                            {new Date(scan.createdAt).toLocaleString()}
+                            {formatDateTime(scan.createdAt)}
                           </Typography>
                         </TableCell>
                       </TableRow>

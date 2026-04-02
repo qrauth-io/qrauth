@@ -23,6 +23,8 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { formatDate } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { Iconify } from 'src/components/iconify';
@@ -134,7 +136,7 @@ export default function QRCodesPage() {
                       />
                     </TableCell>
                     <TableCell>{qr._count?.scans ?? 0}</TableCell>
-                    <TableCell>{new Date(qr.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{formatDate(qr.createdAt)}</TableCell>
                     <TableCell>
                       <IconButton
                         size="small"

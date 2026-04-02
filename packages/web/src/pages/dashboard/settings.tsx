@@ -20,6 +20,8 @@ import CardContent from '@mui/material/CardContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { formatDate, formatDateTime } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { Iconify } from 'src/components/iconify';
@@ -245,7 +247,7 @@ export default function SettingsPage() {
                         <TableRow key={event.id} hover>
                           <TableCell>
                             <Typography variant="caption">
-                              {new Date(event.createdAt).toLocaleString()}
+                              {formatDateTime(event.createdAt)}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -340,7 +342,7 @@ export default function SettingsPage() {
                       Created
                     </Typography>
                     <Typography variant="body2">
-                      {org?.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}
+                      {org?.createdAt ? formatDate(org?.createdAt) : '—'}
                     </Typography>
                   </Box>
                   {org?.kycStatus === 'PENDING' && canEdit && (
@@ -406,7 +408,7 @@ export default function SettingsPage() {
                           />
                         </Stack>
                         <Typography variant="caption" color="text.secondary">
-                          {key.algorithm} · {new Date(key.createdAt).toLocaleDateString()}
+                          {key.algorithm} · {formatDate(key.createdAt)}
                         </Typography>
                       </Box>
                     ))}
