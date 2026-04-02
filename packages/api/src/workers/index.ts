@@ -1,12 +1,14 @@
 import { Worker } from 'bullmq';
 import type { Job } from 'bullmq';
 import type { Prisma } from '@prisma/client';
-import { createQueueConnection, alertQueue } from '../lib/queue.js';
+import { createQueueConnection, alertQueue, fraudQueue } from '../lib/queue.js';
 import { db } from '../lib/db.js';
 import { GeoService } from '../services/geo.js';
 import { AlertService } from '../services/alerts.js';
 import { FraudDetectionService } from '../services/fraud.js';
 import type { FraudAlertJobData } from '../services/alerts.js';
+import { FeatureExtractionService } from '../services/feature-extraction.js';
+import { DynamicRuleEngine } from '../services/dynamic-rules.js';
 
 // ---------------------------------------------------------------------------
 // Scan job payload
@@ -77,9 +79,10 @@ function createScanWorker(): Worker<ScanJobData> {
 
       let trustScore = 100;
       let proxyDetected = false;
+      let fraudResult = { trustScore: 100, incidents: [] as any[] };
 
       try {
-        const result = await fraudService.analyzeScan({
+        fraudResult = await fraudService.analyzeScan({
           qrCodeId,
           scanId: scan.id,
           clientIpHash,
@@ -89,9 +92,9 @@ function createScanWorker(): Worker<ScanJobData> {
           metadata,
         });
 
-        trustScore = result.trustScore;
+        trustScore = fraudResult.trustScore;
         proxyDetected =
-          result.incidents.some((i) => i.type === 'PROXY_DETECTED');
+          fraudResult.incidents.some((i: any) => i.type === 'PROXY_DETECTED');
       } catch (err) {
         // Fraud analysis failure must not block the scan record from being
         // committed – log and proceed with default values.
@@ -106,6 +109,20 @@ function createScanWorker(): Worker<ScanJobData> {
         where: { id: scan.id },
         data: { trustScore, proxyDetected },
       });
+
+      // Step 4 – enqueue feature extraction + dynamic rule evaluation (fire-and-forget).
+      const qrCode = await db.qRCode.findUnique({
+        where: { id: qrCodeId },
+        select: { organizationId: true },
+      });
+      fraudQueue.add('extract-features', {
+        scanId: scan.id,
+        qrCodeId: job.data.qrCodeId,
+        orgId: qrCode?.organizationId,
+        clientIpHash: job.data.clientIpHash,
+        userAgent: job.data.userAgent,
+        trustScore: fraudResult.trustScore,
+      }).catch(() => {}); // fire-and-forget
     },
     {
       connection: createQueueConnection(),
@@ -119,21 +136,56 @@ function createScanWorker(): Worker<ScanJobData> {
 // ---------------------------------------------------------------------------
 
 /**
- * Passthrough worker reserved for a future ML fraud-detection pipeline.
+ * Real-time feature extraction and dynamic rule evaluation worker.
  *
- * Fraud analysis currently runs inline inside the scan worker. This queue
- * exists so that an external ML service can be plugged in later without
- * changing the queue topology.
+ * Receives jobs enqueued by the scan worker after inline fraud analysis.
+ * Extracts Redis-backed feature vectors and evaluates dynamic DB rules,
+ * creating additional FraudIncident rows for any newly fired rules.
  */
 function createFraudWorker(): Worker {
   return new Worker(
     'vqr-fraud',
     async (job: Job) => {
-      // Future: forward to ML pipeline, persist raw feature vectors, etc.
-      console.info(
-        `[fraud-worker] received job ${job.id} (name: ${job.name}) — ` +
-          'no-op placeholder, reserved for ML pipeline.',
-      );
+      const { scanId, qrCodeId, orgId, clientIpHash, userAgent, trustScore } = job.data;
+
+      const featureService = new FeatureExtractionService();
+      const ruleEngine = new DynamicRuleEngine(db);
+
+      // 1. Extract features
+      const features = await featureService.extractFeatures({
+        qrCodeId,
+        clientIpHash,
+        userAgent,
+        trustScore,
+      });
+
+      // 2. Evaluate dynamic rules
+      const firedRules = await ruleEngine.evaluate(features);
+
+      // 3. Create incidents for fired rules
+      for (const result of firedRules) {
+        try {
+          await db.fraudIncident.create({
+            data: {
+              qrCodeId,
+              scanId,
+              type: result.action.type as any,
+              severity: result.action.severity as any,
+              details: {
+                reason: result.action.reason,
+                ruleName: result.ruleName,
+                ruleId: result.ruleId,
+                features,
+              } as any,
+            },
+          });
+        } catch {
+          // Ignore duplicate incidents
+        }
+      }
+
+      // 4. Store features for batch flush
+      await featureService.storePendingFeatures(scanId || 'unknown', orgId || 'unknown', features);
     },
     {
       connection: createQueueConnection(),

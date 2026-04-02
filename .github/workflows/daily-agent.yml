@@ -1,0 +1,35 @@
+name: Daily AI Analysis
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  analyze:
+    name: Run AI Agent
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npx prisma generate --schema=packages/api/prisma/schema.prisma
+
+      - name: Create env file
+        run: |
+          echo "DATABASE_URL=${{ secrets.PROD_DATABASE_URL }}" > packages/api/.env
+          echo "REDIS_URL=${{ secrets.PROD_REDIS_URL }}" >> packages/api/.env
+          echo "JWT_SECRET=agent-does-not-need-this-but-config-requires-it-32chars" >> packages/api/.env
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> packages/api/.env
+          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> packages/api/.env
+
+      - name: Run analysis
+        run: npx tsx packages/api/src/agent/daily-analysis.ts
+        timeout-minutes: 10

@@ -77,6 +77,7 @@ export const endpoints = {
     heatmap: '/api/v1/analytics/heatmap',
     fraud: '/api/v1/analytics/fraud',
     summary: '/api/v1/analytics/summary',
+    fraudRules: '/api/v1/analytics/fraud-rules',
   },
   verify: {
     check: (token: string) => `/v/${token}`,

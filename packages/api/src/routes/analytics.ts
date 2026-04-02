@@ -279,6 +279,47 @@ export default async function analyticsRoutes(fastify: FastifyInstance): Promise
   });
 
   // -------------------------------------------------------------------------
+  // GET /fraud-rules — List all dynamic fraud rules
+  // -------------------------------------------------------------------------
+
+  fastify.get('/fraud-rules', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER')],
+  }, async (_request, reply) => {
+    const rules = await fastify.prisma.fraudRule.findMany({
+      orderBy: { priority: 'asc' },
+    });
+    return reply.send({ data: rules });
+  });
+
+  // -------------------------------------------------------------------------
+  // PATCH /fraud-rules/:id — Enable/disable or update a rule
+  // -------------------------------------------------------------------------
+
+  fastify.patch('/fraud-rules/:id', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN')],
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { enabled?: boolean; conditions?: any; action?: any; priority?: number };
+
+    const rule = await fastify.prisma.fraudRule.update({
+      where: { id },
+      data: {
+        ...(body.enabled !== undefined ? { enabled: body.enabled } : {}),
+        ...(body.conditions ? { conditions: body.conditions } : {}),
+        ...(body.action ? { action: body.action } : {}),
+        ...(body.priority !== undefined ? { priority: body.priority } : {}),
+        version: { increment: 1 },
+      },
+    });
+
+    // Bust the rule cache so changes take effect immediately
+    const { cacheDel } = await import('../lib/cache.js');
+    await cacheDel('fraud_rules:active');
+
+    return reply.send(rule);
+  });
+
+  // -------------------------------------------------------------------------
   // GET /summary — Aggregated dashboard statistics
   // -------------------------------------------------------------------------
 

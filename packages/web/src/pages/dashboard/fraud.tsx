@@ -111,6 +111,37 @@ export default function FraudPage() {
   const [resolveNote, setResolveNote] = useState('');
   const [resolving, setResolving] = useState(false);
 
+  // Dynamic fraud rules
+  const [fraudRules, setFraudRules] = useState<any[]>([]);
+  const [loadingRules, setLoadingRules] = useState(true);
+
+  const fetchRules = useCallback(async () => {
+    try {
+      const res = await axios.get(endpoints.analytics.fraudRules);
+      setFraudRules(res.data.data ?? []);
+    } catch {
+      // rules may not exist yet — ignore
+    } finally {
+      setLoadingRules(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRules();
+  }, [fetchRules]);
+
+  const handleToggleRule = async (ruleId: string, currentEnabled: boolean) => {
+    try {
+      await axios.patch(`${endpoints.analytics.fraudRules}/${ruleId}`, {
+        enabled: !currentEnabled,
+      });
+      showSuccess(`Rule ${currentEnabled ? 'disabled' : 'enabled'}`);
+      fetchRules();
+    } catch (err: unknown) {
+      showError((err as Error).message || 'Failed to update rule');
+    }
+  };
+
   const fetchIncidents = useCallback(async () => {
     setLoading(true);
     try {
@@ -729,6 +760,92 @@ export default function FraudPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dynamic Fraud Rules */}
+      <Card sx={{ mt: 3 }}>
+        <CardHeader
+          title="Dynamic Fraud Rules"
+          subheader="Rules evaluated on every QR code scan — managed by AI and admins"
+        />
+        {loadingRules ? (
+          <CardContent sx={{ textAlign: 'center', py: 3 }}>
+            <CircularProgress size={24} />
+          </CardContent>
+        ) : (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Rule</TableCell>
+                  <TableCell>Conditions</TableCell>
+                  <TableCell>Action</TableCell>
+                  <TableCell>Source</TableCell>
+                  <TableCell align="right">Enabled</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {fraudRules.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography color="text.secondary" variant="body2">
+                        No dynamic rules yet. The AI agent will create rules automatically after analyzing scan patterns.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  fraudRules.map((rule: any) => (
+                    <TableRow key={rule.id} hover>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600}>{rule.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{rule.description}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          {(rule.conditions as any[]).map((c: any, i: number) => (
+                            <Chip
+                              key={i}
+                              label={`${c.field} ${c.operator} ${JSON.stringify(c.value)}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontFamily: 'monospace', fontSize: 11 }}
+                            />
+                          ))}
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={`-${(rule.action as any).deductScore} trust`}
+                          size="small"
+                          color={SEVERITY_COLORS[(rule.action as any).severity] || 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={rule.source}
+                          size="small"
+                          variant="outlined"
+                          color={rule.source === 'agent' ? 'info' : 'default'}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          size="small"
+                          variant={rule.enabled ? 'contained' : 'outlined'}
+                          color={rule.enabled ? 'success' : 'inherit'}
+                          onClick={() => handleToggleRule(rule.id, rule.enabled)}
+                          sx={{ minWidth: 70 }}
+                        >
+                          {rule.enabled ? 'ON' : 'OFF'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Card>
     </>
   );
 }

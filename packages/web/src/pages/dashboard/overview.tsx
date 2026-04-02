@@ -92,6 +92,7 @@ export default function OverviewPage() {
   const [stats, setStats] = useState<Summary | null>(null);
   const [recentScans, setRecentScans] = useState<RecentScan[]>([]);
   const [topQRCodes, setTopQRCodes] = useState<QRCodeItem[]>([]);
+  const [fraudRuleCount, setFraudRuleCount] = useState(0);
 
   useEffect(() => {
     // Fetch all in parallel
@@ -106,6 +107,13 @@ export default function OverviewPage() {
         setTopQRCodes(qrRes.data.data ?? []);
       })
       .catch((err: any) => showError(err.message || 'Failed to load dashboard'));
+
+    axios
+      .get(endpoints.analytics.fraudRules)
+      .then((r) =>
+        setFraudRuleCount((r.data.data || []).filter((rule: any) => rule.enabled).length)
+      )
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -337,6 +345,47 @@ export default function OverviewPage() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* AI Security Monitoring */}
+      <Card sx={{ mt: 3 }}>
+        <CardHeader
+          title="AI Security Monitoring"
+          subheader="Automated fraud detection with dynamic rules"
+          action={
+            <Chip
+              label="Active"
+              color="success"
+              size="small"
+              variant="outlined"
+            />
+          }
+        />
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Box sx={{ textAlign: 'center', p: 2, borderRadius: 1, bgcolor: 'background.neutral' }}>
+                <Typography variant="h4" color="primary.main">{fraudRuleCount}</Typography>
+                <Typography variant="body2" color="text.secondary">Active Fraud Rules</Typography>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Box sx={{ textAlign: 'center', p: 2, borderRadius: 1, bgcolor: 'background.neutral' }}>
+                <Typography variant="h4" color="info.main">6</Typography>
+                <Typography variant="body2" color="text.secondary">Detection Signals</Typography>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <Box sx={{ textAlign: 'center', p: 2, borderRadius: 1, bgcolor: 'background.neutral' }}>
+                <Typography variant="h4" color="success.main">24/7</Typography>
+                <Typography variant="body2" color="text.secondary">Real-Time Monitoring</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Dynamic rules are evaluated on every QR code scan. The AI agent analyzes patterns daily and creates new rules automatically.
+          </Typography>
+        </CardContent>
+      </Card>
     </>
   );
 }

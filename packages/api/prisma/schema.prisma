@@ -399,3 +399,51 @@ model AuthSession {
   @@index([status, expiresAt])
   @@map("auth_sessions")
 }
+
+model AnalyticsSnapshot {
+  id          String   @id @default(cuid())
+  type        String
+  entityType  String
+  entityId    String
+  periodStart DateTime
+  periodEnd   DateTime
+  data        Json
+  createdAt   DateTime @default(now())
+
+  @@index([type, entityType, periodStart])
+  @@index([entityId, type])
+  @@map("analytics_snapshots")
+}
+
+model FraudRule {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  enabled     Boolean  @default(true)
+  priority    Int      @default(100)
+  conditions  Json
+  action      Json
+  source      String   @default("system")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled, priority])
+  @@map("fraud_rules")
+}
+
+model AgentRun {
+  id            String    @id @default(cuid())
+  runType       String
+  status        String
+  inputSummary  Json?
+  outputSummary Json?
+  tokensUsed    Int?
+  durationMs    Int?
+  error         String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([runType, createdAt])
+  @@map("agent_runs")
+}
