@@ -113,9 +113,25 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
 
   <script>
     (function() {
+      // Origin integrity check
       var h = ['vqr.io', 'vqr.progressnet.io', 'localhost'];
       if (!h.some(function(d) { return location.hostname === d || location.hostname.endsWith('.' + d); })) {
         document.getElementById('origin-warning').style.display = 'block';
+      }
+
+      // Request GPS and re-verify with location for proximity check
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          var lat = pos.coords.latitude;
+          var lng = pos.coords.longitude;
+          // Reload with coordinates to get location match
+          var url = new URL(window.location.href);
+          if (!url.searchParams.has('clientLat')) {
+            url.searchParams.set('clientLat', lat.toFixed(6));
+            url.searchParams.set('clientLng', lng.toFixed(6));
+            window.location.replace(url.toString());
+          }
+        }, function() {}, { timeout: 5000, maximumAge: 60000 });
       }
     })();
   </script>
