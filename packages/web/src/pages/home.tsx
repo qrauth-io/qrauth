@@ -500,6 +500,133 @@ export default function HomePage() {
       </Box>
 
       {/* ============================================================ */}
+      {/* AI SECURITY ANALYST */}
+      {/* ============================================================ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#0f1724', color: 'white' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={6} alignItems="center">
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Chip
+                label="AI-Powered"
+                size="small"
+                sx={{ mb: 2, bgcolor: 'rgba(0,167,111,0.2)', color: '#00A76F', fontWeight: 600 }}
+              />
+              <Typography variant="h3" fontWeight={800} sx={{ mb: 2 }}>
+                An AI Security Analyst
+                <br />
+                That Never Sleeps
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ mb: 4, color: 'rgba(255,255,255,0.8)', lineHeight: 1.8, maxWidth: 480 }}
+              >
+                Our Claude-powered AI agent analyzes every scan, every login, every pattern —
+                24 hours a day. It discovers new attack vectors, creates fraud rules in real-time,
+                and sends you a daily security briefing.
+              </Typography>
+              <Stack spacing={2}>
+                {[
+                  { icon: '🔍', text: 'Analyzes scan patterns, fraud incidents, and login events daily' },
+                  { icon: '🧠', text: 'Discovers new attack patterns not caught by existing rules' },
+                  { icon: '⚡', text: 'Creates dynamic fraud rules that go live in under 60 seconds' },
+                  { icon: '📊', text: 'Generates daily security reports emailed to your team' },
+                  { icon: '🔄', text: 'Adaptive trust scoring — learns from false positives automatically' },
+                ].map((item) => (
+                  <Stack key={item.text} direction="row" spacing={1.5} alignItems="flex-start">
+                    <Typography sx={{ fontSize: 20, lineHeight: 1.4 }}>{item.icon}</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)' }}>
+                      {item.text}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              {/* Terminal-style AI agent output */}
+              <Box
+                sx={{
+                  bgcolor: '#1a1a2e',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                }}
+              >
+                {/* Terminal header */}
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    bgcolor: '#16213e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#FF5630' }} />
+                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#FFAB00' }} />
+                  <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#00A76F' }} />
+                  <Typography
+                    variant="caption"
+                    sx={{ ml: 1, color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}
+                  >
+                    vqr-ai-agent — daily-analysis
+                  </Typography>
+                </Box>
+                {/* Terminal body */}
+                <Box sx={{ p: 2.5, fontFamily: 'monospace', fontSize: 12, lineHeight: 1.8 }}>
+                  <Box sx={{ color: '#637381' }}>[06:00 UTC] Starting daily analysis...</Box>
+                  <Box sx={{ color: '#00A76F' }}>
+                    [agent] Calling tool: query_scan_patterns
+                  </Box>
+                  <Box sx={{ color: '#00A76F' }}>
+                    [agent] Calling tool: query_fraud_incidents
+                  </Box>
+                  <Box sx={{ color: '#00A76F' }}>
+                    [agent] Calling tool: query_login_events
+                  </Box>
+                  <Box sx={{ color: '#00A76F' }}>
+                    [agent] Calling tool: query_org_activity
+                  </Box>
+                  <Box sx={{ color: '#FFAB00', mt: 1 }}>
+                    [discovery] New pattern: IP cluster from ASN 12345
+                  </Box>
+                  <Box sx={{ color: '#FFAB00' }}>
+                    [discovery] 3 orgs with similar domain registrations
+                  </Box>
+                  <Box sx={{ color: '#00A76F', mt: 1 }}>
+                    [agent] Calling tool: create_fraud_rule
+                  </Box>
+                  <Box sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    → Rule &quot;ASN-12345 Cluster&quot; created (live in 60s)
+                  </Box>
+                  <Box sx={{ color: '#00A76F', mt: 1 }}>
+                    [agent] Calling tool: write_report
+                  </Box>
+                  <Box sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    → Daily report emailed to admin@company.com
+                  </Box>
+                  <Box sx={{ color: '#637381', mt: 1 }}>
+                    [agent] Done. 6 iterations, 24,499 tokens, 62s
+                  </Box>
+                  <Box
+                    sx={{
+                      mt: 1,
+                      display: 'inline-block',
+                      width: 8,
+                      height: 16,
+                      bgcolor: '#00A76F',
+                      animation: 'blink 1s step-end infinite',
+                      '@keyframes blink': { '50%': { opacity: 0 } },
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ============================================================ */}
       {/* FOR DEVELOPERS — SDK */}
       {/* ============================================================ */}
       <Box id="developers" sx={{ py: { xs: 8, md: 12 } }}>
