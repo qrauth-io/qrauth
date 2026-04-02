@@ -84,13 +84,145 @@ const TYPE_LABELS: Record<string, string> = {
   GEO_IMPOSSIBLE: 'Geo Impossibility',
 };
 
-const DETAIL_REASONS: Record<string, string> = {
-  scan_velocity: 'Unusual scan volume detected',
-  bot_detected: 'Automated scanner / bot detected',
-  device_clustering: 'Same device scanning many QR codes',
-  duplicate_location: 'Another org has a QR code at this location',
-  geo_impossible: 'Same IP scanned from impossible distance',
-  proxy_detected: 'VPN or proxy connection detected',
+const FRAUD_GUIDE = [
+  {
+    icon: '📍',
+    title: 'Duplicate Location',
+    severity: 'HIGH',
+    severityColor: 'error',
+    description:
+      'Another organization has registered a QR code within 20 meters of yours. This could indicate someone placed a fake QR sticker near your legitimate one.',
+    prevention:
+      'Regularly inspect physical QR code locations. Use tamper-evident stickers. Enable location binding on all QR codes.',
+  },
+  {
+    icon: '🌐',
+    title: 'Proxy / VPN Detection',
+    severity: 'MEDIUM',
+    severityColor: 'warning',
+    description:
+      'A scan came through a VPN or proxy server. While some users legitimately use VPNs, this can also indicate someone is trying to hide their real location or relay traffic.',
+    prevention:
+      'Monitor proxy detection rates. High rates on specific QR codes may indicate targeted attacks.',
+  },
+  {
+    icon: '✈️',
+    title: 'Geo-Impossibility',
+    severity: 'CRITICAL',
+    severityColor: 'error',
+    description:
+      'The same device scanned from two locations more than 500km apart within 30 minutes — physically impossible. Strong indicator of a cloned QR code or proxy attack.',
+    prevention:
+      'Investigate immediately. Check if the physical QR code has been tampered with. Consider revoking and reissuing.',
+  },
+  {
+    icon: '⚡',
+    title: 'Scan Velocity',
+    severity: 'MEDIUM',
+    severityColor: 'warning',
+    description:
+      'An unusually high number of scans in a short period (50+ in 5 minutes). Could indicate automated scanning, bot activity, or a denial-of-service attempt.',
+    prevention: 'Normal at busy events. Investigate if it happens on low-traffic QR codes.',
+  },
+  {
+    icon: '🤖',
+    title: 'Bot Detection',
+    severity: 'MEDIUM',
+    severityColor: 'warning',
+    description:
+      'The scan came from an automated tool (bot, crawler, or script) rather than a real phone browser. Bots may be probing your QR codes for vulnerabilities.',
+    prevention:
+      'Bot scans on public QR codes are normal (search engines). Investigate if bots target specific codes repeatedly.',
+  },
+  {
+    icon: '🔗',
+    title: 'Device Clustering',
+    severity: 'HIGH',
+    severityColor: 'error',
+    description:
+      'The same IP address scanned 20+ different QR codes within one hour. May indicate someone systematically scanning your QR codes to map your infrastructure.',
+    prevention:
+      'Normal at events with shared WiFi. Investigate if it occurs from unexpected IPs or targets specific codes.',
+  },
+];
+
+const SECURITY_TIPS = [
+  {
+    title: 'Verify your domain',
+    description:
+      'Go to Settings → Domain and add a DNS TXT record. Verified domains show a green badge on scan pages and get priority in phishing detection.',
+  },
+  {
+    title: 'Complete KYC verification',
+    description:
+      "Submit your organization's identity verification. Verified organizations get higher trust scores and a \"KYC Verified\" badge.",
+  },
+  {
+    title: 'Enable location binding',
+    description:
+      'When creating QR codes, always set the latitude and longitude. This enables proximity checks — scanners see if they\'re near the registered location.',
+  },
+  {
+    title: 'Use tamper-evident stickers',
+    description:
+      'Print QR codes on destructible vinyl that shows visible damage if someone tries to peel and replace them.',
+  },
+  {
+    title: 'Monitor the fraud dashboard daily',
+    description:
+      'Acknowledge and resolve incidents promptly. The AI agent analyzes patterns and creates new rules, but human review catches what automation misses.',
+  },
+  {
+    title: 'Rotate signing keys periodically',
+    description: 'Go to Settings → Signing Keys → Rotate. Old QR codes continue to work, but new ones use the fresh key.',
+  },
+];
+
+const DETAIL_REASONS: Record<string, { label: string; action: string }> = {
+  scan_velocity: {
+    label: 'Unusual scan volume detected',
+    action: 'Check if QR is at a busy location or being attacked',
+  },
+  scan_velocity_dynamic: {
+    label: 'Dynamic rule: high scan velocity',
+    action: 'Review scan patterns for this QR code',
+  },
+  bot_detected: {
+    label: 'Automated scanner detected',
+    action: 'Normal for public QR codes — investigate if targeted',
+  },
+  bot_detected_dynamic: {
+    label: 'Dynamic rule: bot activity',
+    action: 'Check if specific bots are targeting your codes',
+  },
+  device_clustering: {
+    label: 'Same device scanning many QR codes',
+    action: 'Could be shared WiFi at events — check the IP',
+  },
+  device_clustering_dynamic: {
+    label: 'Dynamic rule: device clustering',
+    action: 'Review IP patterns',
+  },
+  duplicate_location: {
+    label: "Another org's QR code nearby",
+    action: 'Inspect the physical location for fake stickers',
+  },
+  geo_impossible: {
+    label: 'Impossible travel distance',
+    action: 'Check if QR code was physically tampered with',
+  },
+  proxy_detected: {
+    label: 'VPN/proxy connection',
+    action: 'Monitor — legitimate users sometimes use VPNs',
+  },
+  suspicious_domain: {
+    label: 'Domain looks like a verified org',
+    action: 'Potential phishing — review the destination URL',
+  },
+  night_scan_anomaly: {
+    label: 'Unusual night-time scanning',
+    action: 'Review if scans at odd hours are expected',
+  },
 };
 
 export default function FraudPage() {
@@ -114,6 +246,8 @@ export default function FraudPage() {
   const [resolving, setResolving] = useState(false);
 
   // Dynamic fraud rules
+  const [showGuide, setShowGuide] = useState(false);
+
   const [fraudRules, setFraudRules] = useState<any[]>([]);
   const [loadingRules, setLoadingRules] = useState(true);
 
@@ -302,6 +436,103 @@ export default function FraudPage() {
         </Grid>
       </Grid>
 
+      {/* Security Guide */}
+      <Card sx={{ mb: 3 }}>
+        <CardHeader
+          title="Understanding Fraud Detection"
+          subheader="How vQR protects your QR codes"
+          action={
+            <Button size="small" onClick={() => setShowGuide(!showGuide)}>
+              {showGuide ? 'Hide' : 'Learn More'}
+            </Button>
+          }
+        />
+        {showGuide && (
+          <CardContent>
+            <Grid container spacing={3}>
+              {FRAUD_GUIDE.map((item) => (
+                <Grid key={item.title} size={{ xs: 12, md: 6 }}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                      <Box sx={{ fontSize: 28, lineHeight: 1 }}>{item.icon}</Box>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          {item.title}
+                        </Typography>
+                        <Chip
+                          label={item.severity}
+                          size="small"
+                          color={item.severityColor as any}
+                          sx={{ my: 0.5 }}
+                        />
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mt: 0.5, lineHeight: 1.6 }}
+                        >
+                          {item.description}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="primary.main"
+                          sx={{ mt: 1, display: 'block', fontWeight: 600 }}
+                        >
+                          Prevention: {item.prevention}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+              How to Improve Your Security Score
+            </Typography>
+            <Stack spacing={1.5}>
+              {SECURITY_TIPS.map((tip, i) => (
+                <Stack key={i} direction="row" spacing={1.5} alignItems="flex-start">
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      fontSize: 12,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {i + 1}
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>
+                      {tip.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {tip.description}
+                    </Typography>
+                  </Box>
+                </Stack>
+              ))}
+            </Stack>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Filters */}
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
         <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -409,10 +640,31 @@ export default function FraudPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Typography variant="caption" color="text.secondary">
-                            {DETAIL_REASONS[incident.details?.reason as string] ||
-                              JSON.stringify(incident.details).slice(0, 60)}
-                          </Typography>
+                          {(() => {
+                            const reason =
+                              DETAIL_REASONS[incident.details?.reason as string];
+                            if (reason) {
+                              return (
+                                <Box>
+                                  <Typography variant="caption" fontWeight={600}>
+                                    {reason.label}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    display="block"
+                                  >
+                                    {reason.action}
+                                  </Typography>
+                                </Box>
+                              );
+                            }
+                            return (
+                              <Typography variant="caption" color="text.secondary">
+                                {JSON.stringify(incident.details).slice(0, 60)}
+                              </Typography>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <Stack direction="row" spacing={0.5}>
@@ -544,10 +796,47 @@ export default function FraudPage() {
               <Typography variant="subtitle2" color="text.secondary">
                 Description
               </Typography>
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                {DETAIL_REASONS[selectedIncident.details?.reason as string] ||
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                {DETAIL_REASONS[selectedIncident.details?.reason as string]?.label ||
                   'Fraud signal detected during scan analysis.'}
               </Typography>
+              {DETAIL_REASONS[selectedIncident.details?.reason as string]?.action && (
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                  {DETAIL_REASONS[selectedIncident.details?.reason as string].action}
+                </Typography>
+              )}
+              {(() => {
+                const typeMap: Record<string, string> = {
+                  'Duplicate Location': 'DUPLICATE_LOCATION',
+                  'Proxy / VPN Detection': 'PROXY_DETECTED',
+                  'Geo-Impossibility': 'GEO_IMPOSSIBLE',
+                  'Scan Velocity': 'PATTERN_ANOMALY',
+                  'Bot Detection': 'PATTERN_ANOMALY',
+                  'Device Clustering': 'PATTERN_ANOMALY',
+                };
+                const guide = FRAUD_GUIDE.find((g) => typeMap[g.title] === selectedIncident.type);
+                if (!guide) return null;
+                return (
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      mt: 1,
+                      borderRadius: 1,
+                      bgcolor: 'info.lighter',
+                      border: '1px solid',
+                      borderColor: 'info.light',
+                    }}
+                  >
+                    <Typography variant="caption" fontWeight={700} color="info.dark">
+                      Prevention tip
+                    </Typography>
+                    <Typography variant="caption" display="block" color="info.dark">
+                      {guide.prevention}
+                    </Typography>
+                  </Box>
+                );
+              })()}
+              <Box sx={{ mb: 2 }} />
 
               <Divider sx={{ my: 2 }} />
 
