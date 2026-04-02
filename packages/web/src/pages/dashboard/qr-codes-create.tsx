@@ -38,7 +38,7 @@ const DEFAULT_STYLE: QRStyle = {
 
 // ----------------------------------------------------------------------
 
-function PreviewVerifyBar() {
+export function PreviewVerifyBar() {
   return (
     <Box sx={{ px: 2, py: 1, bgcolor: '#00A76F', color: 'white', display: 'flex', alignItems: 'center', gap: 1, fontSize: 12, fontWeight: 600 }}>
       <span>&#10003;</span> Verified by vQR
@@ -46,7 +46,7 @@ function PreviewVerifyBar() {
   );
 }
 
-function PreviewFooter() {
+export function PreviewFooter() {
   return (
     <Box sx={{ p: 1.5, textAlign: 'center', borderTop: '1px solid #f0f0f0', fontSize: 10, color: '#919eab' }}>
       Secured by <strong>vQR</strong>
@@ -54,7 +54,7 @@ function PreviewFooter() {
   );
 }
 
-function PreviewFieldRow({ icon, iconBg, label, value }: { icon: string; iconBg: string; label: string; value: string }) {
+export function PreviewFieldRow({ icon, iconBg, label, value }: { icon: string; iconBg: string; label: string; value: string }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.5, borderBottom: '1px solid #f5f5f5', px: 2 }}>
       <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
