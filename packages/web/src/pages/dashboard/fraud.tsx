@@ -775,6 +775,7 @@ export default function FraudPage() {
         anchor="right"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
         PaperProps={{ sx: { width: { xs: '100%', sm: 420 } } }}
       >
         {loadingDetail ? (
