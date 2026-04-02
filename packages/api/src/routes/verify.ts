@@ -329,7 +329,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
         fingerprint: proofHmac.slice(0, 12),
       };
       const contentType = (qrCode.contentType as string) || 'url';
-      const renderer = getRenderer(contentType);
+      const renderer = await getRenderer(contentType);
 
       if (renderer) {
         const renderCtx: RenderContext = {

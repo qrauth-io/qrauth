@@ -51,10 +51,16 @@ export function registerRenderer(contentType: string, renderer: ContentRenderer)
   renderers[contentType] = renderer;
 }
 
-export function getRenderer(contentType: string): ContentRenderer | undefined {
+let initialized = false;
+
+export async function getRenderer(contentType: string): Promise<ContentRenderer | undefined> {
+  if (!initialized) {
+    // Lazy-load renderers to avoid circular initialization
+    const urlMod = await import('./url.js');
+    const vcardMod = await import('./vcard.js');
+    if (urlMod.default) registerRenderer('url', urlMod.default);
+    if (vcardMod.default) registerRenderer('vcard', vcardMod.default);
+    initialized = true;
+  }
   return renderers[contentType];
 }
-
-// Import renderers to trigger registration
-import './url.js';
-import './vcard.js';

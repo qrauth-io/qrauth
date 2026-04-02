@@ -1,4 +1,3 @@
-import { registerRenderer } from './index.js';
 import { esc } from './utils.js';
 import type { RenderContext } from './index.js';
 
@@ -32,4 +31,4 @@ function renderUrlContent(ctx: RenderContext): string {
   `;
 }
 
-registerRenderer('url', renderUrlContent);
+export default renderUrlContent;

@@ -1,4 +1,3 @@
-import { registerRenderer } from './index.js';
 import { esc } from './utils.js';
 import type { RenderContext } from './index.js';
 
@@ -126,4 +125,4 @@ function renderVCardContent(ctx: RenderContext): string {
   `;
 }
 
-registerRenderer('vcard', renderVCardContent);
+export default renderVCardContent;
