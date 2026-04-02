@@ -81,9 +81,11 @@ function createScanWorker(): Worker<ScanJobData> {
       try {
         const result = await fraudService.analyzeScan({
           qrCodeId,
+          scanId: scan.id,
           clientIpHash,
           clientLat,
           clientLng,
+          userAgent: userAgent ?? undefined,
           metadata,
         });
 

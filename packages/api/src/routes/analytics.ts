@@ -202,6 +202,83 @@ export default async function analyticsRoutes(fastify: FastifyInstance): Promise
   });
 
   // -------------------------------------------------------------------------
+  // GET /fraud/:id — Incident detail
+  // -------------------------------------------------------------------------
+
+  fastify.get('/fraud/:id', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER', 'MEMBER', 'VIEWER')],
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const organizationId = request.user!.orgId;
+
+    const incident = await fastify.prisma.fraudIncident.findFirst({
+      where: { id, qrCode: { organizationId } },
+      include: {
+        qrCode: { select: { token: true, label: true, destinationUrl: true, latitude: true, longitude: true } },
+        scan: { select: { id: true, clientIpHash: true, clientLat: true, clientLng: true, userAgent: true, trustScore: true, createdAt: true } },
+      },
+    });
+
+    if (!incident) {
+      return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Incident not found' });
+    }
+
+    return reply.send(incident);
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /fraud/:id/acknowledge — Acknowledge an incident
+  // -------------------------------------------------------------------------
+
+  fastify.post('/fraud/:id/acknowledge', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER')],
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const organizationId = request.user!.orgId;
+
+    const incident = await fastify.prisma.fraudIncident.findFirst({
+      where: { id, qrCode: { organizationId } },
+    });
+    if (!incident) return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Incident not found' });
+
+    const updated = await fastify.prisma.fraudIncident.update({
+      where: { id },
+      data: { acknowledgedAt: new Date() },
+    });
+
+    return reply.send(updated);
+  });
+
+  // -------------------------------------------------------------------------
+  // POST /fraud/:id/resolve — Resolve an incident
+  // -------------------------------------------------------------------------
+
+  fastify.post('/fraud/:id/resolve', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER')],
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { note?: string } | undefined;
+    const organizationId = request.user!.orgId;
+
+    const incident = await fastify.prisma.fraudIncident.findFirst({
+      where: { id, qrCode: { organizationId } },
+    });
+    if (!incident) return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Incident not found' });
+
+    const updated = await fastify.prisma.fraudIncident.update({
+      where: { id },
+      data: {
+        resolved: true,
+        resolvedAt: new Date(),
+        resolvedBy: request.user!.id,
+        resolutionNote: body?.note || null,
+      },
+    });
+
+    return reply.send(updated);
+  });
+
+  // -------------------------------------------------------------------------
   // GET /summary — Aggregated dashboard statistics
   // -------------------------------------------------------------------------
 

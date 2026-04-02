@@ -5,6 +5,7 @@ import { rateLimitPublic } from '../middleware/rateLimit.js';
 import { SigningService } from '../services/signing.js';
 import { GeoService } from '../services/geo.js';
 import { TransparencyLogService } from '../services/transparency.js';
+import { FraudDetectionService } from '../services/fraud.js';
 import { cacheGet, cacheSet } from '../lib/cache.js';
 import { hashString } from '../lib/crypto.js';
 import { scanQueue } from '../lib/queue.js';
@@ -56,6 +57,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
   const signingService = new SigningService(fastify.prisma);
   const geoService = new GeoService(fastify.prisma);
   const transparencyService = new TransparencyLogService(fastify.prisma);
+  const fraudService = new FraudDetectionService(fastify.prisma, geoService, null as any);
 
   // -------------------------------------------------------------------------
   // GET /:token — Core verification (public, no auth)
@@ -227,14 +229,19 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
     // ------------------------------------------------------------------
     // 7. Build response and populate cache (static parts only)
     // ------------------------------------------------------------------
+
+    // Compute real-time trust score based on fraud history
+    const trustScore = await fraudService.getQuickTrustScore(qrCode.id);
+
     const staticParts = {
-      verified: signatureValid,
+      verified: signatureValid && trustScore > 20,
+      ...(signatureValid && trustScore <= 20 ? { reason: 'QR code has a critically low trust score due to detected fraud.' } : {}),
       organization: qrCode.organization,
       destination_url: qrCode.destinationUrl,
       security: {
         signatureValid,
-        proxyDetected: false, // populated by scan worker post-response
-        trustScore: 100,      // populated by scan worker post-response
+        proxyDetected: false,
+        trustScore,
         transparencyLogVerified,
       },
     };

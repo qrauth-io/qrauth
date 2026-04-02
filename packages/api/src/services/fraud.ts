@@ -7,6 +7,7 @@ import type {
 } from '@prisma/client';
 import type { AlertService } from './alerts.js';
 import { haversineDistance, type GeoService } from './geo.js';
+import { parseUserAgent } from '../lib/metadata.js';
 
 // ---------------------------------------------------------------------------
 // Input / output shapes
@@ -14,9 +15,11 @@ import { haversineDistance, type GeoService } from './geo.js';
 
 export interface ScanAnalysisInput {
   qrCodeId: string;
+  scanId?: string;
   clientIpHash: string;
   clientLat?: number;
   clientLng?: number;
+  userAgent?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -126,6 +129,7 @@ export class FraudDetectionService {
         const incident = await this.prisma.fraudIncident.create({
           data: {
             qrCodeId: qrCode.id,
+            scanId: input.scanId,
             type: 'DUPLICATE_LOCATION',
             severity: 'HIGH',
             details: {
@@ -153,6 +157,7 @@ export class FraudDetectionService {
       const incident = await this.prisma.fraudIncident.create({
         data: {
           qrCodeId: qrCode.id,
+          scanId: input.scanId,
           type: 'PROXY_DETECTED',
           severity: 'MEDIUM',
           details: {
@@ -209,6 +214,7 @@ export class FraudDetectionService {
         const incident = await this.prisma.fraudIncident.create({
           data: {
             qrCodeId: qrCode.id,
+            scanId: input.scanId,
             type: 'GEO_IMPOSSIBLE',
             severity: 'CRITICAL',
             details: {
@@ -227,6 +233,73 @@ export class FraudDetectionService {
 
         createdIncidents.push(incident);
       }
+    }
+
+    // ------------------------------------------------------------------
+    // Signal 4: Scan velocity
+    // ------------------------------------------------------------------
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentScanCount = await this.prisma.scan.count({
+      where: {
+        qrCodeId: input.qrCodeId,
+        createdAt: { gte: fiveMinAgo },
+      },
+    });
+    if (recentScanCount > 20) {
+      trustScore -= 20;
+      createdIncidents.push(await this.prisma.fraudIncident.create({
+        data: {
+          qrCodeId: input.qrCodeId,
+          scanId: input.scanId,
+          type: 'PATTERN_ANOMALY',
+          severity: 'MEDIUM',
+          details: { reason: 'scan_velocity', scansIn5Min: recentScanCount, threshold: 20 } as any,
+        },
+      }));
+    }
+
+    // ------------------------------------------------------------------
+    // Signal 5: Bot/Automation detection
+    // ------------------------------------------------------------------
+    if (input.metadata?.userAgent || input.userAgent) {
+      const ua = (input.metadata?.userAgent || input.userAgent) as string;
+      const device = parseUserAgent(ua);
+      if (device.deviceType === 'bot') {
+        trustScore -= 15;
+        createdIncidents.push(await this.prisma.fraudIncident.create({
+          data: {
+            qrCodeId: input.qrCodeId,
+            scanId: input.scanId,
+            type: 'PATTERN_ANOMALY',
+            severity: 'MEDIUM',
+            details: { reason: 'bot_detected', userAgent: ua } as any,
+          },
+        }));
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Signal 6: Device clustering
+    // ------------------------------------------------------------------
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const distinctQRs = await this.prisma.scan.groupBy({
+      by: ['qrCodeId'],
+      where: {
+        clientIpHash: input.clientIpHash,
+        createdAt: { gte: oneHourAgo },
+      },
+    });
+    if (distinctQRs.length >= 5) {
+      trustScore -= 25;
+      createdIncidents.push(await this.prisma.fraudIncident.create({
+        data: {
+          qrCodeId: input.qrCodeId,
+          scanId: input.scanId,
+          type: 'PATTERN_ANOMALY',
+          severity: 'HIGH',
+          details: { reason: 'device_clustering', distinctQRCodes: distinctQRs.length, window: '1h' } as any,
+        },
+      }));
     }
 
     // Clamp trust score to [0, 100].
@@ -307,6 +380,39 @@ export class FraudDetectionService {
       where: { id },
       data: { resolved: true, resolvedAt: new Date() },
     });
+  }
+
+  /**
+   * Quick trust score computation for real-time verification.
+   * Checks recent fraud history for this QR code without full analysis.
+   */
+  async getQuickTrustScore(qrCodeId: string): Promise<number> {
+    let score = 100;
+
+    // Check for active (unresolved) fraud incidents
+    const activeIncidents = await this.prisma.fraudIncident.findMany({
+      where: { qrCodeId, resolved: false },
+      select: { severity: true, type: true },
+    });
+
+    for (const incident of activeIncidents) {
+      switch (incident.severity) {
+        case 'CRITICAL': score -= 40; break;
+        case 'HIGH': score -= 25; break;
+        case 'MEDIUM': score -= 15; break;
+        case 'LOW': score -= 5; break;
+      }
+    }
+
+    // Check scan velocity (last 5 min)
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentScans = await this.prisma.scan.count({
+      where: { qrCodeId, createdAt: { gte: fiveMinAgo } },
+    });
+    if (recentScans > 20) score -= 15;
+    else if (recentScans > 10) score -= 5;
+
+    return Math.max(0, Math.min(100, score));
   }
 
   /**

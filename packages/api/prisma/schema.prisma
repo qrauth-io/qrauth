@@ -171,9 +171,12 @@ model FraudIncident {
   type       FraudType
   severity   FraudSeverity
   details    Json
-  resolved   Boolean       @default(false)
-  resolvedAt DateTime?
-  createdAt  DateTime      @default(now())
+  resolved       Boolean       @default(false)
+  resolvedAt     DateTime?
+  resolvedBy     String?
+  resolutionNote String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime      @default(now())
 
   qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
   scan   Scan?  @relation(fields: [scanId], references: [id])
