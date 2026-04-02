@@ -245,7 +245,7 @@ export class FraudDetectionService {
         createdAt: { gte: fiveMinAgo },
       },
     });
-    if (recentScanCount > 20) {
+    if (recentScanCount > 50) { // Raised from 20 — busy locations can have high scan volume
       trustScore -= 20;
       createdIncidents.push(await this.prisma.fraudIncident.create({
         data: {
@@ -289,7 +289,7 @@ export class FraudDetectionService {
         createdAt: { gte: oneHourAgo },
       },
     });
-    if (distinctQRs.length >= 5) {
+    if (distinctQRs.length >= 20) { // Raised from 5 — shared WiFi at events is normal
       trustScore -= 25;
       createdIncidents.push(await this.prisma.fraudIncident.create({
         data: {
