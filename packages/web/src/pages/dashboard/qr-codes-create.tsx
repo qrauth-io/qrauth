@@ -17,6 +17,8 @@ import CardContent from '@mui/material/CardContent';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
+import { formatDateTime } from 'src/utils/format-date';
+
 import axios, { endpoints } from 'src/lib/axios';
 
 import { useSnackbar } from 'src/components/snackbar';
@@ -124,7 +126,7 @@ function ContentPagePreview({ type, content }: { type: string; content: Record<s
             <Typography variant="h6" fontWeight={800} sx={{ color: '#1B2A4A' }}>{content.headline || 'Your Offer'}</Typography>
             {content.company && <Typography variant="caption" color="text.secondary" display="block">{content.company}</Typography>}
             {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
-            {content.expiresAt && <Typography variant="caption" color="error.main" display="block" sx={{ mt: 1 }}>Expires: {content.expiresAt}</Typography>}
+            {content.expiresAt && <Typography variant="caption" color="error.main" display="block" sx={{ mt: 1 }}>Expires: {formatDateTime(content.expiresAt)}</Typography>}
           </Box>
           {content.redemptionUrl && (
             <Box sx={{ px: 2, pb: 2 }}>
@@ -145,7 +147,7 @@ function ContentPagePreview({ type, content }: { type: string; content: Record<s
             {content.organizer && <Typography variant="caption" color="text.secondary" display="block">by {content.organizer}</Typography>}
             {content.description && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{content.description}</Typography>}
           </Box>
-          {content.startDate && <PreviewFieldRow icon="&#128197;" iconBg="#E3F2FD" label="When" value={content.startDate} />}
+          {content.startDate && <PreviewFieldRow icon="&#128197;" iconBg="#E3F2FD" label="When" value={formatDateTime(content.startDate)} />}
           {content.location && <PreviewFieldRow icon="&#128205;" iconBg="#F3E5F5" label="Where" value={`${content.location}${content.address ? `, ${content.address}` : ''}`} />}
           {content.contactEmail && <PreviewFieldRow icon="&#9993;" iconBg="#E3F2FD" label="Contact" value={content.contactEmail} />}
           <Box sx={{ px: 2, py: 2 }}>
