@@ -162,7 +162,7 @@ async function generateQRCode(
 
   // 7. Check destination domain against verified org domains (non-blocking).
   const domainCheck = await domainService.checkUrlAgainstVerifiedDomains(
-    input.destinationUrl,
+    destinationUrl,
     organizationId,
   );
 
