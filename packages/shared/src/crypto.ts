@@ -66,9 +66,10 @@ export function hashPayload(
   token: string,
   url: string,
   geoHash: string,
-  expiry: string
+  expiry: string,
+  contentHash: string = ''
 ): string {
-  return `${token}:${url}:${geoHash}:${expiry}`;
+  return `${token}:${url}:${geoHash}:${expiry}:${contentHash}`;
 }
 
 /**

@@ -14,6 +14,9 @@ import { collectRequestMetadata } from '../lib/metadata.js';
 import { config } from '../lib/config.js';
 import { CACHE_TTL } from '@vqr/shared';
 import { z } from 'zod';
+import { getRenderer } from '../renderers/index.js';
+import { renderShell } from '../renderers/shell.js';
+import type { RenderContext } from '../renderers/index.js';
 
 // ---------------------------------------------------------------------------
 // Local parameter schema
@@ -325,6 +328,34 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
         timestamp: proofTimestamp,
         fingerprint: proofHmac.slice(0, 12),
       };
+      const contentType = (qrCode.contentType as string) || 'url';
+      const renderer = getRenderer(contentType);
+
+      if (renderer) {
+        const renderCtx: RenderContext = {
+          qrCode: {
+            token,
+            contentType,
+            content: qrCode.content,
+            label: qrCode.label,
+            destinationUrl: qrCode.destinationUrl,
+            createdAt: qrCode.createdAt,
+          },
+          organization: qrCode.organization as RenderContext['organization'],
+          verified: response.verified,
+          reason: (response as any).reason,
+          security: response.security,
+          locationMatch: response.location_match,
+          ephemeralProof,
+          domainWarning: (response as any).domain_warning,
+          scannedAt: response.scannedAt,
+          assetBaseUrl: `${process.env.WEBAUTHN_ORIGIN || 'http://localhost:3000'}/assets`,
+        };
+        const contentBody = renderer(renderCtx);
+        return reply.type('text/html').send(renderShell(renderCtx, contentBody));
+      }
+
+      // Fallback to legacy renderer for unknown types
       return reply.type('text/html').send(renderVerificationPage(response, token, qrCode, ephemeralProof));
     }
 

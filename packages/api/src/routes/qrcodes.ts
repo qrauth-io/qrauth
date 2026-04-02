@@ -5,6 +5,7 @@ import {
   bulkCreateQRCodeSchema,
   paginationSchema,
   generateToken,
+  getContentType,
 } from '@vqr/shared';
 import { zodValidator } from '../middleware/validate.js';
 import { authorize } from '../middleware/authorize.js';
@@ -19,6 +20,7 @@ import { TransparencyLogService } from '../services/transparency.js';
 import { DomainService } from '../services/domain.js';
 import { cacheDel } from '../lib/cache.js';
 import { config } from '../lib/config.js';
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -31,6 +33,12 @@ const tokenParamsSchema = z.object({
 
 const listQRCodesQuerySchema = paginationSchema.extend({
   status: z.enum(['ACTIVE', 'EXPIRED', 'REVOKED']).optional(),
+});
+
+// Extends the shared createQRCodeSchema with optional content-type fields.
+const extendedCreateSchema = createQRCodeSchema.extend({
+  contentType: z.string().optional(),
+  content: z.any().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -60,38 +68,69 @@ async function generateQRCode(
     label?: string;
     location?: { lat: number; lng: number; radiusM: number };
     expiresAt?: string;
+    contentType?: string;
+    content?: unknown;
   },
 ) {
-  // 1. Get active signing key.
+  // 1. Resolve and validate content type.
+  const resolvedContentType = input.contentType || 'url';
+  const typeRegistry = getContentType(resolvedContentType);
+  if (!typeRegistry) {
+    throw new Error(`Unknown content type: ${resolvedContentType}`);
+  }
+
+  let contentHash = '';
+  if (input.content && resolvedContentType !== 'url') {
+    const parseResult = typeRegistry.schema.safeParse(input.content);
+    if (!parseResult.success) {
+      throw new Error(`Invalid content for type ${resolvedContentType}: ${parseResult.error.message}`);
+    }
+    contentHash = createHash('sha256').update(JSON.stringify(input.content)).digest('hex');
+  }
+
+  // Derive destinationUrl for non-URL types (the verify page is the destination).
+  const baseUrl = config.server.isDev
+    ? `http://localhost:${config.server.port}`
+    : 'https://vqr.io';
+
+  // 2. Get active signing key.
   const signingKey = await signingService.getActiveKey(organizationId);
 
-  // 2. Generate a short, unbiased token.
+  // 3. Generate a short, unbiased token.
   const token = generateToken();
 
-  // 3. Encode geohash when location is provided.
+  // 4. For non-URL types, the QR code points to the vQR verify page itself.
+  const destinationUrl = resolvedContentType === 'url'
+    ? input.destinationUrl
+    : `${baseUrl}/v/${token}`;
+
+  // 5. Encode geohash when location is provided.
   const geoHash = input.location
     ? geoService.encodeGeoHash(input.location.lat, input.location.lng)
     : '';
 
   const expiresAtStr = input.expiresAt ?? '';
 
-  // 4. Sign the canonical payload.
+  // 6. Sign the canonical payload (includes contentHash for non-URL types).
   const signature = await signingService.signQRCode(
     signingKey.keyId,
     token,
-    input.destinationUrl,
+    destinationUrl,
     geoHash,
     expiresAtStr,
+    contentHash,
   );
 
-  // 5. Persist to database.
+  // 7. Persist to database.
   const qrCode = await fastify.prisma.qRCode.create({
     data: {
       token,
       organizationId,
       signingKeyId: signingKey.id,
-      destinationUrl: input.destinationUrl,
+      destinationUrl,
       label: input.label,
+      contentType: resolvedContentType,
+      content: input.content ? (input.content as object) : undefined,
       signature,
       geoHash: geoHash || null,
       latitude: input.location?.lat ?? null,
@@ -185,13 +224,15 @@ export default async function qrCodeRoutes(fastify: FastifyInstance): Promise<vo
   fastify.post('/', {
     config: { rateLimit: rateLimitGenerate },
     preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER', 'MEMBER')],
-    preValidation: zodValidator({ body: createQRCodeSchema }),
+    preValidation: zodValidator({ body: extendedCreateSchema }),
   }, async (request, reply) => {
     const body = request.body as {
       destinationUrl: string;
       label?: string;
       location?: { lat: number; lng: number; radiusM: number };
       expiresAt?: string;
+      contentType?: string;
+      content?: unknown;
     };
 
     const result = await generateQRCode(

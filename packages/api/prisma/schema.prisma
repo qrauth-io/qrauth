@@ -87,13 +87,14 @@ model Organization {
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
 
-  signingKeys  SigningKey[]
-  qrCodes      QRCode[]
-  apiKeys      ApiKey[]
-  memberships  Membership[]
-  invitations  Invitation[]
-  auditLogs    AuditLog[]
-  apps         App[]
+  signingKeys    SigningKey[]
+  qrCodes        QRCode[]
+  apiKeys        ApiKey[]
+  memberships    Membership[]
+  invitations    Invitation[]
+  auditLogs      AuditLog[]
+  apps           App[]
+  contentAssets  ContentAsset[]
 
   @@map("organizations")
 }
@@ -123,6 +124,10 @@ model QRCode {
   signingKeyId   String
   destinationUrl String
   label          String?
+  contentType    String       @default("url")
+  content        Json?
+  contentVersion Int          @default(1)
+  publishedAt    DateTime?
   signature      String
   geoHash        String?
   latitude       Float?
@@ -139,6 +144,7 @@ model QRCode {
   scans                Scan[]
   fraudIncidents       FraudIncident[]
   transparencyLogEntry TransparencyLogEntry?
+  contentAssets        ContentAsset[]
 
   @@index([organizationId])
   @@index([status])
@@ -446,4 +452,22 @@ model AgentRun {
 
   @@index([runType, createdAt])
   @@map("agent_runs")
+}
+
+model ContentAsset {
+  id             String   @id @default(cuid())
+  organizationId String
+  qrCodeId       String?
+  filename       String
+  mimeType       String
+  sizeBytes      Int
+  storagePath    String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  qrCode       QRCode?      @relation(fields: [qrCodeId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([qrCodeId])
+  @@map("content_assets")
 }

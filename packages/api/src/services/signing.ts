@@ -55,6 +55,7 @@ export class SigningService {
     destinationUrl: string,
     geoHash: string,
     expiresAt: string,
+    contentHash: string = '',
   ): Promise<string> {
     const keyPath = join(config.kms.ecdsaPrivateKeyPath, `${keyId}.pem`);
 
@@ -67,7 +68,7 @@ export class SigningService {
       );
     }
 
-    const payload = hashPayload(token, destinationUrl, geoHash, expiresAt);
+    const payload = hashPayload(token, destinationUrl, geoHash, expiresAt, contentHash);
     return signPayload(privateKey, payload);
   }
 
