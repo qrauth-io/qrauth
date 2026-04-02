@@ -320,6 +320,42 @@ export default async function analyticsRoutes(fastify: FastifyInstance): Promise
   });
 
   // -------------------------------------------------------------------------
+  // GET /feedback/:token — Get feedback submissions for a QR code
+  // -------------------------------------------------------------------------
+
+  fastify.get('/feedback/:token', {
+    preHandler: [authenticate, authorize('OWNER', 'ADMIN', 'MANAGER', 'MEMBER', 'VIEWER')],
+  }, async (request, reply) => {
+    const { token } = request.params as { token: string };
+    const organizationId = request.user!.orgId;
+
+    const qrCode = await fastify.prisma.qRCode.findFirst({
+      where: { token, organizationId },
+      select: { id: true },
+    });
+
+    if (!qrCode) {
+      return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'QR code not found' });
+    }
+
+    const submissions = await fastify.prisma.feedbackSubmission.findMany({
+      where: { qrCodeId: qrCode.id },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    const avgRating = submissions.length > 0
+      ? submissions.reduce((sum, s) => sum + s.rating, 0) / submissions.length
+      : null;
+
+    return reply.send({
+      data: submissions,
+      total: submissions.length,
+      avgRating: avgRating ? Math.round(avgRating * 10) / 10 : null,
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // GET /summary — Aggregated dashboard statistics
   // -------------------------------------------------------------------------
 

@@ -385,6 +385,44 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
       message: 'WebAuthn verification coming in Phase 2.',
     });
   });
+
+  // -------------------------------------------------------------------------
+  // POST /v/:token/feedback — Submit feedback rating (public, rate-limited)
+  // -------------------------------------------------------------------------
+
+  fastify.post('/:token/feedback', {
+    config: { rateLimit: rateLimitPublic },
+  }, async (request, reply) => {
+    const { token } = request.params as { token: string };
+    const body = request.body as { rating?: number; comment?: string };
+
+    if (!body.rating || body.rating < 1 || body.rating > 5) {
+      return reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Rating must be 1-5' });
+    }
+
+    const qrCode = await fastify.prisma.qRCode.findUnique({
+      where: { token },
+      select: { id: true, contentType: true },
+    });
+
+    if (!qrCode || qrCode.contentType !== 'feedback') {
+      return reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Feedback QR code not found' });
+    }
+
+    const ipHash = hashString(request.ip || 'unknown');
+
+    await fastify.prisma.feedbackSubmission.create({
+      data: {
+        qrCodeId: qrCode.id,
+        rating: body.rating,
+        comment: body.comment?.slice(0, 1000) || null,
+        ipHash,
+        userAgent: request.headers['user-agent'] || null,
+      },
+    });
+
+    return reply.send({ success: true });
+  });
 }
 
 // ---------------------------------------------------------------------------

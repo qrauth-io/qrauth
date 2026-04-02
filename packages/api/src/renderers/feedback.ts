@@ -53,9 +53,21 @@ function renderFeedbackContent(ctx: RenderContext): string {
         var btn = document.getElementById('fb-submit');
         btn.disabled = true;
         btn.textContent = 'Submitting...';
-        // For now, just show thanks (API endpoint for submission is Phase 3)
-        document.getElementById('fb-form').style.display = 'none';
-        document.getElementById('fb-thanks').style.display = 'block';
+        var comment = document.getElementById('fb-comment').value;
+        fetch(window.location.pathname + '/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: selectedRating, comment: comment || undefined })
+        })
+        .then(function() {
+          document.getElementById('fb-form').style.display = 'none';
+          document.getElementById('fb-thanks').style.display = 'block';
+        })
+        .catch(function() {
+          btn.disabled = false;
+          btn.textContent = 'Submit Feedback';
+          alert('Failed to submit. Please try again.');
+        });
       }
     </script>
   `;

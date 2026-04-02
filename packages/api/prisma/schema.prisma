@@ -145,6 +145,7 @@ model QRCode {
   fraudIncidents       FraudIncident[]
   transparencyLogEntry TransparencyLogEntry?
   contentAssets        ContentAsset[]
+  feedbackSubmissions  FeedbackSubmission[]
 
   @@index([organizationId])
   @@index([status])
@@ -470,4 +471,19 @@ model ContentAsset {
   @@index([organizationId])
   @@index([qrCodeId])
   @@map("content_assets")
+}
+
+model FeedbackSubmission {
+  id        String   @id @default(cuid())
+  qrCodeId  String
+  rating    Int
+  comment   String?
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@index([qrCodeId, createdAt])
+  @@map("feedback_submissions")
 }
