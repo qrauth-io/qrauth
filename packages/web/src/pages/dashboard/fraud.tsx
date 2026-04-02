@@ -146,6 +146,36 @@ const FRAUD_GUIDE = [
   },
 ];
 
+const FIELD_LABELS: Record<string, string> = {
+  scanVelocity5m: 'scans in 5 min',
+  scanVelocity1h: 'scans in 1 hour',
+  ipDispersion1h: 'different QR codes from same IP in 1h',
+  hourOfDay: 'hour of day (UTC)',
+  dayOfWeek: 'day of week',
+  isBot: 'is bot',
+  isNewIp: 'is new IP',
+  timeSinceLastScan: 'seconds since last scan',
+  trustScoreTrend: 'rolling avg trust score',
+};
+
+const OPERATOR_LABELS: Record<string, string> = {
+  gt: '>',
+  lt: '<',
+  gte: '≥',
+  lte: '≤',
+  eq: '=',
+  neq: '≠',
+  between: 'between',
+  in: 'in',
+};
+
+function formatCondition(c: { field: string; operator: string; value: unknown }): string {
+  const field = FIELD_LABELS[c.field] || c.field;
+  const op = OPERATOR_LABELS[c.operator] || c.operator;
+  const val = c.operator === 'between' ? (c.value as number[]).join('–') : String(c.value);
+  return `${field} ${op} ${val}`;
+}
+
 const SECURITY_TIPS = [
   {
     title: 'Verify your domain',
@@ -1055,86 +1085,83 @@ export default function FraudPage() {
       {/* Dynamic Fraud Rules */}
       <Card sx={{ mt: 3 }}>
         <CardHeader
-          title="Dynamic Fraud Rules"
-          subheader="Rules evaluated on every QR code scan — managed by AI and admins"
+          title="Fraud Detection Rules"
+          subheader="These rules are evaluated on every QR code scan in real-time. Disable a rule to stop it from firing. The AI agent can create new rules automatically."
         />
         {loadingRules ? (
           <CardContent sx={{ textAlign: 'center', py: 3 }}>
             <CircularProgress size={24} />
           </CardContent>
+        ) : fraudRules.length === 0 ? (
+          <CardContent>
+            <Typography color="text.secondary" variant="body2" textAlign="center">
+              No rules configured yet. The AI agent will create rules after analyzing scan patterns.
+            </Typography>
+          </CardContent>
         ) : (
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Rule</TableCell>
-                  <TableCell>Conditions</TableCell>
-                  <TableCell>Action</TableCell>
-                  <TableCell>Source</TableCell>
-                  <TableCell align="right">Enabled</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {fraudRules.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} sx={{ textAlign: 'center', py: 4 }}>
-                      <Typography color="text.secondary" variant="body2">
-                        No dynamic rules yet. The AI agent will create rules automatically after analyzing scan patterns.
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  fraudRules.map((rule: any) => (
-                    <TableRow key={rule.id} hover>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight={600}>{rule.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{rule.description}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Stack spacing={0.5}>
-                          {(rule.conditions as any[]).map((c: any, i: number) => (
-                            <Chip
-                              key={i}
-                              label={`${c.field} ${c.operator} ${JSON.stringify(c.value)}`}
-                              size="small"
-                              variant="outlined"
-                              sx={{ fontFamily: 'monospace', fontSize: 11 }}
-                            />
-                          ))}
-                        </Stack>
-                      </TableCell>
-                      <TableCell>
+          <Box>
+            {fraudRules.map((rule: any) => (
+              <Box
+                key={rule.id}
+                sx={{
+                  px: 3,
+                  py: 2,
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                  opacity: rule.enabled ? 1 : 0.5,
+                  '&:last-child': { borderBottom: 'none' },
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                  <Box sx={{ flex: 1 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                      <Typography variant="subtitle2" fontWeight={700}>{rule.name}</Typography>
+                      <Chip
+                        label={(rule.action as any).severity}
+                        size="small"
+                        color={SEVERITY_COLORS[(rule.action as any).severity] || 'default'}
+                        variant="outlined"
+                      />
+                      <Chip
+                        label={rule.source === 'agent' ? 'AI Created' : rule.source === 'system' ? 'Built-in' : 'Manual'}
+                        size="small"
+                        variant="outlined"
+                        color={rule.source === 'agent' ? 'info' : 'default'}
+                      />
+                      <Typography variant="caption" color="text.disabled">v{rule.version}</Typography>
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      {rule.description}
+                    </Typography>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      {(rule.conditions as any[]).map((c: any, i: number) => (
                         <Chip
-                          label={`-${(rule.action as any).deductScore} trust`}
+                          key={i}
+                          label={formatCondition(c)}
                           size="small"
-                          color={SEVERITY_COLORS[(rule.action as any).severity] || 'default'}
+                          sx={{ bgcolor: 'background.neutral', fontFamily: 'monospace', fontSize: 11 }}
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={rule.source}
-                          size="small"
-                          variant="outlined"
-                          color={rule.source === 'agent' ? 'info' : 'default'}
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Button
-                          size="small"
-                          variant={rule.enabled ? 'contained' : 'outlined'}
-                          color={rule.enabled ? 'success' : 'inherit'}
-                          onClick={() => handleToggleRule(rule.id, rule.enabled)}
-                          sx={{ minWidth: 70 }}
-                        >
-                          {rule.enabled ? 'ON' : 'OFF'}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      ))}
+                      <Chip
+                        label={`→ -${(rule.action as any).deductScore} trust score`}
+                        size="small"
+                        color={SEVERITY_COLORS[(rule.action as any).severity] || 'default'}
+                      />
+                    </Stack>
+                  </Box>
+                  <Button
+                    size="small"
+                    variant={rule.enabled ? 'contained' : 'outlined'}
+                    color={rule.enabled ? 'success' : 'inherit'}
+                    onClick={() => handleToggleRule(rule.id, rule.enabled)}
+                    sx={{ minWidth: 70, ml: 2, flexShrink: 0 }}
+                  >
+                    {rule.enabled ? 'ON' : 'OFF'}
+                  </Button>
+                </Stack>
+              </Box>
+            ))}
+          </Box>
         )}
       </Card>
     </>
