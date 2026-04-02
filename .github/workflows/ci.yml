@@ -129,18 +129,15 @@ jobs:
 
       - name: Create API env file
         run: |
-          cat > packages/api/.env << 'EOF'
-          DATABASE_URL=postgresql://vqr:vqr@localhost:5432/vqr
-          REDIS_URL=redis://localhost:6379
-          JWT_SECRET=ci-test-secret-must-be-at-least-32-characters
-          NODE_ENV=test
-          PORT=3000
-          HOST=0.0.0.0
-          KMS_PROVIDER=local
-          ECDSA_PRIVATE_KEY_PATH=./keys
-          VISUAL_PROOF_SECRET=ci-visual-proof-secret-for-testing-64-characters-long-string
-          EOF
-          sed -i 's/^          //' packages/api/.env
+          echo "DATABASE_URL=postgresql://vqr:vqr@localhost:5432/vqr" > packages/api/.env
+          echo "REDIS_URL=redis://localhost:6379" >> packages/api/.env
+          echo "JWT_SECRET=ci-test-secret-must-be-at-least-32-characters" >> packages/api/.env
+          echo "NODE_ENV=test" >> packages/api/.env
+          echo "PORT=3000" >> packages/api/.env
+          echo "HOST=0.0.0.0" >> packages/api/.env
+          echo "KMS_PROVIDER=local" >> packages/api/.env
+          echo "ECDSA_PRIVATE_KEY_PATH=./keys" >> packages/api/.env
+          echo "VISUAL_PROOF_SECRET=ci-visual-proof-secret-for-testing-64-characters-long-string" >> packages/api/.env
 
       - name: Run E2E tests
         run: npm run test:e2e
