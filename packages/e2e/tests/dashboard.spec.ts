@@ -9,7 +9,22 @@ async function signUp(page: import('@playwright/test').Page) {
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password').fill('TestPass123!');
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+
+  // Complete onboarding if redirected there
+  try {
+    await expect(page).toHaveURL(/\/onboarding/, { timeout: 5000 });
+    // Step 1: org name is pre-filled, click Continue
+    await page.getByRole('button', { name: 'Continue' }).click();
+    // Step 2: select use case
+    await page.getByText('Developer').click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    // Step 3: skip QR creation
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+  } catch {
+    // If already on dashboard (onboarding was skipped), continue
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+  }
 }
 
 test.describe('Dashboard', () => {

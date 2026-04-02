@@ -37,8 +37,8 @@ test.describe('Authentication', () => {
 
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    // Should redirect to dashboard after successful signup
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    // Should redirect to onboarding (new user) or dashboard
+    await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10000 });
   });
 
   test('should sign in with existing user', async ({ page }) => {
@@ -51,7 +51,16 @@ test.describe('Authentication', () => {
     await page.getByLabel('Email address').fill(email);
     await page.getByLabel('Password').fill('TestPass123!');
     await page.getByRole('button', { name: 'Create account' }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10000 });
+
+    // Complete onboarding if needed so user has onboardedAt set
+    if (page.url().includes('/onboarding')) {
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await page.getByText('Developer').click();
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await page.getByRole('button', { name: 'Skip' }).click();
+      await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    }
 
     // Sign out (clear session)
     await page.evaluate(() => sessionStorage.clear());
@@ -62,6 +71,7 @@ test.describe('Authentication', () => {
     await page.getByLabel('Password').fill('TestPass123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
+    // Onboarded user goes straight to dashboard
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
   });
 
