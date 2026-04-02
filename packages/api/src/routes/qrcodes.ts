@@ -49,7 +49,8 @@ function buildVerificationUrl(token: string): string {
   if (config.server.isDev) {
     return `http://localhost:${config.server.port}/v/${token}`;
   }
-  return `https://vqr.io/v/${token}`;
+  const baseUrl = process.env.WEBAUTHN_ORIGIN || 'https://vqr.progressnet.io';
+  return `${baseUrl}/v/${token}`;
 }
 
 /**
