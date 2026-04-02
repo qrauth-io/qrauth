@@ -495,26 +495,38 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
       });
 
       if (user) {
-        // Link OAuth provider if user found by email but different provider
-        if (!user.providerId || user.provider === 'EMAIL') {
-          await fastify.prisma.user.update({
-            where: { id: user.id },
-            data: {
-              provider: provider.toUpperCase() as any,
-              providerId: oauthUser.providerId,
-              avatarUrl: oauthUser.avatarUrl || user.avatarUrl,
-              emailVerified: true, // OAuth emails are pre-verified
-            },
-          });
-        }
-
-        // Update lastLoginAt
+        // Update avatar + verify email, but DON'T overwrite provider/providerId
+        // so the user can sign in via any OAuth provider that matches their email
         await fastify.prisma.user.update({
           where: { id: user.id },
-          data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
+          data: {
+            avatarUrl: oauthUser.avatarUrl || user.avatarUrl || undefined,
+            emailVerified: true,
+            lastLoginAt: new Date(),
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+            // Only set provider if user was email-only (first OAuth link)
+            ...(!user.providerId ? {
+              provider: provider.toUpperCase() as any,
+              providerId: oauthUser.providerId,
+            } : {}),
+          },
+        });
+
+        // Reload memberships after update
+        user = await fastify.prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            memberships: {
+              include: { organization: { select: { id: true, name: true, slug: true } } },
+              orderBy: { joinedAt: 'desc' },
+            },
+          },
         });
       } else {
         // Create new user + default organization
+        // Use the user's name for the org, cleaned up
+        const orgName = `${oauthUser.name}'s Organization`;
         const slug = oauthUser.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'my-org';
         const existingSlug = await fastify.prisma.organization.findUnique({ where: { slug } });
         const finalSlug = existingSlug ? `${slug}-${randomBytes(2).toString('hex')}` : slug;
@@ -534,7 +546,7 @@ export default async function authRoutes(fastify: FastifyInstance): Promise<void
 
           const org = await tx.organization.create({
             data: {
-              name: `${oauthUser.name}'s Organization`,
+              name: orgName,
               slug: finalSlug,
               email: oauthUser.email,
             },
