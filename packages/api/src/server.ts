@@ -20,6 +20,10 @@ import analyticsRoutes from './routes/analytics.js';
 import transparencyRoutes from './routes/transparency.js';
 import authSessionRoutes from './routes/auth-sessions.js';
 import approvalRoutes from './routes/approval.js';
+import apiKeyRoutes from './routes/api-keys.js';
+import usageRoutes from './routes/usage.js';
+import webhookDeliveryRoutes from './routes/webhook-deliveries.js';
+import billingRoutes from './routes/billing.js';
 
 // Workers
 import { registerWorkers, closeWorkers } from './workers/index.js';
@@ -229,6 +233,10 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   await app.register(authSessionRoutes, { prefix: '/api/v1/auth-sessions' });
   await app.register(approvalRoutes, { prefix: '/a' });
+  await app.register(apiKeyRoutes, { prefix: '/api/v1/api-keys' });
+  await app.register(usageRoutes, { prefix: '/api/v1/usage' });
+  await app.register(webhookDeliveryRoutes, { prefix: '/api/v1/webhook-deliveries' });
+  await app.register(billingRoutes, { prefix: '/api/v1/billing' });
 
   // -------------------------------------------------------------------------
   // 9. Health check

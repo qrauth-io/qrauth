@@ -77,13 +77,13 @@ jobs:
       postgres:
         image: postgis/postgis:16-3.4
         env:
-          POSTGRES_USER: vqr
-          POSTGRES_PASSWORD: vqr
-          POSTGRES_DB: vqr
+          POSTGRES_USER: qrauth
+          POSTGRES_PASSWORD: qrauth
+          POSTGRES_DB: qrauth
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U vqr"
+          --health-cmd="pg_isready -U qrauth"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=5
@@ -99,7 +99,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://vqr:vqr@localhost:5432/vqr
+      DATABASE_URL: postgresql://qrauth:qrauth@localhost:5432/qrauth
       REDIS_URL: redis://localhost:6379
       JWT_SECRET: ci-test-secret-must-be-at-least-32-characters
       NODE_ENV: test
@@ -133,7 +133,7 @@ jobs:
 
       - name: Create API env file
         run: |
-          echo "DATABASE_URL=postgresql://vqr:vqr@localhost:5432/vqr" > packages/api/.env
+          echo "DATABASE_URL=postgresql://qrauth:qrauth@localhost:5432/qrauth" > packages/api/.env
           echo "REDIS_URL=redis://localhost:6379" >> packages/api/.env
           echo "JWT_SECRET=ci-test-secret-must-be-at-least-32-characters" >> packages/api/.env
           echo "NODE_ENV=test" >> packages/api/.env
@@ -180,7 +180,7 @@ jobs:
           ssh-keyscan -t ed25519 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           ssh -T -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
             set -e
-            cd ~/vqr
+            cd ~/qrauth
             git pull origin main
             npm ci
             npm run build --workspace=packages/shared
@@ -189,6 +189,6 @@ jobs:
             npx prisma migrate deploy --schema=packages/api/prisma/schema.prisma
             npm run build --workspace=packages/api
             npm run build --workspace=packages/web
-            sudo systemctl restart vqr-api
+            sudo systemctl restart qrauth-api
             echo "Deployed $(date)"
           EOF

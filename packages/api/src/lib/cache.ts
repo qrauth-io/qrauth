@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
 import { config } from './config.js';
 
-const KEY_PREFIX = 'vqr:';
+const KEY_PREFIX = 'qrauth:';
 
 function createRedisClient(): Redis {
   const client = new Redis(config.redis.url, {

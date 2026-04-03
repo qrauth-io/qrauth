@@ -27,7 +27,7 @@ jobs:
           # Run agent on server via SSH
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" bash -s "$ANTHROPIC_API_KEY" "$ADMIN_EMAIL" << 'REMOTE_SCRIPT'
             set -e
-            cd ~/vqr
+            cd ~/qrauth
 
             # Source production env vars
             set -a

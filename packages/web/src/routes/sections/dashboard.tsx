@@ -25,6 +25,9 @@ const FraudPage = lazy(() => import('src/pages/dashboard/fraud'));
 const TeamPage = lazy(() => import('src/pages/dashboard/team'));
 const SettingsPage = lazy(() => import('src/pages/dashboard/settings'));
 const AppsPage = lazy(() => import('src/pages/dashboard/apps'));
+const ApiKeysPage = lazy(() => import('src/pages/dashboard/api-keys'));
+const UsagePage = lazy(() => import('src/pages/dashboard/usage'));
+const WebhookLogsPage = lazy(() => import('src/pages/dashboard/webhook-logs'));
 
 // ----------------------------------------------------------------------
 
@@ -59,6 +62,9 @@ export const dashboardRoutes: RouteObject[] = [
       { path: 'team', element: <TeamPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'apps', element: <AppsPage /> },
+      { path: 'api-keys', element: <ApiKeysPage /> },
+      { path: 'usage', element: <UsagePage /> },
+      { path: 'webhook-logs', element: <WebhookLogsPage /> },
     ],
   },
 ];

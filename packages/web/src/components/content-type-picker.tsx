@@ -1,6 +1,6 @@
-import type { ContentTypeDef } from '@vqr/shared';
+import type { ContentTypeDef } from '@qrauth/shared';
 
-import { getAllContentTypes } from '@vqr/shared';
+import { getAllContentTypes } from '@qrauth/shared';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';

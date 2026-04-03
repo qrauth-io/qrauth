@@ -133,7 +133,7 @@ export default function AppsPage() {
         <Box>
           <Typography variant="h4">Auth Apps</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register apps that use vQR for QR-based authentication
+            Register apps that use QRAuth for QR-based authentication
           </Typography>
         </Box>
         <Button

@@ -17,7 +17,7 @@ export interface KeyPair {
 }
 
 export interface ApiKeyResult {
-  /** The full secret key shown once to the user, e.g. "vqr_<32 hex chars>" */
+  /** The full secret key shown once to the user, e.g. "qrauth_<32 hex chars>" */
   fullKey: string;
   /** First 8 characters of the random part – safe to store in plain text for lookup */
   prefix: string;
@@ -91,7 +91,7 @@ export function verifySignature(
 /**
  * Generate a new API key.
  *
- * Format: `vqr_<64 hex chars>`  (32 random bytes → 64 hex characters)
+ * Format: `qrauth_<64 hex chars>`  (32 random bytes → 64 hex characters)
  *
  * - fullKey  – the complete secret, shown to the user exactly once
  * - prefix   – first 8 hex chars of the random part, stored in plain text
@@ -101,7 +101,7 @@ export function verifySignature(
  */
 export function generateApiKey(): ApiKeyResult {
   const randomPart = randomBytes(32).toString('hex'); // 64 hex chars
-  const fullKey = `vqr_${randomPart}`;
+  const fullKey = `qrauth_${randomPart}`;
   const prefix = randomPart.slice(0, 8);
   const hash = hashString(fullKey);
 

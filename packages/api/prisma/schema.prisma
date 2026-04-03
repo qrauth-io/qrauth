@@ -84,6 +84,8 @@ model Organization {
   domainVerifyToken  String?
   plan         Plan                    @default(FREE)
   billingEmail String?
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
 
@@ -368,8 +370,9 @@ model App {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  authSessions AuthSession[]
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  authSessions      AuthSession[]
+  webhookDeliveries WebhookDelivery[]
 
   @@index([organizationId])
   @@map("apps")
@@ -489,4 +492,26 @@ model FeedbackSubmission {
 
   @@index([qrCodeId, createdAt])
   @@map("feedback_submissions")
+}
+
+model WebhookDelivery {
+  id              String    @id @default(cuid())
+  appId           String
+  event           String    // e.g. qr.created, qr.scanned, qr.verified, fraud.detected, auth.approved, auth.denied
+  url             String
+  payload         Json
+  statusCode      Int?
+  responseBody    String?
+  attempts        Int       @default(0)
+  lastAttemptAt   DateTime?
+  deliveredAt     DateTime?
+  failedAt        DateTime?
+  error           String?
+  createdAt       DateTime  @default(now())
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId, createdAt])
+  @@index([event, createdAt])
+  @@map("webhook_deliveries")
 }

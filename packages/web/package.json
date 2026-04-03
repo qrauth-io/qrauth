@@ -1,8 +1,8 @@
 {
-  "name": "@vqr/web",
+  "name": "@qrauth/web",
   "author": "Minimals",
   "version": "0.1.0",
-  "description": "vQR Issuer Portal",
+  "description": "QRAuth Issuer Portal",
   "private": true,
   "type": "module",
   "scripts": {
@@ -43,7 +43,7 @@
     "@mui/x-data-grid": "^8.22.0",
     "@mui/x-date-pickers": "^8.22.0",
     "@mui/x-tree-view": "^8.22.0",
-    "@vqr/shared": "*",
+    "@qrauth/shared": "*",
     "apexcharts": "^5.10.4",
     "autosuggest-highlight": "^3.3.4",
     "axios": "^1.13.2",

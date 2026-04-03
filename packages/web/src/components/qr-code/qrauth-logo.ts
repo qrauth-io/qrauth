@@ -1,4 +1,4 @@
-// Inline SVG data URI for the vQR shield logo.
+// Inline SVG data URI for the QRAuth shield logo.
 // The shield conveys security/trust and is embedded in the centre of every QR code.
 // Using a data URI avoids an extra network request and works in both <img> and qrcode.react's imageSettings.
 
@@ -11,8 +11,8 @@ const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill=
   <circle cx="60" cy="56" r="24" fill="#00A76F"/>
   <!-- Checkmark -->
   <path d="M50 56l7 7 13-14" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- vQR text -->
-  <text x="60" y="100" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">vQR</text>
+  <!-- QRAuth text -->
+  <text x="60" y="100" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">QRAuth</text>
 </svg>`;
 
-export const VQR_LOGO_SVG_DATA_URI = `data:image/svg+xml;base64,${btoa(SVG)}`;
+export const QRAUTH_LOGO_SVG_DATA_URI = `data:image/svg+xml;base64,${btoa(SVG)}`;

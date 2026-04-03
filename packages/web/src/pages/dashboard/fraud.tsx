@@ -470,7 +470,7 @@ export default function FraudPage() {
       <Card sx={{ mb: 3 }}>
         <CardHeader
           title="Understanding Fraud Detection"
-          subheader="How vQR protects your QR codes"
+          subheader="How QRAuth protects your QR codes"
           action={
             <Button size="small" onClick={() => setShowGuide(!showGuide)}>
               {showGuide ? 'Hide' : 'Learn More'}

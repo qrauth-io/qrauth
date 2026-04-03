@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vQR Auth SDK Demo</title>
+  <title>QRAuth SDK Demo</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -23,28 +23,28 @@
     }
     .config label { display: block; font-size: 13px; font-weight: 600; color: #637381; margin-bottom: 4px; margin-top: 12px; }
     .config input { width: 100%; padding: 8px 12px; border: 1px solid #dfe3e8; border-radius: 8px; font-size: 14px; font-family: monospace; box-sizing: border-box; }
-    #vqr-login { margin: 32px 0; }
+    #qrauth-login { margin: 32px 0; }
     .result { margin-top: 24px; text-align: left; background: #E8F5E9; padding: 16px; border-radius: 8px; display: none; }
     .result pre { font-size: 12px; white-space: pre-wrap; word-break: break-all; }
     code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
   </style>
 </head>
 <body>
-  <h1>vQR Auth SDK Demo</h1>
+  <h1>QRAuth SDK Demo</h1>
   <p>Test QR-based authentication. Enter your app credentials below.</p>
 
   <div class="config">
     <label>Client ID</label>
-    <input id="clientId" placeholder="vqr_app_xxx" />
+    <input id="clientId" placeholder="qrauth_app_xxx" />
     <label>Client Secret</label>
-    <input id="clientSecret" type="password" placeholder="vqr_secret_xxx" />
+    <input id="clientSecret" type="password" placeholder="qrauth_secret_xxx" />
     <br><br>
     <button onclick="initAuth()" style="padding:8px 20px;background:#1B2A4A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
       Initialize SDK
     </button>
   </div>
 
-  <div id="vqr-login"></div>
+  <div id="qrauth-login"></div>
 
   <div class="result" id="result">
     <strong>Authentication Result:</strong>
@@ -54,13 +54,13 @@
   <hr style="margin:32px 0;border:none;border-top:1px solid #eee;">
   <h3>Integration Code</h3>
   <p>Copy this to your website:</p>
-  <pre style="text-align:left;background:#1B2A4A;color:#e0e0e0;padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;">&lt;div id="vqr-auth"&gt;&lt;/div&gt;
-&lt;script src="https://qrauth.io/sdk/vqr-auth.js"&gt;&lt;/script&gt;
+  <pre style="text-align:left;background:#1B2A4A;color:#e0e0e0;padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;">&lt;div id="qrauth-auth"&gt;&lt;/div&gt;
+&lt;script src="https://qrauth.io/sdk/qrauth-auth.js"&gt;&lt;/script&gt;
 &lt;script&gt;
-  new VQRAuth({
+  new QRAuth({
     clientId: 'YOUR_CLIENT_ID',
     clientSecret: 'YOUR_CLIENT_SECRET',
-    element: '#vqr-auth',
+    element: '#qrauth-auth',
     onSuccess: function(result) {
       console.log('User:', result.user);
       console.log('Signature:', result.signature);
@@ -69,7 +69,7 @@
   });
 &lt;/script&gt;</pre>
 
-  <script src="vqr-auth.js"></script>
+  <script src="qrauth-auth.js"></script>
   <script>
     function initAuth() {
       var clientId = document.getElementById('clientId').value;
@@ -79,10 +79,10 @@
         return;
       }
 
-      new VQRAuth({
+      new QRAuth({
         clientId: clientId,
         clientSecret: clientSecret,
-        element: '#vqr-login',
+        element: '#qrauth-login',
         scopes: ['identity', 'email'],
         onSuccess: function (result) {
           var el = document.getElementById('result');

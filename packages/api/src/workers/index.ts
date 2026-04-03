@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import type { Job } from 'bullmq';
 import type { Prisma } from '@prisma/client';
-import { createQueueConnection, alertQueue, fraudQueue } from '../lib/queue.js';
+import { createQueueConnection, alertQueue, fraudQueue, webhookQueue } from '../lib/queue.js';
 import { db } from '../lib/db.js';
 import { GeoService } from '../services/geo.js';
 import { AlertService } from '../services/alerts.js';
@@ -9,6 +9,8 @@ import { FraudDetectionService } from '../services/fraud.js';
 import type { FraudAlertJobData } from '../services/alerts.js';
 import { FeatureExtractionService } from '../services/feature-extraction.js';
 import { DynamicRuleEngine } from '../services/dynamic-rules.js';
+import { WebhookService } from '../services/webhook.js';
+import type { WebhookJobData } from '../services/webhook.js';
 
 // ---------------------------------------------------------------------------
 // Scan job payload
@@ -41,7 +43,7 @@ function buildFraudService(): FraudDetectionService {
 }
 
 // ---------------------------------------------------------------------------
-// Worker: vqr-scans
+// Worker: qrauth-scans
 // ---------------------------------------------------------------------------
 
 /**
@@ -53,7 +55,7 @@ function buildFraudService(): FraudDetectionService {
  */
 function createScanWorker(): Worker<ScanJobData> {
   return new Worker<ScanJobData>(
-    'vqr-scans',
+    'qrauth-scans',
     async (job: Job<ScanJobData>) => {
       const { qrCodeId, clientIpHash, clientLat, clientLng, userAgent, metadata } =
         job.data;
@@ -115,6 +117,16 @@ function createScanWorker(): Worker<ScanJobData> {
         where: { id: qrCodeId },
         select: { organizationId: true },
       });
+
+      // Emit qr.scanned webhook (fire-and-forget).
+      if (qrCode?.organizationId) {
+        const webhookService = new WebhookService(db);
+        webhookService.emit(qrCode.organizationId, {
+          event: 'qr.scanned',
+          data: { qrCodeId, scanId: scan.id, trustScore, proxyDetected },
+        }).catch(() => {});
+      }
+
       fraudQueue.add('extract-features', {
         scanId: scan.id,
         qrCodeId: job.data.qrCodeId,
@@ -132,7 +144,7 @@ function createScanWorker(): Worker<ScanJobData> {
 }
 
 // ---------------------------------------------------------------------------
-// Worker: vqr-fraud
+// Worker: qrauth-fraud
 // ---------------------------------------------------------------------------
 
 /**
@@ -144,7 +156,7 @@ function createScanWorker(): Worker<ScanJobData> {
  */
 function createFraudWorker(): Worker {
   return new Worker(
-    'vqr-fraud',
+    'qrauth-fraud',
     async (job: Job) => {
       const { scanId, qrCodeId, orgId, clientIpHash, userAgent, trustScore } = job.data;
 
@@ -195,7 +207,7 @@ function createFraudWorker(): Worker {
 }
 
 // ---------------------------------------------------------------------------
-// Worker: vqr-alerts
+// Worker: qrauth-alerts
 // ---------------------------------------------------------------------------
 
 /**
@@ -206,7 +218,7 @@ function createFraudWorker(): Worker {
  */
 function createAlertWorker(): Worker<FraudAlertJobData> {
   return new Worker<FraudAlertJobData>(
-    'vqr-alerts',
+    'qrauth-alerts',
     async (job: Job<FraudAlertJobData>) => {
       // A fresh AlertService instance per job — alertQueue is only needed by
       // sendFraudAlert(), which is not called from within processAlertJob().
@@ -222,26 +234,139 @@ function createAlertWorker(): Worker<FraudAlertJobData> {
 }
 
 // ---------------------------------------------------------------------------
+// Worker: qrauth-webhooks
+// ---------------------------------------------------------------------------
+
+/**
+ * Delivers webhook payloads to third-party app endpoints.
+ *
+ * Each job carries a pre-signed payload. On success (2xx), the WebhookDelivery
+ * record is marked delivered. On failure the error is persisted and BullMQ
+ * retries with exponential backoff. After all retries are exhausted the record
+ * is marked permanently failed.
+ */
+function createWebhookWorker(): Worker<WebhookJobData> {
+  return new Worker<WebhookJobData>(
+    'qrauth-webhooks',
+    async (job: Job<WebhookJobData>) => {
+      const { deliveryId, url, payload, signature, appId } = job.data;
+
+      // Parse the event name from the stored payload for the header.
+      let eventName = 'unknown';
+      try {
+        eventName = (JSON.parse(payload) as { event: string }).event;
+      } catch {
+        // Leave as 'unknown' if parsing fails.
+      }
+
+      const now = new Date();
+      let statusCode: number | undefined;
+      let responseBody: string | undefined;
+
+      try {
+        let response: Response;
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-QRAuth-Signature': `sha256=${signature}`,
+            'X-QRAuth-Event': eventName,
+            'User-Agent': 'QRAuth-Webhooks/1.0',
+          },
+          body: payload,
+          signal: AbortSignal.timeout(10_000),
+        });
+
+        statusCode = response.status;
+        responseBody = await response.text().catch(() => undefined);
+
+        if (response.ok) {
+          // Success — mark delivered.
+          await db.webhookDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              statusCode,
+              responseBody: responseBody ?? null,
+              attempts: job.attemptsMade + 1,
+              lastAttemptAt: now,
+              deliveredAt: now,
+            },
+          });
+          return;
+        }
+
+        // Non-2xx — record the failure and let BullMQ retry.
+        await db.webhookDelivery.update({
+          where: { id: deliveryId },
+          data: {
+            statusCode,
+            responseBody: responseBody ?? null,
+            attempts: job.attemptsMade + 1,
+            lastAttemptAt: now,
+            error: `HTTP ${statusCode}`,
+            // Mark permanently failed only when this was the last attempt.
+            ...(job.attemptsMade + 1 >= (job.opts.attempts ?? 5)
+              ? { failedAt: now }
+              : {}),
+          },
+        });
+
+        throw new Error(`Webhook endpoint returned HTTP ${statusCode}`);
+      } catch (err) {
+        if (err instanceof Error && err.message.startsWith('Webhook endpoint returned')) {
+          throw err; // already persisted above — re-throw for BullMQ retry
+        }
+
+        // Network / timeout error.
+        const message = err instanceof Error ? err.message : String(err);
+
+        await db.webhookDelivery.update({
+          where: { id: deliveryId },
+          data: {
+            statusCode: statusCode ?? null,
+            attempts: job.attemptsMade + 1,
+            lastAttemptAt: now,
+            error: message,
+            ...(job.attemptsMade + 1 >= (job.opts.attempts ?? 5)
+              ? { failedAt: now }
+              : {}),
+          },
+        });
+
+        throw err; // re-throw so BullMQ schedules the next retry
+      }
+    },
+    {
+      connection: createQueueConnection(),
+      concurrency: 5,
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 let scanWorker: Worker<ScanJobData> | null = null;
 let fraudWorker: Worker | null = null;
 let alertWorker: Worker<FraudAlertJobData> | null = null;
+let webhookWorker: Worker<WebhookJobData> | null = null;
 
 /**
  * Instantiate and start all BullMQ workers.
- * Returns the three worker instances so callers can attach event listeners
+ * Returns all worker instances so callers can attach event listeners
  * or inspect their state if needed.
  */
 export function registerWorkers(): {
   scanWorker: Worker<ScanJobData>;
   fraudWorker: Worker;
   alertWorker: Worker<FraudAlertJobData>;
+  webhookWorker: Worker<WebhookJobData>;
 } {
   scanWorker = createScanWorker();
   fraudWorker = createFraudWorker();
   alertWorker = createAlertWorker();
+  webhookWorker = createWebhookWorker();
 
   scanWorker.on('failed', (job, err) => {
     console.error(`[scan-worker] job ${job?.id} failed:`, err.message);
@@ -255,9 +380,13 @@ export function registerWorkers(): {
     console.error(`[alert-worker] job ${job?.id} failed:`, err.message);
   });
 
-  console.info('[workers] scan, fraud, and alert workers registered.');
+  webhookWorker.on('failed', (job, err) => {
+    console.error(`[webhook-worker] job ${job?.id} failed:`, err.message);
+  });
 
-  return { scanWorker, fraudWorker, alertWorker };
+  console.info('[workers] scan, fraud, alert, and webhook workers registered.');
+
+  return { scanWorker, fraudWorker, alertWorker, webhookWorker };
 }
 
 /**
@@ -269,11 +398,13 @@ export async function closeWorkers(): Promise<void> {
     scanWorker?.close(),
     fraudWorker?.close(),
     alertWorker?.close(),
+    webhookWorker?.close(),
   ]);
 
   scanWorker = null;
   fraudWorker = null;
   alertWorker = null;
+  webhookWorker = null;
 
   console.info('[workers] all workers closed.');
 }

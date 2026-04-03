@@ -27,7 +27,7 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vQR \u2014 ${esc(org.name)}</title>
+  <title>QRAuth \u2014 ${esc(org.name)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; }
@@ -63,7 +63,7 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
     <!-- Verification status bar -->
     <div class="verify-bar ${verified ? 'verified' : 'unverified'}">
       ${verified
-        ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Verified by vQR'
+        ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Verified by QRAuth'
         : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg> Verification Failed'
       }
       <div style="margin-left:auto;font-size:11px;opacity:0.8;">${sec.trustScore}/100</div>
@@ -105,19 +105,19 @@ export function renderShell(ctx: RenderContext, contentBody: string): string {
     ` : ''}
 
     <div id="origin-warning">
-      <strong>&#9888; WARNING:</strong> This page is not served from an official vQR domain. This may be a cloned phishing page.
+      <strong>&#9888; WARNING:</strong> This page is not served from an official QRAuth domain. This may be a cloned phishing page.
     </div>
 
     <!-- Footer -->
     <div class="footer">
-      Secured by <a href="https://qrauth.io"><strong>vQR</strong></a> &middot; Token: ${esc(ctx.qrCode.token)} &middot; ${esc(scannedAt)}
+      Secured by <a href="https://qrauth.io"><strong>QRAuth</strong></a> &middot; Token: ${esc(ctx.qrCode.token)} &middot; ${esc(scannedAt)}
     </div>
   </div>
 
   <script>
     (function() {
       // Origin integrity check
-      var h = ['qrauth.io', 'vqr.io', 'vqr.progressnet.io', 'localhost'];
+      var h = ['qrauth.io', 'localhost'];
       if (!h.some(function(d) { return location.hostname === d || location.hostname.endsWith('.' + d); })) {
         document.getElementById('origin-warning').style.display = 'block';
       }

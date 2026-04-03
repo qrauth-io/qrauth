@@ -24,7 +24,7 @@ if (config.server.isDev || !process.env.SMTP_HOST) {
   });
 }
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'vQR <noreply@qrauth.io>';
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'QRAuth <noreply@qrauth.io>';
 
 // ---------------------------------------------------------------------------
 // Email templates
@@ -36,12 +36,12 @@ export async function sendPasswordResetEmail(to: string, resetToken: string): Pr
   const info = await transporter.sendMail({
     from: FROM_ADDRESS,
     to,
-    subject: 'Reset your vQR password',
+    subject: 'Reset your QRAuth password',
     html: `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:40px 20px;">
         <h2 style="color:#1B2A4A;margin-bottom:16px;">Reset Your Password</h2>
         <p style="color:#637381;font-size:14px;line-height:1.6;">
-          We received a request to reset your vQR account password. Click the button below to set a new password.
+          We received a request to reset your QRAuth account password. Click the button below to set a new password.
         </p>
         <a href="${resetUrl}" style="display:inline-block;padding:12px 32px;background:#00A76F;color:white;text-decoration:none;border-radius:8px;font-weight:600;margin:24px 0;">
           Reset Password
@@ -50,10 +50,10 @@ export async function sendPasswordResetEmail(to: string, resetToken: string): Pr
           This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
         </p>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
-        <p style="color:#c4cdd5;font-size:11px;">Sent by vQR — Verified QR Code Security Platform</p>
+        <p style="color:#c4cdd5;font-size:11px;">Sent by QRAuth — Verified QR Code Security Platform</p>
       </div>
     `,
-    text: `Reset your vQR password: ${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
+    text: `Reset your QRAuth password: ${resetUrl}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
   });
 
   if (config.server.isDev) {
@@ -76,12 +76,12 @@ export async function sendInvitationEmail(
   const info = await transporter.sendMail({
     from: FROM_ADDRESS,
     to,
-    subject: `${inviterName} invited you to ${orgName} on vQR`,
+    subject: `${inviterName} invited you to ${orgName} on QRAuth`,
     html: `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:40px 20px;">
         <h2 style="color:#1B2A4A;margin-bottom:16px;">You've Been Invited</h2>
         <p style="color:#637381;font-size:14px;line-height:1.6;">
-          <strong>${inviterName}</strong> invited you to join <strong>${orgName}</strong> on vQR as a <strong>${role}</strong>.
+          <strong>${inviterName}</strong> invited you to join <strong>${orgName}</strong> on QRAuth as a <strong>${role}</strong>.
         </p>
         <a href="${acceptUrl}" style="display:inline-block;padding:12px 32px;background:#00A76F;color:white;text-decoration:none;border-radius:8px;font-weight:600;margin:24px 0;">
           Accept Invitation
@@ -90,10 +90,10 @@ export async function sendInvitationEmail(
           This invitation expires in 72 hours.
         </p>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
-        <p style="color:#c4cdd5;font-size:11px;">Sent by vQR — Verified QR Code Security Platform</p>
+        <p style="color:#c4cdd5;font-size:11px;">Sent by QRAuth — Verified QR Code Security Platform</p>
       </div>
     `,
-    text: `${inviterName} invited you to join ${orgName} on vQR as a ${role}.\n\nAccept: ${acceptUrl}\n\nThis invitation expires in 72 hours.`,
+    text: `${inviterName} invited you to join ${orgName} on QRAuth as a ${role}.\n\nAccept: ${acceptUrl}\n\nThis invitation expires in 72 hours.`,
   });
 
   if (config.server.isDev) {
@@ -135,7 +135,7 @@ export async function sendFraudAlertEmail(
           View in Dashboard
         </a>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
-        <p style="color:#c4cdd5;font-size:11px;">Sent by vQR — Verified QR Code Security Platform</p>
+        <p style="color:#c4cdd5;font-size:11px;">Sent by QRAuth — Verified QR Code Security Platform</p>
       </div>
     `,
     text: `[${incident.severity}] Fraud alert for ${orgName}\n\nQR Code: ${incident.qrCodeToken}\nType: ${incident.type}\nSeverity: ${incident.severity}\n\nView in dashboard: ${process.env.WEBAUTHN_ORIGIN || 'http://localhost:8081'}/dashboard/fraud`,
@@ -167,7 +167,7 @@ export async function sendDailyReportEmail(
   const info = await transporter.sendMail({
     from: FROM_ADDRESS,
     to,
-    subject: `[vQR ${severity.toUpperCase()}] ${title}`,
+    subject: `[QRAuth ${severity.toUpperCase()}] ${title}`,
     html: `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;">
         <div style="padding:12px 16px;background:${severityBg};border-left:4px solid ${severityColor};border-radius:4px;margin-bottom:24px;">
@@ -175,7 +175,7 @@ export async function sendDailyReportEmail(
         </div>
         ${sectionsHtml}
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
-        <p style="color:#c4cdd5;font-size:11px;">Generated by vQR AI Security Analyst</p>
+        <p style="color:#c4cdd5;font-size:11px;">Generated by QRAuth AI Security Analyst</p>
       </div>
     `,
   });

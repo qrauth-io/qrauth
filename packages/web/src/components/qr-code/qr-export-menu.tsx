@@ -42,7 +42,7 @@ type ExportOption = {
 export function QRExportMenu({ containerRef, token, captionText, bgColor = '#FFFFFF' }: Props) {
   const { showSuccess, showError } = useSnackbar();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const filename = `vqr-${token || 'code'}`;
+  const filename = `qrauth-${token || 'code'}`;
 
   const handleExport = useCallback(
     async (fn: () => Promise<void>, label: string) => {

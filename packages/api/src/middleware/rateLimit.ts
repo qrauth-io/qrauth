@@ -161,7 +161,7 @@ async function rateLimitPlugin(fastify: FastifyInstance): Promise<void> {
     redis,
 
     // Namespace all keys to avoid collisions with application data.
-    nameSpace: 'vqr:rl:',
+    nameSpace: 'qrauth:rl:',
 
     // Default key: client IP.
     keyGenerator(request: FastifyRequest): string {
@@ -192,5 +192,5 @@ async function rateLimitPlugin(fastify: FastifyInstance): Promise<void> {
 }
 
 export const rateLimitMiddleware = fp(rateLimitPlugin, {
-  name: 'vqr-rate-limit',
+  name: 'qrauth-rate-limit',
 });

@@ -13,7 +13,7 @@ import {
   resetPasswordSchema,
   onboardingCompleteSchema,
   ACCOUNT_LOCKOUT_MINUTES,
-} from '@vqr/shared';
+} from '@qrauth/shared';
 import { getEnabledProviderNames, buildAuthUrl, exchangeCodeForUser, generateOAuthState } from '../lib/oauth.js';
 import { cacheSet, cacheGet, cacheDel } from '../lib/cache.js';
 import { config } from '../lib/config.js';

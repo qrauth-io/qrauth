@@ -1,4 +1,4 @@
-import type { ContentFieldDef } from '@vqr/shared';
+import type { ContentFieldDef } from '@qrauth/shared';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';

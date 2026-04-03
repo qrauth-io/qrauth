@@ -55,7 +55,7 @@ const sharedQueueOptions: Partial<QueueOptions> = {
  * Receives a job for every QR code scan.
  * Processors run fraud checks, update trust scores, and write Scan records.
  */
-export const scanQueue = new Queue('vqr-scans', {
+export const scanQueue = new Queue('qrauth-scans', {
   connection: createQueueConnection(),
   ...sharedQueueOptions,
 });
@@ -65,7 +65,7 @@ export const scanQueue = new Queue('vqr-scans', {
  * reports. Processors classify, persist FraudIncidents, and may enqueue
  * alert jobs.
  */
-export const fraudQueue = new Queue('vqr-fraud', {
+export const fraudQueue = new Queue('qrauth-fraud', {
   connection: createQueueConnection(),
   ...sharedQueueOptions,
   defaultJobOptions: {
@@ -82,7 +82,24 @@ export const fraudQueue = new Queue('vqr-fraud', {
  * Handles outbound alert delivery (webhooks, emails, SMS) when fraud
  * incidents exceed a severity threshold or require issuer notification.
  */
-export const alertQueue = new Queue('vqr-alerts', {
+export const alertQueue = new Queue('qrauth-alerts', {
+  connection: createQueueConnection(),
+  ...sharedQueueOptions,
+  defaultJobOptions: {
+    ...sharedQueueOptions.defaultJobOptions,
+    attempts: 5,
+    backoff: {
+      type: 'exponential',
+      delay: 2_000,
+    },
+  },
+});
+
+/**
+ * Delivers outbound webhook events to third-party app endpoints.
+ * Uses exponential backoff with up to 5 attempts to ensure reliable delivery.
+ */
+export const webhookQueue = new Queue('qrauth-webhooks', {
   connection: createQueueConnection(),
   ...sharedQueueOptions,
   defaultJobOptions: {
@@ -108,5 +125,6 @@ export async function closeQueues(): Promise<void> {
     scanQueue.close(),
     fraudQueue.close(),
     alertQueue.close(),
+    webhookQueue.close(),
   ]);
 }

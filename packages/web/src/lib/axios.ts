@@ -93,7 +93,18 @@ export const endpoints = {
     details: (id: string) => `/api/v1/apps/${id}`,
     rotateSecret: (id: string) => `/api/v1/apps/${id}/rotate-secret`,
   },
+  apiKeys: {
+    list: '/api/v1/api-keys',
+    create: '/api/v1/api-keys',
+    revoke: (id: string) => `/api/v1/api-keys/${id}`,
+  },
   onboarding: {
     complete: '/api/v1/auth/onboarding/complete',
+  },
+  usage: {
+    root: '/api/v1/usage',
+  },
+  webhookDeliveries: {
+    list: '/api/v1/webhook-deliveries',
   },
 } as const;

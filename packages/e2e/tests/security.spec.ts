@@ -1,5 +1,5 @@
 /**
- * vQR Security Tests — Automated penetration testing
+ * QRAuth Security Tests — Automated penetration testing
  *
  * Tests every defensive layer by simulating real attack scenarios.
  * These prove our security claims to potential clients.
@@ -86,7 +86,7 @@ test.describe('Tier 2 — Clone Detection', () => {
 
     expect(html).toContain('origin-warning');
     expect(html).toContain('location.hostname');
-    expect(html).toContain('not served from an official vQR domain');
+    expect(html).toContain('not served from an official QRAuth domain');
   });
 });
 

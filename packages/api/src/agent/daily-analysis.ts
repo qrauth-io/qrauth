@@ -20,7 +20,7 @@ async function main() {
     const messages: Anthropic.MessageParam[] = [
       {
         role: 'user',
-        content: `Run your daily security and behavior analysis for the vQR platform. Today is ${new Date().toISOString().slice(0, 10)}.
+        content: `Run your daily security and behavior analysis for the QRAuth platform. Today is ${new Date().toISOString().slice(0, 10)}.
 
 Start by querying the last 24 hours of scan patterns and fraud incidents. Compare against the 7-day baseline. Then analyze login events and organization activity.
 

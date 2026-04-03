@@ -1,7 +1,7 @@
 import type { QRStyle } from 'src/components/qr-code';
 
 import { useRef, useState } from 'react';
-import { getContentType } from '@vqr/shared';
+import { getContentType } from '@qrauth/shared';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -33,7 +33,7 @@ const DEFAULT_STYLE: QRStyle = {
   fgColor: '#000000',
   bgColor: '#FFFFFF',
   showLogo: true,
-  captionText: 'vQR Verified',
+  captionText: 'QRAuth Verified',
 };
 
 // ----------------------------------------------------------------------
@@ -41,7 +41,7 @@ const DEFAULT_STYLE: QRStyle = {
 export function PreviewVerifyBar() {
   return (
     <Box sx={{ px: 2, py: 1, bgcolor: '#00A76F', color: 'white', display: 'flex', alignItems: 'center', gap: 1, fontSize: 12, fontWeight: 600 }}>
-      <span>&#10003;</span> Verified by vQR
+      <span>&#10003;</span> Verified by QRAuth
     </Box>
   );
 }
@@ -49,7 +49,7 @@ export function PreviewVerifyBar() {
 export function PreviewFooter() {
   return (
     <Box sx={{ p: 1.5, textAlign: 'center', borderTop: '1px solid #f0f0f0', fontSize: 10, color: '#919eab' }}>
-      Secured by <strong>vQR</strong>
+      Secured by <strong>QRAuth</strong>
     </Box>
   );
 }

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { AuthSessionService } from '../services/auth-session.js';
 import { hashString } from '../lib/crypto.js';
-import { AUTH_SESSION_EXPIRY_SECONDS } from '@vqr/shared';
+import { AUTH_SESSION_EXPIRY_SECONDS } from '@qrauth/shared';
 import { getEnabledProviderNames } from '../lib/oauth.js';
 
 export default async function approvalRoutes(fastify: FastifyInstance): Promise<void> {
@@ -35,7 +35,7 @@ export default async function approvalRoutes(fastify: FastifyInstance): Promise<
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vQR Auth — Verify Your Identity</title>
+  <title>QRAuth — Verify Your Identity</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -162,7 +162,7 @@ export default async function approvalRoutes(fastify: FastifyInstance): Promise<
       <path d="M60 16L24 33v25c0 23.5 15.3 45.5 36 50.4 20.7-4.9 36-26.9 36-50.4V33L60 16z" fill="#263B66"/>
       <circle cx="60" cy="56" r="24" fill="#00A76F"/>
       <path d="M50 56l7 7 13-14" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="60" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">vQR</text>
+      <text x="60" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">QRAuth</text>
     </svg>
 
     ${expired ? `
@@ -436,7 +436,7 @@ export default async function approvalRoutes(fastify: FastifyInstance): Promise<
     `}
 
     <div class="footer">
-      Secured by <a href="https://qrauth.io">vQR</a> &mdash; Verified QR Code Security Platform
+      Secured by <a href="https://qrauth.io">QRAuth</a> &mdash; Verified QR Code Security Platform
     </div>
   </div>
 </body>

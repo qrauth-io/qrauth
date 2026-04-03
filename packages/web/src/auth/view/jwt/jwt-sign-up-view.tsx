@@ -137,7 +137,7 @@ export function JwtSignUpView() {
   return (
     <>
       <FormHead
-        title="Create your vQR account"
+        title="Create your QRAuth account"
         description={
           <>
             {`Already have an account? `}

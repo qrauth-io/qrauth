@@ -1,10 +1,12 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { zodValidator } from '../middleware/validate.js';
-import { createAuthSessionSchema } from '@vqr/shared';
+import { createAuthSessionSchema } from '@qrauth/shared';
 import { AppService } from '../services/app.js';
+import { WebhookService } from '../services/webhook.js';
 import { AuthSessionService, subscribeToSession } from '../services/auth-session.js';
 import { hashString } from '../lib/crypto.js';
 import { collectRequestMetadata } from '../lib/metadata.js';
+import { UsageService } from '../services/usage.js';
 
 /**
  * Authenticate a request using app credentials (Basic auth or X-Client-Id/X-Client-Secret headers).
@@ -90,6 +92,13 @@ export default async function authSessionRoutes(fastify: FastifyInstance): Promi
     }
 
     const session = await sessionService.createSession(app.id, body);
+
+    // Track auth session usage
+    const usageService = new UsageService(fastify.prisma);
+    const appRecord = await fastify.prisma.app.findUnique({ where: { id: app.id }, select: { organizationId: true } });
+    if (appRecord) {
+      usageService.increment(appRecord.organizationId, 'authSessions').catch(() => {});
+    }
 
     // Build the QR URL — this is what gets encoded in the QR code
     const baseUrl = process.env.WEBAUTHN_ORIGIN ?? `http://localhost:${config_port(fastify)}`;
@@ -250,6 +259,13 @@ export default async function authSessionRoutes(fastify: FastifyInstance): Promi
         },
       });
 
+      // Emit webhook (fire-and-forget).
+      const webhookService = new WebhookService(fastify.prisma);
+      webhookService.emit(session.app.organizationId, {
+        event: 'auth.approved',
+        data: { sessionId: session.id, appId: session.appId },
+      }).catch(() => {});
+
       return reply.send(result);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -272,6 +288,14 @@ export default async function authSessionRoutes(fastify: FastifyInstance): Promi
 
     try {
       await sessionService.denySession(session.id);
+
+      // Emit webhook (fire-and-forget).
+      const webhookService = new WebhookService(fastify.prisma);
+      webhookService.emit(session.app.organizationId, {
+        event: 'auth.denied',
+        data: { sessionId: session.id, appId: session.appId },
+      }).catch(() => {});
+
       return reply.send({ status: 'DENIED' });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';

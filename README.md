@@ -1,8 +1,8 @@
-# vQR — Verified QR Code Security Platform
+# QRAuth — Verified QR Code Security Platform
 
 **Cryptographically signed, geospatially bound, anti-phishing QR code verification for the physical world.**
 
-vQR is an open-source security platform that makes physical QR codes tamper-proof and verifiable. It combines digital signatures, geospatial binding, anti-proxy detection, and WebAuthn passkeys to create a trust layer for QR codes deployed on parking meters, government signs, payment terminals, restaurant menus, and any other public-facing surface.
+QRAuth is an open-source security platform that makes physical QR codes tamper-proof and verifiable. It combines digital signatures, geospatial binding, anti-proxy detection, and WebAuthn passkeys to create a trust layer for QR codes deployed on parking meters, government signs, payment terminals, restaurant menus, and any other public-facing surface.
 
 ---
 
@@ -44,15 +44,15 @@ The ticket fraud detection market alone is valued at USD 1.87 billion (2024), gr
 
 ## Solution
 
-vQR creates a **Certificate Authority for physical QR codes** — a trust infrastructure layer between QR code issuers and scanners.
+QRAuth creates a **Certificate Authority for physical QR codes** — a trust infrastructure layer between QR code issuers and scanners.
 
 ### How It Works
 
-1. **Issuer Registration**: Municipality, business, or institution registers on the vQR platform, undergoes KYC verification, and receives a cryptographic key pair.
+1. **Issuer Registration**: Municipality, business, or institution registers on the QRAuth platform, undergoes KYC verification, and receives a cryptographic key pair.
 
 2. **QR Code Generation**: Issuer generates QR codes through the platform. Each QR encodes a short verification URL:
    ```
-   https://vqr.io/v/[short-token]
+   https://qrauth.io/v/[short-token]
    ```
 
 3. **Scan & Verify**: Any user scans the QR with their phone camera (no app required). The URL opens a verification page showing issuer identity, registration date, location match, and a server-generated ephemeral visual proof.
@@ -147,15 +147,15 @@ Public, append-only ledger of all QR code issuances. Each entry contains: issuer
 
 ## Security Model
 
-vQR implements a four-tier progressive security model. Each tier builds on the previous, and users automatically escalate through tiers over time.
+QRAuth implements a four-tier progressive security model. Each tier builds on the previous, and users automatically escalate through tiers over time.
 
 ### Tier 1 — Cryptographic Signing (Baseline)
 
-Every QR code generated through vQR includes a digital signature in its verification record. The signature is created using ECDSA-P256 with the issuer's private key (managed in KMS).
+Every QR code generated through QRAuth includes a digital signature in its verification record. The signature is created using ECDSA-P256 with the issuer's private key (managed in KMS).
 
 **Verification flow:**
 ```
-1. User scans QR → browser opens https://vqr.io/v/[token]
+1. User scans QR → browser opens https://qrauth.io/v/[token]
 2. Edge worker looks up token → retrieves: destination_url, issuer_id, signature, geo_data
 3. Edge worker fetches issuer's public key (cached at edge)
 4. Edge worker verifies: ECDSA_Verify(public_key, signature, payload_hash)
@@ -182,7 +182,7 @@ The image is rendered server-side using Sharp or Canvas API. It is NOT HTML/CSS 
 
 ### Tier 3 — Anti-Proxy Detection (Anti-MitM)
 
-Defends against real-time reverse proxying where a scammer forwards requests to the real vQR server and relays responses to the victim.
+Defends against real-time reverse proxying where a scammer forwards requests to the real QRAuth server and relays responses to the victim.
 
 **Detection signals:**
 
@@ -204,7 +204,7 @@ Defends against real-time reverse proxying where a scammer forwards requests to 
 The strongest security tier, leveraging hardware-backed cryptographic authentication.
 
 **How WebAuthn defeats phishing:**
-WebAuthn credentials are **origin-bound** at the OS/hardware level. A passkey created for `https://vqr.io` will ONLY activate on `https://vqr.io`. A phishing page on `https://vqr-io.com` or any other domain physically cannot trigger the passkey prompt. This is enforced by the authenticator (Secure Enclave on Apple, Titan chip on Android, TPM on Windows), not by JavaScript — making it immune to code injection or proxy attacks.
+WebAuthn credentials are **origin-bound** at the OS/hardware level. A passkey created for `https://qrauth.io` will ONLY activate on `https://qrauth.io`. A phishing page on `https://qrauth-io.com` or any other domain physically cannot trigger the passkey prompt. This is enforced by the authenticator (Secure Enclave on Apple, Titan chip on Android, TPM on Windows), not by JavaScript — making it immune to code injection or proxy attacks.
 
 **Enrollment flow:**
 ```
@@ -212,14 +212,14 @@ WebAuthn credentials are **origin-bound** at the OS/hardware level. A passkey cr
 2. Verification page offers: "Create a passkey for instant verification"
 3. User taps → biometric prompt (Face ID / fingerprint)
 4. Browser generates ECDSA key pair, private key stored in Secure Enclave
-5. Public key sent to vQR server, associated with user's device
+5. Public key sent to QRAuth server, associated with user's device
 6. Enrollment complete — future scans trigger passkey automatically
 ```
 
 **Verification flow (returning user):**
 ```
-1. User scans any vQR code → browser opens verification URL
-2. Browser detects existing passkey for vqr.io → prompts biometric
+1. User scans any QRAuth code → browser opens verification URL
+2. Browser detects existing passkey for qrauth.io → prompts biometric
 3. Authenticator signs server challenge with private key
 4. Server verifies signature with stored public key
 5. Verification page shows: "Verified + Passkey Confirmed"
@@ -289,7 +289,7 @@ WebAuthn credentials are **origin-bound** at the OS/hardware level. A passkey cr
 ## Project Structure
 
 ```
-vqr/
+qrauth/
 ├── README.md
 ├── docker-compose.yml
 ├── .env.example
@@ -462,7 +462,7 @@ GET    /api/v1/transparency/proof/:token  # Get inclusion proof for token
 ### Example: Generate a Signed QR Code
 
 ```bash
-curl -X POST https://api.vqr.io/api/v1/qrcodes \
+curl -X POST https://api.qrauth.io/api/v1/qrcodes \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -482,8 +482,8 @@ curl -X POST https://api.vqr.io/api/v1/qrcodes \
 ```json
 {
   "token": "xK9m2pQ7",
-  "verification_url": "https://vqr.io/v/xK9m2pQ7",
-  "qr_image_url": "https://api.vqr.io/qr/xK9m2pQ7.png",
+  "verification_url": "https://qrauth.io/v/xK9m2pQ7",
+  "qr_image_url": "https://api.qrauth.io/qr/xK9m2pQ7.png",
   "signature": "MEUCIQD...base64...==",
   "issuer_id": "iss_thess_municipality",
   "created_at": "2026-04-01T12:00:00Z",
@@ -495,7 +495,7 @@ curl -X POST https://api.vqr.io/api/v1/qrcodes \
 ### Example: Verify a QR Code (API)
 
 ```bash
-curl https://api.vqr.io/api/v1/verify/xK9m2pQ7 \
+curl https://api.qrauth.io/api/v1/verify/xK9m2pQ7 \
   -H "X-Client-Lat: 40.6325" \
   -H "X-Client-Lng: 22.9410"
 ```
@@ -572,7 +572,7 @@ The mobile app serves as the **highest-security verification channel** and provi
 ```
 1. App periodically syncs issuer public keys from server → stores in WatermelonDB
 2. User scans QR code (no internet required)
-3. App parses vQR token from URL
+3. App parses QRAuth token from URL
 4. App looks up issuer public key in local cache
 5. App verifies ECDSA signature locally
 6. App checks GPS against cached geospatial data
@@ -602,8 +602,8 @@ The mobile app serves as the **highest-security verification channel** and provi
 
 ```bash
 # Clone the repository
-git clone https://github.com/vqr-io/vqr.git
-cd vqr
+git clone https://github.com/qrauth-io/qrauth.git
+cd qrauth
 
 # Install dependencies (monorepo)
 npm install
@@ -636,7 +636,7 @@ This starts:
 
 ```bash
 # Database
-DATABASE_URL=postgresql://vqr:vqr@localhost:5432/vqr
+DATABASE_URL=postgresql://qrauth:qrauth@localhost:5432/qrauth
 REDIS_URL=redis://localhost:6379
 
 # Cryptography
@@ -650,13 +650,13 @@ CF_API_TOKEN=
 CF_ZONE_ID=
 
 # WebAuthn
-WEBAUTHN_RP_NAME=vQR
-WEBAUTHN_RP_ID=localhost              # vqr.io in production
-WEBAUTHN_ORIGIN=http://localhost:3000 # https://vqr.io in production
+WEBAUTHN_RP_NAME=QRAuth
+WEBAUTHN_RP_ID=localhost              # qrauth.io in production
+WEBAUTHN_ORIGIN=http://localhost:3000 # https://qrauth.io in production
 
 # Analytics
 CLICKHOUSE_URL=http://localhost:8123
-CLICKHOUSE_DATABASE=vqr_analytics
+CLICKHOUSE_DATABASE=qrauth_analytics
 
 # Alerts
 SMTP_HOST=
@@ -708,7 +708,7 @@ PUSH_VAPID_PRIVATE_KEY=
 | Redis | Upstash (free tier) | $0 (up to 10K commands/day) |
 | Analytics | ClickHouse Cloud (dev tier) | $0-25 |
 | Portal Hosting | Cloudflare Pages (free) | $0 |
-| Domain (vqr.io) | Registrar | ~$30/year |
+| Domain (qrauth.io) | Registrar | ~$30/year |
 | **Total MVP** | | **$10-50/month** |
 
 ---
@@ -718,7 +718,7 @@ PUSH_VAPID_PRIVATE_KEY=
 ### Revenue Streams
 
 **1. SaaS Platform (Primary)**
-- Free tier: up to 50 QR codes, basic verification, vQR branding on verification page
+- Free tier: up to 50 QR codes, basic verification, QRAuth branding on verification page
 - Pro ($49-199/month): unlimited QR codes, geospatial binding, analytics dashboard, custom branding
 - Enterprise ($500-5000/month): API access, white-label, SLA, dedicated support, bulk management
 
@@ -731,7 +731,7 @@ PUSH_VAPID_PRIVATE_KEY=
 - Sold as add-on to municipal and enterprise customers
 
 **4. Tamper-Evident Sticker Packs (Future Physical Product)**
-- Pre-printed vQR-encoded stickers on destructible vinyl substrate
+- Pre-printed QRAuth-encoded stickers on destructible vinyl substrate
 - $0.50-1.00 per sticker (BOM: $0.05-0.15)
 - Ordered through the platform, shipped directly to issuers
 
@@ -818,15 +818,15 @@ npm run lint
 
 ## License
 
-This project is licensed under the [BSL 1.1](LICENSE) (Business Source License) — free for non-commercial use, with automatic conversion to Apache 2.0 after 3 years. Commercial use requires a license from vQR.
+This project is licensed under the [BSL 1.1](LICENSE) (Business Source License) — free for non-commercial use, with automatic conversion to Apache 2.0 after 3 years. Commercial use requires a license from QRAuth.
 
 ---
 
 ## Contact
 
-- Website: https://vqr.io
-- Email: hello@vqr.io
-- GitHub: https://github.com/vqr-io/vqr
+- Website: https://qrauth.io
+- Email: hello@qrauth.io
+- GitHub: https://github.com/qrauth-io/qrauth
 
 ---
 

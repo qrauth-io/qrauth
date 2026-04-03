@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import { VQR_LOGO_SVG_DATA_URI } from './vqr-logo';
+import { QRAUTH_LOGO_SVG_DATA_URI } from './qrauth-logo';
 
 // ----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ export function QRPreview({ value, style, size = 260, token }: Props) {
           bgColor={style.bgColor}
           {...(style.showLogo && {
             imageSettings: {
-              src: VQR_LOGO_SVG_DATA_URI,
+              src: QRAUTH_LOGO_SVG_DATA_URI,
               x: undefined,
               y: undefined,
               height: Math.round(size * 0.22),

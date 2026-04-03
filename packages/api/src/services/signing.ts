@@ -7,7 +7,7 @@ import {
   signPayload,
   verifySignature,
 } from '../lib/crypto.js';
-import { hashPayload } from '@vqr/shared';
+import { hashPayload } from '@qrauth/shared';
 
 export class SigningService {
   constructor(private prisma: PrismaClient) {}

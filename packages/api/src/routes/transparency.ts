@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { transparencyLogQuerySchema } from '@vqr/shared';
+import { transparencyLogQuerySchema } from '@qrauth/shared';
 import { zodValidator } from '../middleware/validate.js';
 import { rateLimitPublic } from '../middleware/rateLimit.js';
 import { TransparencyLogService } from '../services/transparency.js';

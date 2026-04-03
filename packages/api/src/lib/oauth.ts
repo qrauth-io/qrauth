@@ -168,7 +168,7 @@ export async function exchangeCodeForUser(
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: 'application/json',
-      'User-Agent': 'vQR-Auth/1.0', // Required by GitHub
+      'User-Agent': 'QRAuth/1.0', // Required by GitHub
     },
   });
 
@@ -180,7 +180,7 @@ export async function exchangeCodeForUser(
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
-        'User-Agent': 'vQR-Auth/1.0',
+        'User-Agent': 'QRAuth/1.0',
       },
     });
     const emails = await emailRes.json() as Array<{ email: string; primary: boolean; verified: boolean }>;

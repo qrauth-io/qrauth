@@ -11,7 +11,7 @@ import {
   inviteUserSchema,
   updateMemberRoleSchema,
   INVITATION_EXPIRY_HOURS,
-} from '@vqr/shared';
+} from '@qrauth/shared';
 import { randomBytes } from 'node:crypto';
 
 const createApiKeySchema = z.object({
@@ -534,11 +534,11 @@ export default async function organizationRoutes(fastify: FastifyInstance): Prom
     const token = await domainService.generateVerifyToken(id);
     return reply.send({
       token,
-      instruction: `Add a DNS TXT record to ${org.domain}: vqr-verify=${token}`,
+      instruction: `Add a DNS TXT record to ${org.domain}: qrauth-verify=${token}`,
       dnsRecord: {
         type: 'TXT',
         name: org.domain,
-        value: `vqr-verify=${token}`,
+        value: `qrauth-verify=${token}`,
       },
     });
   });

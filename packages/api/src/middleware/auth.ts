@@ -121,5 +121,5 @@ async function authPlugin(fastify: FastifyInstance): Promise<void> {
 }
 
 export const authMiddleware = fp(authPlugin, {
-  name: 'vqr-auth',
+  name: 'qrauth-auth',
 });

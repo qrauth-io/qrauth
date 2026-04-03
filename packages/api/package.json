@@ -1,5 +1,5 @@
 {
-  "name": "@vqr/api",
+  "name": "@qrauth/api",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/server.js",
@@ -22,12 +22,13 @@
     "@fastify/sensible": "^6.0.0",
     "@fastify/static": "^9.0.0",
     "@prisma/client": "^6.0.0",
-    "@vqr/shared": "*",
+    "@qrauth/shared": "*",
     "bullmq": "^5.0.0",
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.0",
     "ioredis": "^5.4.0",
     "nodemailer": "^8.0.4",
+    "stripe": "^17.0.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

@@ -131,7 +131,7 @@ export function JwtSignInView() {
   return (
     <>
       <FormHead
-        title="Sign in to vQR"
+        title="Sign in to QRAuth"
         description={
           <>
             {`Don’t have an account? `}

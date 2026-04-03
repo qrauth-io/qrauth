@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import { MAX_FAILED_LOGIN_ATTEMPTS, ACCOUNT_LOCKOUT_MINUTES } from '@vqr/shared';
+import { MAX_FAILED_LOGIN_ATTEMPTS, ACCOUNT_LOCKOUT_MINUTES } from '@qrauth/shared';
 import type { RequestMetadata } from '../lib/metadata.js';
 
 export class LoginEventService {

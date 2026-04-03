@@ -39,9 +39,17 @@ export const navData: NavSectionProps['data'] = [
     ],
   },
   {
-    subheader: 'Organization',
+    subheader: 'Developer',
     items: [
       { title: 'Auth Apps', path: paths.dashboard.apps.root, icon: ICONS.lock },
+      { title: 'API Keys', path: paths.dashboard.apiKeys, icon: ICONS.label },
+      { title: 'Webhook Logs', path: paths.dashboard.webhookLogs, icon: ICONS.params },
+      { title: 'Usage', path: paths.dashboard.usage, icon: ICONS.analytics },
+    ],
+  },
+  {
+    subheader: 'Organization',
+    items: [
       { title: 'Team', path: paths.dashboard.team, icon: ICONS.user },
       { title: 'Settings', path: paths.dashboard.settings, icon: ICONS.params },
     ],

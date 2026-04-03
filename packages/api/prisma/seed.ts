@@ -1,8 +1,8 @@
 /**
- * Database seeder for the vQR API.
+ * Database seeder for the QRAuth API.
  *
  * Run with:
- *   yarn workspace @vqr/api db:seed
+ *   yarn workspace @qrauth/api db:seed
  *
  * The script is idempotent at the organization level: it upserts the test
  * organization by slug so it can be re-run safely against a database that was
@@ -14,7 +14,7 @@ import { PrismaClient } from '@prisma/client';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { generateKeyPair, signPayload, hashString } from '../src/lib/crypto.js';
-import { generateToken, hashPayload } from '@vqr/shared';
+import { generateToken, hashPayload } from '@qrauth/shared';
 import { GeoService } from '../src/services/geo.js';
 import { TransparencyLogService } from '../src/services/transparency.js';
 import { hashPassword } from '../src/lib/password.js';
@@ -81,7 +81,7 @@ function jitterCoord(value: number, magnitudeM: number = 30): number {
 // ---------------------------------------------------------------------------
 
 async function seed(): Promise<void> {
-  console.log('=== vQR seed script starting ===\n');
+  console.log('=== QRAuth seed script starting ===\n');
 
   // --------------------------------------------------------------------------
   // a. Create (or fetch) the test organization

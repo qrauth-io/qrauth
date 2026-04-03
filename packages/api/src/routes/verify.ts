@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { verifyQuerySchema } from '@vqr/shared';
+import { verifyQuerySchema } from '@qrauth/shared';
 import { zodValidator } from '../middleware/validate.js';
 import { rateLimitPublic } from '../middleware/rateLimit.js';
 import { SigningService } from '../services/signing.js';
@@ -12,11 +12,12 @@ import { hashString, stableStringify } from '../lib/crypto.js';
 import { scanQueue } from '../lib/queue.js';
 import { collectRequestMetadata } from '../lib/metadata.js';
 import { config } from '../lib/config.js';
-import { CACHE_TTL } from '@vqr/shared';
+import { CACHE_TTL } from '@qrauth/shared';
 import { z } from 'zod';
 import { getRenderer } from '../renderers/index.js';
 import { renderShell } from '../renderers/shell.js';
 import type { RenderContext } from '../renderers/index.js';
+import { UsageService } from '../services/usage.js';
 
 // ---------------------------------------------------------------------------
 // Local parameter schema
@@ -325,6 +326,10 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
         fastify.log.warn({ err, token }, 'Failed to enqueue scan recording');
       });
 
+    // Track verification usage
+    const usageService = new UsageService(fastify.prisma);
+    usageService.increment(qrCode.organizationId, 'verifications').catch(() => {});
+
     // ------------------------------------------------------------------
     // 9. Content negotiation: HTML for browsers, JSON for API clients
     // ------------------------------------------------------------------
@@ -336,7 +341,7 @@ export default async function verifyRoutes(fastify: FastifyInstance): Promise<vo
       // Collect ephemeral proof data — personalized, impossible for a clone to reproduce
       const meta = await collectRequestMetadata(request);
       const proofTimestamp = new Date().toISOString();
-      const proofHmac = hashString(`${config.visualProof.secret || 'vqr'}:${token}:${proofTimestamp}:${request.ip}`);
+      const proofHmac = hashString(`${config.visualProof.secret || 'qrauth'}:${token}:${proofTimestamp}:${request.ip}`);
       const ephemeralProof = {
         city: meta.ipCity || meta.ipCountry || 'Unknown location',
         device: `${meta.browser || 'Unknown browser'} on ${meta.os || 'Unknown OS'}`,
@@ -482,7 +487,7 @@ function renderVerificationPage(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vQR Verification — ${esc(token)}</title>
+  <title>QRAuth Verification — ${esc(token)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -586,11 +591,11 @@ function renderVerificationPage(
             ? '<circle cx="60" cy="56" r="24" fill="rgba(255,255,255,0.3)"/><path d="M50 56l7 7 13-14" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
             : '<circle cx="60" cy="56" r="24" fill="rgba(255,255,255,0.3)"/><path d="M52 48l16 16M68 48L52 64" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
           }
-          <text x="60" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">vQR</text>
+          <text x="60" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="16" fill="#fff" letter-spacing="1">QRAuth</text>
         </svg>
         <h1>${verified ? 'Verified QR Code' : 'Verification Failed'}</h1>
         <p>${verified
-          ? 'This QR code is authentic and registered on the vQR platform.'
+          ? 'This QR code is authentic and registered on the QRAuth platform.'
           : (result.reason || 'This QR code could not be verified.')
         }</p>
       </div>
@@ -711,12 +716,12 @@ function renderVerificationPage(
         <div class="time">Scanned at ${result.scannedAt}</div>
 
         <div id="origin-warning" style="display:none;margin-top:12px;padding:12px 16px;background:#FFEBEE;border-radius:8px;border-left:4px solid #C62828;color:#C62828;font-size:13px;">
-          <strong>&#9888; WARNING:</strong> This verification page is not being served from the official vQR domain. This may be a cloned phishing page. Do NOT enter any information.
+          <strong>&#9888; WARNING:</strong> This verification page is not being served from the official QRAuth domain. This may be a cloned phishing page. Do NOT enter any information.
         </div>
       </div>
 
       <div class="footer">
-        Secured by <a href="https://vqr.io"><strong>vQR</strong></a> — Verified QR Code Security Platform<br>
+        Secured by <a href="https://qrauth.io"><strong>QRAuth</strong></a> — Verified QR Code Security Platform<br>
         <span style="font-size:10px;margin-top:4px;display:inline-block;">Token: ${esc(token)}</span>
       </div>
     </div>
@@ -724,7 +729,7 @@ function renderVerificationPage(
     <script>
       // Origin integrity check — detect if this page is being served from a clone
       (function() {
-        var allowedHosts = ['qrauth.io', 'vqr.io', 'vqr.progressnet.io', 'localhost'];
+        var allowedHosts = ['qrauth.io', 'localhost'];
         var currentHost = window.location.hostname;
         var isLegit = allowedHosts.some(function(h) { return currentHost === h || currentHost.endsWith('.' + h); });
         if (!isLegit) {

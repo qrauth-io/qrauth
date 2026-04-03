@@ -25,7 +25,8 @@ import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
-const STEPS = ['Organization', 'Use Case', 'First QR Code'];
+const STEPS_DEFAULT = ['Organization', 'Use Case', 'First QR Code'];
+const STEPS_DEVELOPER = ['Organization', 'Use Case', 'API Key'];
 
 const USE_CASES = [
   { id: 'MUNICIPALITY', label: 'Municipality', desc: 'Government & public services', icon: '🏛️' },
@@ -47,10 +48,18 @@ export default function OnboardingPage() {
   const [useCase, setUseCase] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // QR creation (step 3)
+  // QR creation (step 3 — default path)
   const [qrUrl, setQrUrl] = useState('');
   const [qrLabel, setQrLabel] = useState('');
   const [creatingQR, setCreatingQR] = useState(false);
+
+  // API key (step 3 — developer path)
+  const [generatedKey, setGeneratedKey] = useState('');
+  const [generatingKey, setGeneratingKey] = useState(false);
+  const [keyCopied, setKeyCopied] = useState(false);
+
+  const isDeveloper = useCase === 'DEVELOPER';
+  const STEPS = isDeveloper ? STEPS_DEVELOPER : STEPS_DEFAULT;
 
   const handleComplete = async () => {
     setSaving(true);
@@ -60,13 +69,31 @@ export default function OnboardingPage() {
         useCase,
       });
       await checkUserSession?.();
-      showSuccess('Welcome to vQR!');
+      showSuccess('Welcome to QRAuth!');
       router.push(paths.dashboard.root);
     } catch (err: any) {
       showError(err.message || 'Failed to complete setup');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleGenerateKey = async () => {
+    setGeneratingKey(true);
+    try {
+      const res = await axios.post(endpoints.apiKeys.create, { label: 'Quickstart key' });
+      setGeneratedKey(res.data.key);
+    } catch (err: any) {
+      showError(err.message || 'Failed to generate API key');
+    } finally {
+      setGeneratingKey(false);
+    }
+  };
+
+  const handleCopyKey = () => {
+    navigator.clipboard.writeText(generatedKey);
+    setKeyCopied(true);
+    setTimeout(() => setKeyCopied(false), 2000);
   };
 
   const handleCreateQR = async () => {
@@ -100,9 +127,9 @@ export default function OnboardingPage() {
       <Container maxWidth="sm">
         {/* Logo */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Box component="img" src="/logo.svg" alt="vQR" sx={{ width: 56, height: 56, mb: 1 }} />
+          <Box component="img" src="/logo.svg" alt="QRAuth" sx={{ width: 56, height: 56, mb: 1 }} />
           <Typography variant="h4" fontWeight={800} color="#1B2A4A">
-            Welcome to vQR
+            Welcome to QRAuth
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Let&apos;s set up your account in 30 seconds
@@ -145,7 +172,7 @@ export default function OnboardingPage() {
             {activeStep === 1 && (
               <Stack spacing={3}>
                 <Typography variant="h6" fontWeight={700}>
-                  What will you use vQR for?
+                  What will you use QRAuth for?
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   This helps us tailor your experience.
@@ -182,14 +209,73 @@ export default function OnboardingPage() {
               </Stack>
             )}
 
-            {/* Step 3: First QR Code */}
-            {activeStep === 2 && (
+            {/* Step 3: Developer fast-path — API Key */}
+            {activeStep === 2 && isDeveloper && (
+              <Stack spacing={3}>
+                <Typography variant="h6" fontWeight={700}>
+                  Get your API key
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Generate an API key to start integrating with the QRAuth SDK.
+                </Typography>
+
+                {!generatedKey ? (
+                  <Button
+                    variant="contained"
+                    onClick={handleGenerateKey}
+                    disabled={generatingKey}
+                    sx={{ bgcolor: '#1B2A4A', '&:hover': { bgcolor: '#263B66' }, alignSelf: 'flex-start' }}
+                  >
+                    {generatingKey ? 'Generating...' : 'Generate API Key'}
+                  </Button>
+                ) : (
+                  <Stack spacing={2}>
+                    <TextField
+                      label="Your API Key"
+                      value={generatedKey}
+                      fullWidth
+                      slotProps={{
+                        input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 13 } },
+                        inputLabel: { shrink: true },
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={handleCopyKey}
+                      size="small"
+                      sx={{ alignSelf: 'flex-start' }}
+                    >
+                      {keyCopied ? 'Copied!' : 'Copy to Clipboard'}
+                    </Button>
+                    <Box
+                      component="pre"
+                      sx={{ bgcolor: '#0f1724', borderRadius: 2, p: 2.5, fontFamily: 'monospace', fontSize: 12, lineHeight: 1.8, color: '#E2E8F0', overflow: 'auto', whiteSpace: 'pre-wrap', m: 0 }}
+                      dangerouslySetInnerHTML={{ __html: [
+                        '<span style="color:#64748B">$ npm install @qrauth/node</span>',
+                        '',
+                        '<span style="color:#C084FC">import</span> { QRAuth } <span style="color:#C084FC">from</span> <span style="color:#34D399">\'@qrauth/node\'</span>;',
+                        `const qrauth = new QRAuth({ apiKey: '${generatedKey.slice(0, 20)}...' });`,
+                        '',
+                        '<span style="color:#64748B">// Create your first verified QR code</span>',
+                        'const qr = await qrauth.create({ destination: \'https://...\' });',
+                      ].join('\n') }}
+                    />
+                    <Typography variant="caption" color="warning.main">
+                      Store this key securely — it will not be shown again.
+                    </Typography>
+                  </Stack>
+                )}
+              </Stack>
+            )}
+
+            {/* Step 3: Default path — First QR Code */}
+            {activeStep === 2 && !isDeveloper && (
               <Stack spacing={3}>
                 <Typography variant="h6" fontWeight={700}>
                   Create your first QR code
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Enter a URL you want to protect with vQR verification. You can skip this and
+                  Enter a URL you want to protect with QRAuth verification. You can skip this and
                   create one later.
                 </Typography>
                 <TextField
@@ -240,6 +326,15 @@ export default function OnboardingPage() {
                     sx={{ bgcolor: '#1B2A4A', '&:hover': { bgcolor: '#263B66' } }}
                   >
                     Continue
+                  </Button>
+                ) : isDeveloper ? (
+                  <Button
+                    variant="contained"
+                    onClick={handleComplete}
+                    disabled={saving}
+                    sx={{ bgcolor: '#00A76F', '&:hover': { bgcolor: '#007B55' } }}
+                  >
+                    {saving ? 'Setting up...' : generatedKey ? 'Go to Dashboard' : 'Skip & Finish'}
                   </Button>
                 ) : (
                   <Button

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { analyticsQuerySchema } from '@vqr/shared';
+import { analyticsQuerySchema } from '@qrauth/shared';
 import { zodValidator } from '../middleware/validate.js';
 import { authorize } from '../middleware/authorize.js';
 import { rateLimitAuth } from '../middleware/rateLimit.js';

@@ -182,7 +182,7 @@ export function QRStylePicker({ value, onChange }: Props) {
               }}
             >
               <Typography variant="body2" fontWeight={value.showLogo === show ? 700 : 400}>
-                {show ? 'With vQR Badge' : 'No Badge'}
+                {show ? 'With QRAuth Badge' : 'No Badge'}
               </Typography>
             </ButtonBase>
           ))}
@@ -199,7 +199,7 @@ export function QRStylePicker({ value, onChange }: Props) {
           size="small"
           value={value.captionText}
           onChange={(e) => onChange({ ...value, captionText: e.target.value })}
-          placeholder="vQR Verified"
+          placeholder="QRAuth Verified"
           helperText="Displayed below the QR code"
         />
       </Box>

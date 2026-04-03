@@ -13,7 +13,7 @@ export class AdaptiveScoringService {
    * Get the current weight for a signal type for an organization.
    */
   async getWeight(orgId: string, signalType: string): Promise<number> {
-    const key = `vqr:weights:${orgId}`;
+    const key = `qrauth:weights:${orgId}`;
     const stored = await redis.hget(key, signalType);
     if (stored) return parseFloat(stored);
     return DEFAULT_WEIGHTS[signalType] ?? 15;
@@ -23,7 +23,7 @@ export class AdaptiveScoringService {
    * Get all weights for an organization.
    */
   async getAllWeights(orgId: string): Promise<Record<string, number>> {
-    const key = `vqr:weights:${orgId}`;
+    const key = `qrauth:weights:${orgId}`;
     const stored = await redis.hgetall(key);
     const weights = { ...DEFAULT_WEIGHTS };
     for (const [k, v] of Object.entries(stored)) {
@@ -50,7 +50,7 @@ export class AdaptiveScoringService {
       ? Math.max(5, current - adjustment)   // Floor of 5
       : Math.min(50, current + adjustment); // Ceiling of 50
 
-    const key = `vqr:weights:${orgId}`;
+    const key = `qrauth:weights:${orgId}`;
     await redis.hset(key, signalType, newWeight.toFixed(1));
     return newWeight;
   }

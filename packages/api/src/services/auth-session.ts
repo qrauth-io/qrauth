@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { signPayload, hashString } from '../lib/crypto.js';
 import { config } from '../lib/config.js';
 import { cacheSet, cacheGet, cacheDel } from '../lib/cache.js';
-import { AUTH_SESSION_EXPIRY_SECONDS } from '@vqr/shared';
+import { AUTH_SESSION_EXPIRY_SECONDS } from '@qrauth/shared';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 

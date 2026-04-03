@@ -6,13 +6,13 @@ export class AppService {
 
   /**
    * Generate a client ID and secret for an app.
-   * clientId: "vqr_app_" + 16 random hex chars (public, shown in dashboards)
-   * clientSecret: "vqr_secret_" + 64 random hex chars (shown ONCE at creation)
+   * clientId: "qrauth_app_" + 16 random hex chars (public, shown in dashboards)
+   * clientSecret: "qrauth_secret_" + 64 random hex chars (shown ONCE at creation)
    * We store only the SHA-256 hash of the secret.
    */
   generateCredentials(): { clientId: string; clientSecret: string; clientSecretHash: string } {
-    const clientId = `vqr_app_${randomBytes(8).toString('hex')}`;
-    const clientSecret = `vqr_secret_${randomBytes(32).toString('hex')}`;
+    const clientId = `qrauth_app_${randomBytes(8).toString('hex')}`;
+    const clientSecret = `qrauth_secret_${randomBytes(32).toString('hex')}`;
     const clientSecretHash = createHash('sha256').update(clientSecret).digest('hex');
     return { clientId, clientSecret, clientSecretHash };
   }
@@ -150,7 +150,7 @@ export class AppService {
     const app = await this.getApp(appId, organizationId);
     if (!app) throw new Error('App not found');
 
-    const clientSecret = `vqr_secret_${randomBytes(32).toString('hex')}`;
+    const clientSecret = `qrauth_secret_${randomBytes(32).toString('hex')}`;
     const clientSecretHash = createHash('sha256').update(clientSecret).digest('hex');
 
     await this.prisma.app.update({

@@ -10,14 +10,14 @@ const TEST_USER = {
 test.describe('Authentication', () => {
   test('should show sign-in page', async ({ page }) => {
     await page.goto('/auth/jwt/sign-in');
-    await expect(page.getByText('Sign in to vQR')).toBeVisible();
+    await expect(page.getByText('Sign in to QRAuth')).toBeVisible();
     await expect(page.getByLabel('Email address')).toBeVisible();
     await expect(page.getByLabel('Password')).toBeVisible();
   });
 
   test('should show sign-up page', async ({ page }) => {
     await page.goto('/auth/jwt/sign-up');
-    await expect(page.getByText('Create your vQR account')).toBeVisible();
+    await expect(page.getByText('Create your QRAuth account')).toBeVisible();
   });
 
   test('should show validation errors on empty sign-in', async ({ page }) => {

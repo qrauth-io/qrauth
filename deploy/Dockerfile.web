@@ -1,7 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-ARG VITE_SERVER_URL=https://vqr.progressnet.io
+ARG VITE_SERVER_URL=https://qrauth.io
 
 # Install deps
 COPY package.json package-lock.json ./

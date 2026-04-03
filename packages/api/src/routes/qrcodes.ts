@@ -6,7 +6,7 @@ import {
   paginationSchema,
   generateToken,
   getContentType,
-} from '@vqr/shared';
+} from '@qrauth/shared';
 import { zodValidator } from '../middleware/validate.js';
 import { authorize } from '../middleware/authorize.js';
 import {
@@ -15,11 +15,13 @@ import {
   rateLimitBulk,
 } from '../middleware/rateLimit.js';
 import { SigningService } from '../services/signing.js';
+import { WebhookService } from '../services/webhook.js';
 import { GeoService } from '../services/geo.js';
 import { TransparencyLogService } from '../services/transparency.js';
 import { DomainService } from '../services/domain.js';
 import { cacheDel } from '../lib/cache.js';
 import { config } from '../lib/config.js';
+import { UsageService } from '../services/usage.js';
 import { createHash } from 'node:crypto';
 import { stableStringify } from '../lib/crypto.js';
 import { z } from 'zod';
@@ -104,7 +106,7 @@ async function generateQRCode(
   // 3. Generate a short, unbiased token.
   const token = generateToken();
 
-  // 4. For non-URL types, the QR code points to the vQR verify page itself.
+  // 4. For non-URL types, the QR code points to the QRAuth verify page itself.
   const destinationUrl = resolvedContentType === 'url'
     ? input.destinationUrl
     : `${baseUrl}/v/${token}`;
@@ -240,6 +242,17 @@ export default async function qrCodeRoutes(fastify: FastifyInstance): Promise<vo
       content?: unknown;
     };
 
+    // Check QR code quota
+    const usageService = new UsageService(fastify.prisma);
+    const org = await fastify.prisma.organization.findUnique({
+      where: { id: request.user!.orgId },
+      select: { plan: true },
+    });
+    const quotaError = await usageService.checkQuota(request.user!.orgId, org?.plan || 'FREE', 'qrCodes');
+    if (quotaError) {
+      return reply.status(429).send({ statusCode: 429, error: 'Quota Exceeded', message: quotaError });
+    }
+
     const result = await generateQRCode(
       fastify,
       signingService,
@@ -249,6 +262,13 @@ export default async function qrCodeRoutes(fastify: FastifyInstance): Promise<vo
       request.user!.orgId,
       body,
     );
+
+    // Emit webhook (fire-and-forget).
+    const webhookService = new WebhookService(fastify.prisma);
+    webhookService.emit(request.user!.orgId, {
+      event: 'qr.created',
+      data: { token: result.token, verification_url: result.verification_url, label: result.label },
+    }).catch(() => {});
 
     return reply.status(201).send(result);
   });

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { zodValidator } from '../middleware/validate.js';
 import { authorize } from '../middleware/authorize.js';
-import { createAppSchema, updateAppSchema } from '@vqr/shared';
+import { createAppSchema, updateAppSchema } from '@qrauth/shared';
 import { AppService } from '../services/app.js';
 
 export default async function appRoutes(fastify: FastifyInstance): Promise<void> {

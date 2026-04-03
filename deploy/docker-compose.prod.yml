@@ -1,25 +1,25 @@
 services:
   postgres:
     image: imresamu/postgis:16-3.4-alpine
-    container_name: vqr-postgres
+    container_name: qrauth-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: vqr
+      POSTGRES_USER: qrauth
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: vqr
+      POSTGRES_DB: qrauth
     ports:
       - '127.0.0.1:5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U vqr']
+      test: ['CMD-SHELL', 'pg_isready -U qrauth']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: vqr-redis
+    container_name: qrauth-redis
     restart: unless-stopped
     ports:
       - '127.0.0.1:6382:6379'
@@ -35,7 +35,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.api
-    container_name: vqr-api
+    container_name: qrauth-api
     restart: unless-stopped
     ports:
       - '127.0.0.1:3200:3000'
@@ -47,7 +47,7 @@ services:
     env_file:
       - .env.prod
     environment:
-      DATABASE_URL: postgresql://vqr:${POSTGRES_PASSWORD}@postgres:5432/vqr
+      DATABASE_URL: postgresql://qrauth:${POSTGRES_PASSWORD}@postgres:5432/qrauth
       REDIS_URL: redis://redis:6379
       PORT: 3000
       HOST: 0.0.0.0
@@ -61,7 +61,7 @@ services:
       dockerfile: deploy/Dockerfile.web
       args:
         VITE_SERVER_URL: https://qrauth.io
-    container_name: vqr-web
+    container_name: qrauth-web
     restart: unless-stopped
     ports:
       - '127.0.0.1:3201:80'

@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-vQR (qrauth.io) is a cryptographically signed QR code verification and authentication platform. It creates a "Certificate Authority for physical QR codes" + a QR-based authentication SDK for third-party websites.
+QRAuth (qrauth.io) is a cryptographically signed QR code verification and authentication platform. It creates a "Certificate Authority for physical QR codes" + a QR-based authentication SDK for third-party websites.
 
-**Production**: https://qrauth.io (currently at vqr.progressnet.io during migration)
+**Production**: https://qrauth.io
 
 ## Commands
 

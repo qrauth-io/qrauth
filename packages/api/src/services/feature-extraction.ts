@@ -31,7 +31,7 @@ export class FeatureExtractionService {
     const nowSec = Math.floor(now / 1000);
 
     // --- Scan velocity (sorted set with timestamps as scores) ---
-    const velKey = `vqr:vel:${data.qrCodeId}`;
+    const velKey = `qrauth:vel:${data.qrCodeId}`;
     await this.redis.zadd(velKey, nowSec, `${nowSec}:${Math.random().toString(36).slice(2, 8)}`);
     await this.redis.expire(velKey, 3600); // 1h TTL
     // Remove entries older than 1h
@@ -43,7 +43,7 @@ export class FeatureExtractionService {
     const scanVelocity1h = await this.redis.zcount(velKey, oneHourAgo, '+inf');
 
     // --- IP dispersion (HyperLogLog of QR codes per IP) ---
-    const ipDispKey = `vqr:ipdisp:${data.clientIpHash}`;
+    const ipDispKey = `qrauth:ipdisp:${data.clientIpHash}`;
     await this.redis.pfadd(ipDispKey, data.qrCodeId);
     await this.redis.expire(ipDispKey, 3600);
     const ipDispersion1h = await this.redis.pfcount(ipDispKey);
@@ -58,20 +58,20 @@ export class FeatureExtractionService {
     const isBot = /bot|crawler|spider|scraper|curl|wget|python|java\/|go-http/i.test(ua);
 
     // --- Is new IP for this QR code ---
-    const knownIpKey = `vqr:knownips:${data.qrCodeId}`;
+    const knownIpKey = `qrauth:knownips:${data.qrCodeId}`;
     const wasKnown = await this.redis.sismember(knownIpKey, data.clientIpHash);
     await this.redis.sadd(knownIpKey, data.clientIpHash);
     await this.redis.expire(knownIpKey, 86400); // 24h
     const isNewIp = !wasKnown;
 
     // --- Time since last scan ---
-    const lastScanKey = `vqr:lastscan:${data.qrCodeId}`;
+    const lastScanKey = `qrauth:lastscan:${data.qrCodeId}`;
     const lastScanStr = await this.redis.get(lastScanKey);
     const timeSinceLastScan = lastScanStr ? nowSec - parseInt(lastScanStr, 10) : 999999;
     await this.redis.set(lastScanKey, nowSec, 'EX', 86400);
 
     // --- Trust score trend (rolling list of last 20) ---
-    const trendKey = `vqr:tscore:${data.qrCodeId}`;
+    const trendKey = `qrauth:tscore:${data.qrCodeId}`;
     if (data.trustScore !== undefined) {
       await this.redis.lpush(trendKey, data.trustScore.toString());
       await this.redis.ltrim(trendKey, 0, 19);
@@ -100,7 +100,7 @@ export class FeatureExtractionService {
    */
   async storePendingFeatures(scanId: string, orgId: string, features: FeatureVector): Promise<void> {
     const entry = JSON.stringify({ scanId, orgId, features, ts: Date.now() });
-    await this.redis.lpush('vqr:features:pending', entry);
-    await this.redis.ltrim('vqr:features:pending', 0, 9999);
+    await this.redis.lpush('qrauth:features:pending', entry);
+    await this.redis.ltrim('qrauth:features:pending', 0, 9999);
   }
 }

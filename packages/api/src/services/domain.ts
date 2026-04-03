@@ -228,7 +228,7 @@ export class DomainService {
 
   /**
    * Generate a domain verification token.
-   * The org adds a DNS TXT record: vqr-verify=<token>
+   * The org adds a DNS TXT record: qrauth-verify=<token>
    */
   async generateVerifyToken(orgId: string): Promise<string> {
     const token = randomBytes(16).toString('hex');
@@ -273,7 +273,7 @@ export class DomainService {
         .filter((r) => r.type === 16) // TXT record type
         .map((r) => r.data.replace(/"/g, ''));
 
-      const expectedValue = `vqr-verify=${org.domainVerifyToken}`;
+      const expectedValue = `qrauth-verify=${org.domainVerifyToken}`;
       const found = txtRecords.some((txt) => txt.includes(expectedValue));
 
       if (found) {
@@ -286,7 +286,7 @@ export class DomainService {
 
       return {
         verified: false,
-        error: `TXT record "vqr-verify=${org.domainVerifyToken}" not found for ${org.domain}. Found records: ${txtRecords.join(', ') || 'none'}`,
+        error: `TXT record "qrauth-verify=${org.domainVerifyToken}" not found for ${org.domain}. Found records: ${txtRecords.join(', ') || 'none'}`,
       };
     } catch (err: any) {
       return { verified: false, error: `DNS lookup error: ${err.message}` };

@@ -1,6 +1,6 @@
 import type { QRStyle } from 'src/components/qr-code';
 
-import { getContentType } from '@vqr/shared';
+import { getContentType } from '@qrauth/shared';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -37,7 +37,7 @@ const DEFAULT_STYLE: QRStyle = {
   fgColor: '#000000',
   bgColor: '#FFFFFF',
   showLogo: true,
-  captionText: 'vQR Verified',
+  captionText: 'QRAuth Verified',
 };
 
 export default function QRCodesEditPage() {
