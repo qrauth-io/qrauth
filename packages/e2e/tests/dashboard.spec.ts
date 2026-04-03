@@ -8,20 +8,22 @@ async function signUp(page: import('@playwright/test').Page) {
   const signupRes = await page.request.post('http://localhost:3000/api/v1/auth/signup', {
     data: { name: 'Dashboard Tester', email, password: 'TestPass123!', organizationName: 'Dashboard Test Org' },
   });
+  expect(signupRes.ok()).toBeTruthy();
   const { token } = await signupRes.json();
 
   // Complete onboarding via API
-  await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
+  const onboardRes = await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
     headers: { Authorization: `Bearer ${token}` },
     data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
   });
+  expect(onboardRes.ok()).toBeTruthy();
 
-  // Set JWT in browser — need to visit the app origin first so sessionStorage is scoped correctly
-  await page.goto('/');
-  await page.evaluate((t) => sessionStorage.setItem('jwt_access_token', t), token);
-  await page.goto('/dashboard');
-  // Wait until the auth guard resolves and dashboard content renders
-  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
+  // Sign in via the browser to get a properly scoped session
+  await page.goto('/auth/jwt/sign-in');
+  await page.getByLabel('Email address').fill(email);
+  await page.getByLabel('Password').fill('TestPass123!');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 }
 
 test.describe('Dashboard', () => {
