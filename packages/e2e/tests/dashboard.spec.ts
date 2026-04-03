@@ -1,26 +1,23 @@
 import { test, expect } from '@playwright/test';
 
-// Helper to create an authenticated session
+// Helper to create an authenticated session via API, then inject JWT via URL hash
+// (mirrors the OAuth callback flow the app already supports)
 async function signUp(page: import('@playwright/test').Page) {
   const email = `dash-${Date.now()}@example.com`;
 
-  // Sign up through the browser (same approach as the passing auth tests)
-  await page.goto('/auth/jwt/sign-up');
-  await page.getByLabel('Full name').fill('Dashboard Tester');
-  await page.getByLabel('Organization name').fill('Dashboard Test Org');
-  await page.getByLabel('Email address').fill(email);
-  await page.getByLabel('Password').fill('TestPass123!');
-  await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10000 });
+  const signupRes = await page.request.post('http://localhost:3000/api/v1/auth/signup', {
+    data: { name: 'Dashboard Tester', email, password: 'TestPass123!', organizationName: 'Dashboard Test Org' },
+  });
+  const { token } = await signupRes.json();
 
-  // Complete onboarding if redirected there
-  if (page.url().includes('/onboarding')) {
-    await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByText('Developer').click();
-    await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByRole('button', { name: 'Skip' }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
-  }
+  await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
+  });
+
+  // Inject JWT via URL hash — the auth provider picks this up (same as OAuth redirect)
+  await page.goto(`/dashboard#jwt=${token}`);
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
 }
 
 test.describe('Dashboard', () => {
