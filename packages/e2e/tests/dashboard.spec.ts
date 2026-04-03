@@ -1,61 +1,48 @@
 import { test, expect } from '@playwright/test';
 
-// Helper: create user via API and inject JWT before any page loads
-async function authenticatedPage(page: import('@playwright/test').Page) {
-  const email = `dash-${Date.now()}@example.com`;
-
-  const signupRes = await page.request.post('http://localhost:3000/api/v1/auth/signup', {
-    data: { name: 'Dashboard Tester', email, password: 'TestPass123!', organizationName: 'Dashboard Test Org' },
-  });
-  const { token } = await signupRes.json();
-
-  await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
-    headers: { Authorization: `Bearer ${token}` },
-    data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
-  });
-
-  // Inject token into sessionStorage BEFORE the app JS runs
-  await page.addInitScript((t) => {
-    sessionStorage.setItem('jwt_access_token', t);
-  }, token);
-
-  await page.goto('/dashboard');
-  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
-}
-
 test.describe('Dashboard', () => {
-  test.beforeEach(async ({ page }) => {
-    await authenticatedPage(page);
-  });
+  test('should show dashboard overview and navigate all pages', async ({ page }) => {
+    // Sign up + onboard via browser (one-time cost)
+    const email = `dash-${Date.now()}@example.com`;
+    await page.goto('/auth/jwt/sign-up');
+    await page.getByLabel('Full name').fill('Dashboard Tester');
+    await page.getByLabel('Organization name').fill('Dashboard Test Org');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByLabel('Password').fill('TestPass123!');
+    await page.getByRole('button', { name: 'Create account' }).click();
+    await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 15000 });
 
-  test('should show dashboard overview', async ({ page }) => {
+    if (page.url().includes('/onboarding')) {
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await page.getByText('Developer').click();
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await page.getByRole('button', { name: 'Skip' }).click();
+      await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    }
+
+    // Dashboard overview
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByText('Total QR Codes')).toBeVisible();
     await expect(page.getByText('Total Scans')).toBeVisible();
     await expect(page.getByText('Fraud Alerts')).toBeVisible();
-  });
 
-  test('should navigate to QR Codes page', async ({ page }) => {
+    // Navigate to QR Codes
     await page.getByRole('link', { name: 'QR Codes' }).click();
     await expect(page.getByText('New QR Code')).toBeVisible();
-  });
 
-  test('should navigate to Analytics page', async ({ page }) => {
+    // Navigate to Analytics
     await page.getByRole('link', { name: 'Analytics' }).click();
     await expect(page.getByText('Analytics')).toBeVisible();
-  });
 
-  test('should navigate to Fraud Incidents page', async ({ page }) => {
+    // Navigate to Fraud Incidents
     await page.getByRole('link', { name: 'Fraud Incidents' }).click();
     await expect(page.getByText('Fraud Incidents')).toBeVisible();
-  });
 
-  test('should navigate to Team page', async ({ page }) => {
+    // Navigate to Team
     await page.getByRole('link', { name: 'Team' }).click();
     await expect(page.getByText('Team Members')).toBeVisible();
-  });
 
-  test('should navigate to Settings page', async ({ page }) => {
+    // Navigate to Settings
     await page.getByRole('link', { name: 'Settings' }).click();
     await expect(page.getByText('Organization Settings')).toBeVisible();
   });
