@@ -17,10 +17,11 @@ test.describe('Dashboard', () => {
       await page.getByText('Developer').click();
       await page.getByRole('button', { name: 'Continue' }).click();
       await page.getByRole('button', { name: 'Skip' }).click();
+      await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
     }
 
-    // Wait for dashboard to fully load (URL + content)
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+    // Force a fresh page load so auth state is fully initialized
+    await page.reload({ waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Total QR Codes')).toBeVisible();
     await expect(page.getByText('Total Scans')).toBeVisible();
