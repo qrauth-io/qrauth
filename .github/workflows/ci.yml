@@ -181,6 +181,7 @@ jobs:
           ssh -T -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
             set -e
             cd ~/vqr
+            set -a; source packages/api/.env; set +a
             git pull origin main
             npm ci --omit=dev
             npm run build --workspace=packages/shared
