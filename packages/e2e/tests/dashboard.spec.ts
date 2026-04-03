@@ -1,33 +1,31 @@
 import { test, expect } from '@playwright/test';
 
-// Browser sign-up + onboarding takes ~20s in CI, so increase test timeout
-test.setTimeout(60000);
-
-// Helper to create an authenticated session via browser sign-up
-async function signUp(page: import('@playwright/test').Page) {
+// Helper: create user via API and inject JWT before any page loads
+async function authenticatedPage(page: import('@playwright/test').Page) {
   const email = `dash-${Date.now()}@example.com`;
 
-  await page.goto('/auth/jwt/sign-up');
-  await page.getByLabel('Full name').fill('Dashboard Tester');
-  await page.getByLabel('Organization name').fill('Dashboard Test Org');
-  await page.getByLabel('Email address').fill(email);
-  await page.getByLabel('Password').fill('TestPass123!');
-  await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 15000 });
+  const signupRes = await page.request.post('http://localhost:3000/api/v1/auth/signup', {
+    data: { name: 'Dashboard Tester', email, password: 'TestPass123!', organizationName: 'Dashboard Test Org' },
+  });
+  const { token } = await signupRes.json();
 
-  // Complete onboarding if redirected there
-  if (page.url().includes('/onboarding')) {
-    await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByText('Developer').click();
-    await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByRole('button', { name: 'Skip' }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
-  }
+  await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
+  });
+
+  // Inject token into sessionStorage BEFORE the app JS runs
+  await page.addInitScript((t) => {
+    sessionStorage.setItem('jwt_access_token', t);
+  }, token);
+
+  await page.goto('/dashboard');
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
 }
 
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await signUp(page);
+    await authenticatedPage(page);
   });
 
   test('should show dashboard overview', async ({ page }) => {
