@@ -180,7 +180,7 @@ jobs:
           ssh-keyscan -t ed25519 -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           ssh -T -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
             set -e
-            cd ~/qrauth
+            cd ~/vqr
             git pull origin main
             npm ci
             npm run build --workspace=packages/shared
@@ -189,6 +189,6 @@ jobs:
             npx prisma migrate deploy --schema=packages/api/prisma/schema.prisma
             npm run build --workspace=packages/api
             npm run build --workspace=packages/web
-            sudo systemctl restart qrauth-api
+            sudo systemctl restart vqr-api
             echo "Deployed $(date)"
           EOF
