@@ -16,11 +16,12 @@ async function signUp(page: import('@playwright/test').Page) {
     data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
   });
 
-  // Set JWT in browser and navigate to dashboard
-  await page.goto('/dashboard');
+  // Set JWT in browser — need to visit the app origin first so sessionStorage is scoped correctly
+  await page.goto('/');
   await page.evaluate((t) => sessionStorage.setItem('jwt_access_token', t), token);
   await page.goto('/dashboard');
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+  // Wait until the auth guard resolves and dashboard content renders
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
 }
 
 test.describe('Dashboard', () => {
