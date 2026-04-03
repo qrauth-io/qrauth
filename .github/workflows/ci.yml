@@ -179,10 +179,15 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           ssh -T -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
+            set -e
             cd ~/vqr
             git pull origin main
-            cd deploy
-            docker compose -f docker-compose.prod.yml build --no-cache
-            docker compose -f docker-compose.prod.yml up -d
+            npm ci --omit=dev
+            npm run build --workspace=packages/shared
+            npx prisma generate --schema=packages/api/prisma/schema.prisma
+            npx prisma migrate deploy --schema=packages/api/prisma/schema.prisma
+            npm run build --workspace=packages/api
+            npm run build --workspace=packages/web
+            sudo systemctl restart vqr-api
             echo "Deployed $(date)"
           EOF

@@ -26,24 +26,18 @@ jobs:
 
           # Run agent on server via SSH
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" bash -s "$ANTHROPIC_API_KEY" "$ADMIN_EMAIL" << 'REMOTE_SCRIPT'
+            set -e
             cd ~/vqr
-            git pull origin main
 
-            # Install deps if needed
-            npm ci --ignore-scripts 2>/dev/null || npm install --ignore-scripts
+            # Source production env vars
+            set -a
+            source packages/api/.env
+            set +a
 
-            # Build shared + generate Prisma client
-            npm run build --workspace=packages/shared
-            cd packages/api
-            npx prisma generate
+            # Override with agent-specific vars
+            export ANTHROPIC_API_KEY="$1"
+            export ADMIN_EMAIL="$2"
 
-            # Run agent
-            PGPASS=$(grep POSTGRES_PASSWORD ~/vqr/deploy/.env | head -1 | cut -d= -f2)
-            DATABASE_URL="postgresql://vqr:${PGPASS}@localhost:5433/vqr" \
-            REDIS_URL="redis://localhost:6382" \
-            JWT_SECRET="agent-run-does-not-need-jwt-but-config-requires-32chars" \
-            ANTHROPIC_API_KEY="$1" \
-            ADMIN_EMAIL="$2" \
-            npx tsx src/agent/daily-analysis.ts
+            npx tsx packages/api/src/agent/daily-analysis.ts
           REMOTE_SCRIPT
         timeout-minutes: 10
