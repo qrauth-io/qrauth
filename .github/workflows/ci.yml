@@ -181,11 +181,11 @@ jobs:
           ssh -T -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" << 'EOF'
             set -e
             cd ~/vqr
-            set -a; source packages/api/.env; set +a
             git pull origin main
             npm ci
             npm run build --workspace=packages/shared
             npx prisma generate --schema=packages/api/prisma/schema.prisma
+            set -a; source packages/api/.env; set +a
             npx prisma migrate deploy --schema=packages/api/prisma/schema.prisma
             npm run build --workspace=packages/api
             npm run build --workspace=packages/web
