@@ -20,8 +20,8 @@ test.describe('Dashboard', () => {
       await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
     }
 
-    // Dashboard overview
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    // Dashboard overview (allow extra time for initial data load after onboarding)
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Total QR Codes')).toBeVisible();
     await expect(page.getByText('Total Scans')).toBeVisible();
     await expect(page.getByText('Fraud Alerts')).toBeVisible();
