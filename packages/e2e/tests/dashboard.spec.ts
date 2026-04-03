@@ -2,28 +2,25 @@ import { test, expect } from '@playwright/test';
 
 // Helper to create an authenticated session
 async function signUp(page: import('@playwright/test').Page) {
-  // Use API directly to create user + complete onboarding (faster, no browser flakiness)
   const email = `dash-${Date.now()}@example.com`;
 
-  const signupRes = await page.request.post('http://localhost:3000/api/v1/auth/signup', {
-    data: { name: 'Dashboard Tester', email, password: 'TestPass123!', organizationName: 'Dashboard Test Org' },
-  });
-  expect(signupRes.ok()).toBeTruthy();
-  const { token } = await signupRes.json();
-
-  // Complete onboarding via API
-  const onboardRes = await page.request.post('http://localhost:3000/api/v1/auth/onboarding/complete', {
-    headers: { Authorization: `Bearer ${token}` },
-    data: { organizationName: 'Dashboard Test Org', useCase: 'DEVELOPER' },
-  });
-  expect(onboardRes.ok()).toBeTruthy();
-
-  // Sign in via the browser to get a properly scoped session
-  await page.goto('/auth/jwt/sign-in');
+  // Sign up through the browser (same approach as the passing auth tests)
+  await page.goto('/auth/jwt/sign-up');
+  await page.getByLabel('Full name').fill('Dashboard Tester');
+  await page.getByLabel('Organization name').fill('Dashboard Test Org');
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password').fill('TestPass123!');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+  await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10000 });
+
+  // Complete onboarding if redirected there
+  if (page.url().includes('/onboarding')) {
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByText('Developer').click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+  }
 }
 
 test.describe('Dashboard', () => {
