@@ -183,7 +183,7 @@ jobs:
             cd ~/vqr
             set -a; source packages/api/.env; set +a
             git pull origin main
-            npm ci --omit=dev
+            npm ci
             npm run build --workspace=packages/shared
             npx prisma generate --schema=packages/api/prisma/schema.prisma
             npx prisma migrate deploy --schema=packages/api/prisma/schema.prisma
