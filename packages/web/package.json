@@ -1,6 +1,6 @@
 {
   "name": "@qrauth/web",
-  "author": "Minimals",
+  "author": "QRAuth",
   "version": "0.1.0",
   "description": "QRAuth Issuer Portal",
   "private": true,

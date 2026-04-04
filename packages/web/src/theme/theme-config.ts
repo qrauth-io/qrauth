@@ -26,7 +26,7 @@ export const themeConfig: ThemeConfig = {
   defaultMode: 'light',
   modeStorageKey: 'theme-mode',
   direction: 'ltr',
-  classesPrefix: 'minimal',
+  classesPrefix: 'qrauth',
   /** **************************************
    * Css variables
    *************************************** */

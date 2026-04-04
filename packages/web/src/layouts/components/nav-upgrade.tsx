@@ -66,11 +66,9 @@ export function NavUpgrade({ sx, ...other }: BoxProps) {
 
         <Button
           variant="contained"
-          href="https://mui.com/store/items/minimal-dashboard/"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/dashboard/usage"
         >
-          Upgrade to Pro
+          Upgrade Plan
         </Button>
       </Box>
     </Box>
