@@ -1,0 +1,54 @@
+Business Source License 1.1
+
+Parameters
+
+Licensor: QRAuth
+Licensed Work: QRAuth Platform
+    The Licensed Work is (c) 2026 QRAuth.
+Change Date: Four years from each release date
+Change License: Apache License 2.0
+
+For information about alternative commercial licensing arrangements for the Licensed Work, please contact licensing@qrauth.io
+
+Notice
+
+Business Source License 1.1
+
+Terms
+
+The Licensor hereby grants you the right to use, modify, create derivative works, and distribute the Licensed Work and derivative works thereof, in source code or object code form, subject to the Change Date and upon issuance of the Change License, in addition to the rights granted in the Change License, provided that the following conditions are met:
+
+1. You may not provide the Licensed Work to third parties as a Software-as-a-Service (SaaS), cloud service, or similar service for generating revenue.
+
+2. You may not move, change, disable, or circumvent any license key functionality in the Licensed Work.
+
+3. If you make changes to the Licensed Work, you must:
+   a. retain all copyright, patent, trademark, and attribution notices that are present in the Licensed Work;
+   b. preserve all notices in the Licensed Work that refer to the Change License; and
+   c. include a prominent notice in any files that you modify stating that you have modified the Licensed Work.
+
+4. You may not remove or alter any license notices (including copyright notices, patent notices, trademarks, and attribution notices) contained within the Licensed Work.
+
+5. You may make modifications to the Licensed Work and distribute your modified version (a "Modified Work") only under the terms of this License, and you must identify in the Modified Work that it has been modified and retain, in the source code of the Modified Work, all copyright, patent, trademark, and attribution notices from the Licensed Work.
+
+Effective on the Change Date, this License will terminate and you may use the Licensed Work under the terms of the Change License, unless you have received an earlier termination notice from the Licensor regarding this Licensed Work.
+
+Additionally, if the Licensor or a successor entity publicly announces a Change Date that is earlier than the Change Date included in the definition of "Change Date" in the Licensed Work, you may use the Licensed Work under the terms of the Change License as of such earlier date.
+
+Limitations
+
+Unless expressly permitted in the Change License, neither the Licensor nor any other party will grant you any rights, licenses or claims, whether express or implied, against the Licensed Work or its use, except as provided in this License. All rights not expressly granted are reserved.
+
+Disclaimer
+
+The Licensed Work is provided on an "as is" basis, without warranties or conditions of any kind, either express or implied, including, without limitation, any warranties or conditions of title, non-infringement, merchantability, or fitness for a particular purpose. You are solely responsible for determining the appropriateness of using the Licensed Work and assume all risks associated with your exercise of rights under this License.
+
+Limitation of Liability
+
+In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and gross negligence acts) or agreed to in writing, shall the Licensor or any other party that modifies and/or conveys the Licensed Work be liable to you for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Licensed Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses).
+
+This limitation of liability shall apply to the fullest extent permitted by applicable law.
+
+Governing Law
+
+This License will be governed by and construed in accordance with the laws of the jurisdiction of the Licensor, excluding its conflicts of law principles.
