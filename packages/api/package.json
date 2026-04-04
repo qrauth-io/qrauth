@@ -15,29 +15,29 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
-    "@fastify/cors": "^10.0.0",
-    "@fastify/helmet": "^12.0.0",
-    "@fastify/jwt": "^9.0.0",
+    "@fastify/cors": "^11.2.0",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/jwt": "^10.0.0",
     "@fastify/rate-limit": "^10.0.0",
     "@fastify/sensible": "^6.0.0",
     "@fastify/static": "^9.0.0",
-    "@prisma/client": "^6.0.0",
+    "@prisma/client": "^7.6.0",
     "@qrauth/shared": "*",
-    "bullmq": "^5.0.0",
+    "bullmq": "^5.73.0",
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.0",
     "ioredis": "^5.4.0",
     "nodemailer": "^8.0.4",
-    "stripe": "^17.0.0",
-    "zod": "^3.23.0"
+    "stripe": "^22.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.5.2",
     "@types/nodemailer": "^7.0.11",
     "pino-pretty": "^13.1.3",
-    "prisma": "^6.0.0",
+    "prisma": "^7.6.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
   }
 }
