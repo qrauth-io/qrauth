@@ -2,24 +2,24 @@
   "name": "qrauth",
   "version": "0.1.0",
   "private": true,
+  "description": "QRAuth Platform - Open source QR authentication platform",
+  "author": "QRAuth",
+  "license": "BSL-1.1",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=packages/api",
-    "dev:web": "npm run dev --workspace=packages/web",
-    "dev:all": "npm run dev --workspace=packages/api & npm run dev --workspace=packages/web",
-    "build": "npm run build --workspace=packages/shared && npm run build --workspace=packages/api && npm run build --workspace=packages/web",
-    "build:web": "npm run build --workspace=packages/web",
-    "test": "npm test --workspaces --if-present",
-    "lint": "eslint packages/*/src --ext .ts,.tsx",
-    "db:migrate": "npm run db:migrate --workspace=packages/api",
-    "db:seed": "npm run db:seed --workspace=packages/api",
-    "test:e2e": "npm test --workspace=packages/e2e",
-    "test:e2e:headed": "npm run test:headed --workspace=packages/e2e",
-    "test:e2e:ui": "npm run test:ui --workspace=packages/e2e"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo clean && rm -rf node_modules"
   },
-  "engines": {
-    "node": ">=20.0.0"
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.3",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
   }
 }

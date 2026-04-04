@@ -1,16 +1,71 @@
+# Dependencies
 node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Build artifacts
 dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment variables
 .env
-.env.prod
+.env.local
+.env.*.local
+.env.production
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.nvim/
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Turbo
+.turbo/
+turbo.log
+
+# Runtime
+.node_repl_history
 *.pem
 *.key
-*.p8
-.DS_Store
-coverage/
-*.tsbuildinfo
-docs/
-packages/api/keys/
-packages/e2e/test-results/
-packages/e2e/playwright-report/
-deploy/.env
-deploy/.env.prod
+
+# OS
+Thumbs.db
+.cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Misc
+.tmp/
+tmp/
+temp/
+*.pid
+*.pid.lock
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Generated
+pocketbase
+pb_migrations/
+pb_hooks/
