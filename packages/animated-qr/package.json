@@ -32,7 +32,7 @@
   "devDependencies": {
     "@types/qrcode": "^1.5.6",
     "esbuild": "^0.24.0",
-    "typescript": "^5.7.0"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "qrcode": "1.5.4"
