@@ -1,0 +1,13 @@
+# Python SDK local .gitignore.
+#
+# This file shadows the monorepo's root .gitignore so the published
+# sdist does not leak internal file names from the parent repo. Only
+# list entries relevant to the Python SDK's own build.
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.venv/

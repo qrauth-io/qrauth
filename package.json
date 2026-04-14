@@ -1,0 +1,32 @@
+{
+  "name": "qrauth",
+  "version": "0.1.2",
+  "private": true,
+  "author": {
+    "name": "Gernard Cerma",
+    "email": "aris@progressnet.gr",
+    "url": "https://github.com/aristech"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/api",
+    "dev:web": "npm run dev --workspace=packages/web",
+    "dev:all": "npm run dev --workspace=packages/api & npm run dev --workspace=packages/web",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=packages/web-components && npm run build:sdk-copy && npm run build --workspace=packages/api && npm run build --workspace=packages/web",
+    "build:sdk-copy": "cp packages/web-components/dist/qrauth-components.js packages/api/public/sdk/v1/components.js && cp packages/web-components/dist/qrauth-components.js.map packages/api/public/sdk/v1/components.js.map && cp packages/web-components/dist/qrauth-components.esm.js packages/api/public/sdk/v1/components.esm.js && cp packages/web-components/dist/qrauth-components.esm.js.map packages/api/public/sdk/v1/components.esm.js.map",
+    "build:docs": "npm run build --workspace=packages/docs && rm -rf packages/api/public/docs && cp -r packages/docs/.vitepress/dist packages/api/public/docs",
+    "build:web": "npm run build --workspace=packages/web",
+    "test": "npm test --workspaces --if-present",
+    "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "db:migrate": "npm run db:migrate --workspace=packages/api",
+    "db:seed": "npm run db:seed --workspace=packages/api",
+    "test:e2e": "npm test --workspace=packages/e2e",
+    "test:e2e:headed": "npm run test:headed --workspace=packages/e2e",
+    "test:e2e:ui": "npm run test:ui --workspace=packages/e2e"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

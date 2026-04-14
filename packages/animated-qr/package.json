@@ -1,0 +1,43 @@
+{
+  "name": "@qrauth/animated-qr",
+  "version": "0.1.0",
+  "description": "Animated cryptographic QR codes (Living Codes) for QRAuth",
+  "type": "module",
+  "main": "dist/animated-qr.js",
+  "module": "dist/animated-qr.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/animated-qr.esm.js",
+      "default": "./dist/animated-qr.js"
+    },
+    "./canvaskit": {
+      "types": "./dist/renderer-canvaskit.d.ts",
+      "import": "./dist/renderer-canvaskit.js"
+    },
+    "./benchmark": {
+      "types": "./dist/benchmark.d.ts",
+      "import": "./dist/benchmark.js"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/bundle.js",
+    "dev": "tsc --watch"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "qrcode": "1.5.4"
+  },
+  "optionalDependencies": {
+    "canvaskit-wasm": "^0.39.0"
+  }
+}
