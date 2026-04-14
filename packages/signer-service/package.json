@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@noble/post-quantum": "^0.6.1",
-    "fastify": "^5.0.0"
+    "fastify": "^5.8.5"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
