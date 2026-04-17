@@ -1,0 +1,50 @@
+{
+  "name": "@qrauth/web-components",
+  "version": "0.1.0",
+  "description": "QRAuth Web Components — drop-in authentication elements",
+  "type": "module",
+  "main": "dist/qrauth-components.js",
+  "module": "dist/qrauth-components.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/qrauth-components.esm.js",
+      "require": "./dist/qrauth-components.js"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/bundle.js",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "qrauth",
+    "web-components",
+    "custom-elements",
+    "authentication",
+    "qr-code",
+    "shadow-dom"
+  ],
+  "author": {
+    "name": "Gernard Cerma",
+    "email": "aris@progressnet.gr",
+    "url": "https://github.com/aristech"
+  },
+  "license": "MIT",
+  "homepage": "https://qrauth.io",
+  "bugs": {
+    "url": "https://github.com/qrauth-io/qrauth/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qrauth-io/qrauth"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  }
+}

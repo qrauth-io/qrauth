@@ -1,0 +1,49 @@
+node_modules/
+dist/
+
+# Vitepress build output (rebuilt during CI deploy)
+packages/docs/.vitepress/dist/
+packages/api/public/docs/
+
+# CDN bundle staging dir populated by deploy step (served by nginx-cdn.conf)
+/cdn/
+.env
+.env.prod
+*.pem
+*.key
+*.p8
+.DS_Store
+coverage/
+*.tsbuildinfo
+/docs/*
+!/docs/security/
+!/docs/adr/
+!/docs/ops/
+packages/api/keys/
+packages/e2e/test-results/
+packages/e2e/playwright-report/
+deploy/.env
+deploy/.env.prod
+__pycache__/
+QRAuth.io social media & public launch/
+roadmap*.md
+readme_update.md
+.claude/
+update_homepage.md
+
+# Internal security documents — describe unfixed vulnerabilities with enough
+# detail to exploit them. Kept on disk so the implementing agent can execute
+# against them during remediation; the monolith → qrauth-io/qrauth sync
+# strips docs/ before pushing to public, so docs/security/ stays private by
+# that mechanism too. The /AUDIT*.md pattern protects repo-root audit files
+# from syndication because they live outside docs/.
+/AUDIT*.md
+/docs/security/audit*-remediation-plan.md
+
+# Internal security documents — describe unfixed vulnerabilities with enough
+# detail to exploit them. Kept on disk so the implementing agent can execute
+# against them during remediation; never committed to the public repo.
+# Redacted post-fix retrospectives go into docs/security/remediation-log.md
+# once fixes ship.
+/AUDIT*.md
+/docs/security/audit*-remediation-plan.md

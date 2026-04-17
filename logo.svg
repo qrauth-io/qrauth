@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E2563;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#081b4c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldInner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E3A8A;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#081b4c;stop-opacity:0.05" />
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34D399;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <filter id="innerGlow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feOffset dx="0" dy="1" result="offsetBlur"/>
+      <feFlood flood-color="#34D399" flood-opacity="0.3" result="color"/>
+      <feComposite in="color" in2="offsetBlur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Shield shape - main body (dark navy blue) -->
+  <path d="M256 28 L440 100 C440 100 450 280 256 484 C62 280 72 100 72 100 Z"
+        fill="url(#shieldGrad)" filter="url(#shadow)" />
+
+  <!-- Shield inner border highlight (subtle light blue) -->
+  <path d="M256 52 L420 116 C420 116 428 272 256 458 C84 272 92 116 92 116 Z"
+        fill="none" stroke="#3B82F6" stroke-width="1.5" opacity="0.35" />
+
+  <!-- Shield inner area -->
+  <path d="M256 68 L408 126 C408 126 416 268 256 440 C96 268 104 126 104 126 Z"
+        fill="url(#shieldInner)" />
+
+  <!-- QR code pattern - top left finder -->
+  <g transform="translate(148, 140)">
+    <rect x="0" y="0" width="56" height="56" rx="4" fill="#E0E7FF" opacity="0.95"/>
+    <rect x="8" y="8" width="40" height="40" rx="2" fill="#081b4c"/>
+    <rect x="16" y="16" width="24" height="24" rx="1" fill="#E0E7FF" opacity="0.95"/>
+    <rect x="22" y="22" width="12" height="12" rx="1" fill="#081b4c"/>
+  </g>
+
+  <!-- QR code pattern - top right finder -->
+  <g transform="translate(308, 140)">
+    <rect x="0" y="0" width="56" height="56" rx="4" fill="#E0E7FF" opacity="0.95"/>
+    <rect x="8" y="8" width="40" height="40" rx="2" fill="#081b4c"/>
+    <rect x="16" y="16" width="24" height="24" rx="1" fill="#E0E7FF" opacity="0.95"/>
+    <rect x="22" y="22" width="12" height="12" rx="1" fill="#081b4c"/>
+  </g>
+
+  <!-- QR code pattern - bottom left finder -->
+  <g transform="translate(148, 260)">
+    <rect x="0" y="0" width="56" height="56" rx="4" fill="#E0E7FF" opacity="0.95"/>
+    <rect x="8" y="8" width="40" height="40" rx="2" fill="#081b4c"/>
+    <rect x="16" y="16" width="24" height="24" rx="1" fill="#E0E7FF" opacity="0.95"/>
+    <rect x="22" y="22" width="12" height="12" rx="1" fill="#081b4c"/>
+  </g>
+
+  <!-- QR data modules - scattered pattern between finders -->
+  <g fill="#E0E7FF" opacity="0.85">
+    <!-- Row 1 -->
+    <rect x="216" y="148" width="14" height="14" rx="2"/>
+    <rect x="240" y="148" width="14" height="14" rx="2"/>
+    <rect x="280" y="148" width="14" height="14" rx="2"/>
+
+    <!-- Row 2 -->
+    <rect x="216" y="170" width="14" height="14" rx="2"/>
+    <rect x="260" y="170" width="14" height="14" rx="2"/>
+    <rect x="280" y="170" width="14" height="14" rx="2"/>
+
+    <!-- Row 3 -->
+    <rect x="240" y="192" width="14" height="14" rx="2"/>
+    <rect x="280" y="192" width="14" height="14" rx="2"/>
+    <rect x="310" y="192" width="14" height="14" rx="2"/>
+    <rect x="340" y="192" width="14" height="14" rx="2"/>
+
+    <!-- Row 4 -->
+    <rect x="148" y="214" width="14" height="14" rx="2"/>
+    <rect x="172" y="214" width="14" height="14" rx="2"/>
+    <rect x="216" y="214" width="14" height="14" rx="2"/>
+    <rect x="260" y="214" width="14" height="14" rx="2"/>
+    <rect x="310" y="214" width="14" height="14" rx="2"/>
+    <rect x="350" y="214" width="14" height="14" rx="2"/>
+
+    <!-- Row 5 -->
+    <rect x="172" y="236" width="14" height="14" rx="2"/>
+    <rect x="216" y="236" width="14" height="14" rx="2"/>
+    <rect x="240" y="236" width="14" height="14" rx="2"/>
+    <rect x="280" y="236" width="14" height="14" rx="2"/>
+    <rect x="330" y="236" width="14" height="14" rx="2"/>
+
+    <!-- Column between bottom-left finder and right side -->
+    <rect x="216" y="268" width="14" height="14" rx="2"/>
+    <rect x="260" y="268" width="14" height="14" rx="2"/>
+    <rect x="310" y="268" width="14" height="14" rx="2"/>
+    <rect x="340" y="268" width="14" height="14" rx="2"/>
+
+    <rect x="240" y="290" width="14" height="14" rx="2"/>
+    <rect x="280" y="290" width="14" height="14" rx="2"/>
+    <rect x="310" y="290" width="14" height="14" rx="2"/>
+
+    <rect x="216" y="312" width="14" height="14" rx="2"/>
+    <rect x="260" y="312" width="14" height="14" rx="2"/>
+    <rect x="340" y="312" width="14" height="14" rx="2"/>
+  </g>
+
+  <!-- Verified checkmark circle - green stays -->
+  <circle cx="296" cy="340" r="44" fill="#064E3B" opacity="0.9"/>
+  <circle cx="296" cy="340" r="38" fill="url(#checkGrad)" filter="url(#innerGlow)"/>
+
+  <!-- Checkmark -->
+  <polyline points="274,340 290,356 318,324"
+            fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Keyhole accent on shield top (subtle blue) -->
+  <circle cx="256" cy="108" r="10" fill="#3B82F6" opacity="0.5"/>
+  <rect x="252" y="108" width="8" height="16" rx="2" fill="#3B82F6" opacity="0.5"/>
+
+</svg>
