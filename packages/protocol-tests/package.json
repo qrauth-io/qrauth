@@ -1,0 +1,22 @@
+{
+  "name": "@qrauth/protocol-tests",
+  "version": "0.1.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "^0.6.1",
+    "@qrauth/api": "*",
+    "@qrauth/shared": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "fast-check": "^3.23.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

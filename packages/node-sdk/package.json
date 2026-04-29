@@ -1,0 +1,51 @@
+{
+  "name": "@qrauth/node",
+  "version": "0.3.0",
+  "description": "Official Node.js SDK for QRAuth — cryptographic QR code verification",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "qrauth",
+    "qr-code",
+    "verification",
+    "authentication",
+    "ecdsa",
+    "anti-fraud"
+  ],
+  "author": {
+    "name": "Gernard Cerma",
+    "email": "aris@progressnet.gr",
+    "url": "https://github.com/aristech"
+  },
+  "license": "MIT",
+  "homepage": "https://qrauth.io",
+  "bugs": {
+    "url": "https://github.com/qrauth-io/qrauth/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qrauth-io/qrauth"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

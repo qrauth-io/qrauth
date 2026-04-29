@@ -1,0 +1,809 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  GITHUB
+  MICROSOFT
+  APPLE
+  PASSKEY
+}
+
+enum OrganizationTrustLevel {
+  INDIVIDUAL
+  BUSINESS
+  GOVERNMENT
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+enum KycStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum KeyStatus {
+  ACTIVE
+  ROTATED
+  REVOKED
+}
+
+enum DeviceTrustLevel {
+  NEW
+  TRUSTED
+  SUSPICIOUS
+  REVOKED
+}
+
+enum QRCodeStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum FraudType {
+  DUPLICATE_LOCATION
+  PROXY_DETECTED
+  PATTERN_ANOMALY
+  MANUAL_REPORT
+  GEO_IMPOSSIBLE
+}
+
+enum FraudSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Organization {
+  id                   String                 @id @default(cuid())
+  name                 String
+  slug                 String                 @unique
+  email                String                 @unique
+  domain               String?
+  trustLevel           OrganizationTrustLevel @default(INDIVIDUAL)
+  kycStatus            KycStatus              @default(PENDING)
+  kycData              Json?
+  domainVerified       Boolean                @default(false)
+  domainVerifyToken    String?
+  plan                 Plan                   @default(FREE)
+  billingEmail         String?
+  stripeCustomerId     String?                @unique
+  stripeSubscriptionId String?
+  // Security webhook (Audit-2 M-13 / ALGORITHM.md §16). HTTPS endpoint
+  // the organization operates to receive signing-key lifecycle events.
+  // Optional — orgs without a configured endpoint just log a warning
+  // when a new key is minted. The secret is a 32-byte base64-encoded
+  // random value, used as the HMAC-SHA3-256 key for every delivery.
+  securityWebhookUrl    String?
+  securityWebhookSecret String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  signingKeys   SigningKey[]
+  qrCodes       QRCode[]
+  apiKeys       ApiKey[]
+  memberships   Membership[]
+  invitations   Invitation[]
+  auditLogs     AuditLog[]
+  apps          App[]
+  contentAssets ContentAsset[]
+  devicePolicy  DevicePolicy?
+  signedBatches SignedBatch[]
+  macKeys       OrgMacKey[]
+
+  @@map("organizations")
+}
+
+model SigningKey {
+  id             String    @id @default(cuid())
+  organizationId String
+  publicKey      String
+  keyId          String    @unique
+  algorithm      String    @default("ES256")
+  status         KeyStatus @default(ACTIVE)
+  createdAt      DateTime  @default(now())
+  rotatedAt      DateTime?
+  revokedAt      DateTime?
+
+  // Post-quantum SLH-DSA-SHA2-128s public key (base64). Paired with the
+  // ECDSA key on the same row so a single rotation event swaps both legs.
+  // Nullable to allow gradual rollout — keys created before the PQC layer
+  // landed do not have an SLH-DSA pubkey.
+  slhdsaPublicKey String?
+  slhdsaAlgorithm String? @default("slh-dsa-sha2-128s")
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  qrCodes       QRCode[]
+  signedBatches SignedBatch[]
+
+  @@index([organizationId, status])
+  @@map("signing_keys")
+}
+
+model QRCode {
+  id                String       @id @default(cuid())
+  token             String       @unique
+  organizationId    String
+  signingKeyId      String
+  keyId             String?      // Audit-4 A4-L2: public signing key identifier (UUID) for offline auditability
+  destinationUrl    String
+  label             String?
+  contentType       String       @default("url")
+  content           Json?
+  contentVersion    Int          @default(1)
+  publishedAt       DateTime?
+  signature         String
+  geoHash           String?
+  latitude          Float?
+  longitude         Float?
+  radiusM           Float        @default(50)
+  status            QRCodeStatus @default(ACTIVE)
+  expiresAt         DateTime?
+  maxScans          Int?
+  maxScansPerDevice Int?
+  revokedAt         DateTime?
+  // AUDIT-2 N-1: structured revocation reason so the pending-reconciler
+  // can distinguish an orphaned-merkle auto-revoke ('ORPHANED_PENDING_MERKLE')
+  // from a user-driven revoke (null). Free-form string for now — callers
+  // that need to branch on the reason match against a small set of
+  // constants defined in services/pending-reconciler.ts. A future
+  // migration can upgrade this to an enum if the reason set stabilises.
+  revocationReason  String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Post-quantum / hybrid signing fields. Populated when the QR code is
+  // issued through the hybrid signing service. `algVersion` is the
+  // authoritative discriminator at verification time:
+  //   - "ecdsa-p256-sha256-v1"   → legacy single-signature row, ECDSA only
+  //   - "hybrid-ecdsa-slhdsa-v1" → ECDSA `signature` + Merkle batch fields
+  //   - "slhdsa-sha2-128s-v1"    → reserved for Phase 3 ECDSA removal
+  algVersion      String? @default("ecdsa-p256-sha256-v1")
+  merkleBatchId   String?
+  merkleLeafIndex Int?
+  merkleLeafHash  String?
+  merkleLeafNonce String?
+  merklePath      Json?
+
+  // Hot-path symmetric MAC track (ALGORITHM.md §7). Computed at issuance over
+  // the canonical payload using the org's HMAC-SHA3-256 key and stored
+  // server-side only — never embedded in the QR. The verify route checks this
+  // first as a fast path; on miss or version skew it falls through to the
+  // ECDSA + Merkle/SLH-DSA legs which remain authoritative.
+  macTokenMac   String?
+  macKeyVersion Int?
+
+  organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signingKey           SigningKey            @relation(fields: [signingKeyId], references: [id])
+  signedBatch          SignedBatch?          @relation(fields: [merkleBatchId], references: [batchId])
+  scans                Scan[]
+  fraudIncidents       FraudIncident[]
+  transparencyLogEntry TransparencyLogEntry?
+  contentAssets        ContentAsset[]
+  feedbackSubmissions  FeedbackSubmission[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("qr_codes")
+}
+
+model Scan {
+  id              String   @id @default(cuid())
+  qrCodeId        String
+  clientIpHash    String
+  clientLat       Float?
+  clientLng       Float?
+  userAgent       String?
+  trustScore      Int      @default(100)
+  proxyDetected   Boolean  @default(false)
+  passkeyVerified Boolean  @default(false)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  qrCode         QRCode          @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  fraudIncidents FraudIncident[]
+
+  @@index([qrCodeId])
+  @@index([createdAt])
+  @@map("scans")
+}
+
+model FraudIncident {
+  id             String        @id @default(cuid())
+  qrCodeId       String
+  scanId         String?
+  type           FraudType
+  severity       FraudSeverity
+  details        Json
+  resolved       Boolean       @default(false)
+  resolvedAt     DateTime?
+  resolvedBy     String?
+  resolutionNote String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime      @default(now())
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  scan   Scan?  @relation(fields: [scanId], references: [id])
+
+  @@index([qrCodeId])
+  @@index([severity])
+  @@index([resolved])
+  @@map("fraud_incidents")
+}
+
+model TransparencyLogEntry {
+  id              String   @id @default(cuid())
+  logIndex        Int      @unique @default(autoincrement())
+  qrCodeId        String   @unique
+  organizationId  String
+  tokenHash       String
+  destinationHash String
+  geoHash         String?
+  previousHash    String?
+  entryHash       String
+  createdAt       DateTime @default(now())
+
+  // Commitment-only fields (ALGORITHM.md §8). Populated for entries written
+  // by the hybrid signing pipeline. Old fields above are retained for
+  // backwards-compatible audit reads on legacy rows. New entries SHOULD
+  // populate the commitment fields and SHOULD NOT depend on the legacy ones.
+  algVersion           String? @default("ecdsa-p256-sha256-v1")
+  commitment           String?
+  batchRootRef         String?
+  merkleInclusionProof Json?
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@index([logIndex])
+  @@map("transparency_log")
+}
+
+// ---------------------------------------------------------------------------
+// SignedBatch — a Merkle root that has been signed once with SLH-DSA. Each
+// QRCode references its batch via QRCode.merkleBatchId. For now batches are
+// single-leaf (one QR per batch) so issuance latency is dominated by SLH-DSA
+// signing; multi-leaf batching is a future optimization (ALGORITHM.md §6.2)
+// that requires no additional schema changes.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// OrgMacKey — versioned HMAC-SHA3-256 key ring per organization. Drives the
+// symmetric fast path (ALGORITHM.md §7). Each row is one *version* of the
+// secret; the active row has `status = ACTIVE`. On rotation the previous
+// ACTIVE row flips to ROTATED and stays around for a grace period so QRs
+// signed under it still verify; after the grace window it's marked RETIRED
+// and pruned by a cleanup worker (not yet implemented — Phase 2.5).
+//
+// `secret` stores the raw HMAC key as base64. In production this should
+// move into KMS and be fetched per-request rather than cached in the row.
+// For MVP it lives here so the verify path has a single DB read instead of
+// a KMS round-trip on every scan.
+// ---------------------------------------------------------------------------
+
+model OrgMacKey {
+  id             String       @id @default(cuid())
+  organizationId String
+  version        Int
+  secret         String
+  algorithm      String       @default("hmac-sha3-256")
+  status         MacKeyStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  rotatedAt      DateTime?
+  retiredAt      DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, version])
+  @@index([organizationId, status])
+  @@map("org_mac_keys")
+}
+
+enum MacKeyStatus {
+  ACTIVE
+  ROTATED
+  RETIRED
+}
+
+model SignedBatch {
+  id             String   @id @default(cuid())
+  batchId        String   @unique
+  organizationId String
+  signingKeyId   String
+  algVersion     String   @default("hybrid-ecdsa-slhdsa-v1")
+  merkleRoot     String
+  rootSignature  String // SLH-DSA signature of merkleRoot, base64
+  tokenCount     Int
+  issuedAt       DateTime
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  signingKey   SigningKey   @relation(fields: [signingKeyId], references: [id])
+  qrCodes      QRCode[]
+
+  @@index([organizationId])
+  @@index([signingKeyId])
+  @@map("signed_batches")
+}
+
+model ApiKey {
+  id             String         @id @default(cuid())
+  organizationId String
+  keyHash        String         @unique
+  prefix         String
+  label          String?
+  role           MembershipRole @default(MEMBER)
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("api_keys")
+}
+
+model User {
+  id                   String       @id @default(cuid())
+  name                 String
+  email                String       @unique
+  passwordHash         String
+  provider             AuthProvider @default(EMAIL)
+  providerId           String?      @unique
+  avatarUrl            String?
+  failedLoginAttempts  Int          @default(0)
+  lockedUntil          DateTime?
+  onboardedAt          DateTime?
+  emailVerified        Boolean      @default(false)
+  emailVerifyToken     String?      @unique
+  passwordResetToken   String?      @unique
+  passwordResetExpires DateTime?
+  lastLoginAt          DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  memberships        Membership[]
+  invitationsSent    Invitation[]    @relation("InvitedByUser")
+  invitedMemberships Membership[]    @relation("InvitedByMembership")
+  auditLogs          AuditLog[]
+  authSessions       AuthSession[]
+  loginEvents        LoginEvent[]
+  refreshTokens      RefreshToken[]
+  trustedDevices     TrustedDevice[]
+  passkeys           Passkey[]
+
+  @@map("users")
+}
+
+model LoginEvent {
+  id          String       @id @default(cuid())
+  userId      String
+  success     Boolean
+  provider    AuthProvider @default(EMAIL)
+  ipAddress   String?
+  ipCountry   String?
+  ipCity      String?
+  userAgent   String?
+  deviceType  String?
+  browser     String?
+  os          String?
+  fingerprint String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([ipAddress])
+  @@map("login_events")
+}
+
+model Membership {
+  id             String         @id @default(cuid())
+  userId         String
+  organizationId String
+  role           MembershipRole @default(MEMBER)
+  invitedBy      String?
+  joinedAt       DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User?        @relation("InvitedByMembership", fields: [invitedBy], references: [id])
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id             String         @id @default(cuid())
+  organizationId String
+  email          String
+  role           MembershipRole @default(MEMBER)
+  token          String         @unique
+  invitedBy      String
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation("InvitedByUser", fields: [invitedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitations")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  action         String
+  resource       String
+  resourceId     String
+  metadata       Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+enum EphemeralSessionStatus {
+  PENDING
+  CLAIMED
+  EXPIRED
+  REVOKED
+}
+
+enum AppStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AuthSessionStatus {
+  PENDING
+  SCANNED
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+model App {
+  id               String    @id @default(cuid())
+  organizationId   String
+  name             String
+  slug             String    @unique
+  clientId         String    @unique
+  clientSecretHash String
+  redirectUrls     String[]
+  webhookUrl       String?
+  allowedScopes    String[]  @default(["identity"])
+  logoUrl          String?
+  description      String?
+  status           AppStatus @default(ACTIVE)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  authSessions      AuthSession[]
+  webhookDeliveries WebhookDelivery[]
+  ephemeralSessions EphemeralSession[]
+
+  @@index([organizationId])
+  @@map("apps")
+}
+
+model AuthSession {
+  id                String            @id @default(cuid())
+  appId             String
+  token             String            @unique
+  status            AuthSessionStatus @default(PENDING)
+  scopes            String[]          @default(["identity"])
+  codeChallenge     String? // PKCE S256 challenge (for browser SDK, no secret needed)
+  userId            String?
+  userAgent         String?
+  clientIpHash      String?
+  deviceFingerprint String?
+  ipCountry         String?
+  ipCity            String?
+  referrer          String?
+  geoLat            Float?
+  geoLng            Float?
+  signature         String?
+  redirectUrl       String?
+  metadata          Json?
+  expiresAt         DateTime
+  scannedAt         DateTime?
+  resolvedAt        DateTime?
+  createdAt         DateTime          @default(now())
+
+  app  App   @relation(fields: [appId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([appId])
+  @@index([token])
+  @@index([status, expiresAt])
+  @@map("auth_sessions")
+}
+
+model AnalyticsSnapshot {
+  id          String   @id @default(cuid())
+  type        String
+  entityType  String
+  entityId    String
+  periodStart DateTime
+  periodEnd   DateTime
+  data        Json
+  createdAt   DateTime @default(now())
+
+  @@index([type, entityType, periodStart])
+  @@index([entityId, type])
+  @@map("analytics_snapshots")
+}
+
+model FraudRule {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  enabled     Boolean  @default(true)
+  priority    Int      @default(100)
+  conditions  Json
+  action      Json
+  source      String   @default("system")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled, priority])
+  @@map("fraud_rules")
+}
+
+model AgentRun {
+  id            String    @id @default(cuid())
+  runType       String
+  status        String
+  inputSummary  Json?
+  outputSummary Json?
+  tokensUsed    Int?
+  durationMs    Int?
+  error         String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([runType, createdAt])
+  @@map("agent_runs")
+}
+
+model ContentAsset {
+  id             String   @id @default(cuid())
+  organizationId String
+  qrCodeId       String?
+  filename       String
+  mimeType       String
+  sizeBytes      Int
+  storagePath    String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  qrCode       QRCode?      @relation(fields: [qrCodeId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([qrCodeId])
+  @@map("content_assets")
+}
+
+model FeedbackSubmission {
+  id        String   @id @default(cuid())
+  qrCodeId  String
+  rating    Int
+  comment   String?
+  name      String?
+  email     String?
+  phone     String?
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@index([qrCodeId, createdAt])
+  @@map("feedback_submissions")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  family    String // Token family for rotation detection
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([family])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model WebhookDelivery {
+  id            String    @id @default(cuid())
+  appId         String
+  event         String // e.g. qr.created, qr.scanned, qr.verified, fraud.detected, auth.approved, auth.denied
+  url           String
+  payload       Json
+  statusCode    Int?
+  responseBody  String?
+  attempts      Int       @default(0)
+  lastAttemptAt DateTime?
+  deliveredAt   DateTime?
+  failedAt      DateTime?
+  error         String?
+  createdAt     DateTime  @default(now())
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId, createdAt])
+  @@index([event, createdAt])
+  @@map("webhook_deliveries")
+}
+
+// ---------------------------------------------------------------------------
+// Device Registry & WebAuthn
+// ---------------------------------------------------------------------------
+
+model TrustedDevice {
+  id          String           @id @default(cuid())
+  userId      String
+  fingerprint String
+  name        String?
+  trustLevel  DeviceTrustLevel @default(NEW)
+  deviceType  String?
+  browser     String?
+  os          String?
+  ipCountry   String?
+  ipCity      String?
+  lastSeenAt  DateTime         @default(now())
+  trustedAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime         @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passkeys Passkey[]
+
+  @@unique([userId, fingerprint])
+  @@index([userId, trustLevel])
+  @@map("trusted_devices")
+}
+
+model Passkey {
+  id           String    @id @default(cuid())
+  userId       String
+  deviceId     String?
+  credentialId String    @unique
+  publicKey    Bytes
+  counter      BigInt    @default(0)
+  transports   String[]
+  aaguid       String?
+  name         String?
+  lastUsedAt   DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  // Post-quantum bridge credential (ALGORITHM.md §9). The WebAuthn key
+  // itself is ECDSA-P256 — quantum-vulnerable to Shor's algorithm. The
+  // bridge is a parallel ML-DSA-44 credential generated server-side at
+  // registration: the public key lives here, the private key was returned
+  // once to the client and stored in browser IndexedDB. At authentication
+  // the client signs the WebAuthn challenge with both keys; the server
+  // verifies both legs. Even after CRQC breaks ECDSA, the ML-DSA leg
+  // still holds.
+  //
+  // Nullable for backwards compatibility: legacy passkeys registered
+  // before this layer landed have no bridge keypair, and the verifier
+  // accepts them without a bridge signature (logged as a downgrade).
+  bridgePublicKey Bytes?
+  bridgeAlgorithm String? @default("ml-dsa-44")
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device TrustedDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("passkeys")
+}
+
+// ---------------------------------------------------------------------------
+// Ephemeral Delegated Access
+// ---------------------------------------------------------------------------
+
+model EphemeralSession {
+  id              String                 @id @default(cuid())
+  appId           String
+  token           String                 @unique
+  status          EphemeralSessionStatus @default(PENDING)
+  scopes          String[]               @default([])
+  ttlSeconds      Int
+  maxUses         Int                    @default(1)
+  useCount        Int                    @default(0)
+  deviceBinding   Boolean                @default(false)
+  boundDeviceHash String?
+  metadata        Json?
+  claimUrl        String?
+  claimedAt       DateTime?
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdAt       DateTime               @default(now())
+
+  app App @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@index([appId])
+  @@index([token])
+  @@index([status, expiresAt])
+  @@map("ephemeral_sessions")
+}
+
+// ---------------------------------------------------------------------------
+// Device Policy
+// ---------------------------------------------------------------------------
+
+model DevicePolicy {
+  id                  String   @id @default(cuid())
+  organizationId      String   @unique
+  maxDevices          Int      @default(10)
+  requireBiometric    Boolean  @default(false)
+  geoFenceLat         Float?
+  geoFenceLng         Float?
+  geoFenceRadiusKm    Float?
+  autoRevokeAfterDays Int?
+  // Post-quantum WebAuthn bridge enforcement (ALGORITHM.md §9). One of:
+  //   - "required" (default): bridge signature MUST verify; missing or
+  //     invalid → auth fails. Forces re-registration if the user clears
+  //     IndexedDB. Recommended for government / regulated tenants.
+  //   - "optional": bridge signature verified when present, accepted
+  //     (with a warn log) when absent. Lets users clear site data
+  //     without bricking auth. Recommended for standard tenants until
+  //     PQC WebAuthn is standardized.
+  //   - "disabled": no bridge keypair minted at registration, no
+  //     bridge check at auth. Useful for tenants on legacy stacks
+  //     where the extra round trip is not worth the latency.
+  // Strictness order for cross-org users: required > optional > disabled.
+  bridgePolicy        String   @default("required")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("device_policies")
+}
