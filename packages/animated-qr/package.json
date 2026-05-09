@@ -31,13 +31,13 @@
   "license": "MIT",
   "devDependencies": {
     "@types/qrcode": "^1.5.6",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.7.0"
   },
   "dependencies": {
     "qrcode": "1.5.4"
   },
   "optionalDependencies": {
-    "canvaskit-wasm": "^0.39.0"
+    "canvaskit-wasm": "^0.41.1"
   }
 }
