@@ -45,7 +45,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.9.1",
     "@types/nodemailer": "^8.0.0",
     "@types/qrcode": "^1.5.6",
     "dotenv": "^16.6.1",
