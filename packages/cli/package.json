@@ -50,7 +50,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "commander": "^12.1.0",
+    "commander": "^15.0.0",
     "qrcode": "1.5.4"
   },
   "devDependencies": {
