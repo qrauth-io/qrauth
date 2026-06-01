@@ -1,0 +1,65 @@
+{
+  "name": "@qrauth/cli",
+  "version": "0.1.0",
+  "description": "Official command-line interface for QRAuth — QR scan login, QR code management",
+  "type": "module",
+  "bin": {
+    "qrauth": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node scripts/bundle.js",
+    "dev": "node scripts/bundle.js",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "qrauth",
+    "cli",
+    "qr-code",
+    "authentication",
+    "pkce"
+  ],
+  "author": {
+    "name": "Gernard Cerma",
+    "email": "aris@progressnet.gr",
+    "url": "https://github.com/aristech"
+  },
+  "license": "MIT",
+  "homepage": "https://qrauth.io",
+  "bugs": {
+    "url": "https://github.com/qrauth-io/qrauth/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qrauth-io/qrauth"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@qrauth/node": "*",
+    "@qrauth/shared": "*",
+    "@types/node": "^22.0.0",
+    "@types/qrcode": "^1.5.5",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
