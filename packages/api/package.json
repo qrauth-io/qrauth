@@ -45,7 +45,7 @@
     "jose": "^6.2.3",
     "nodemailer": "^8.0.7",
     "qrcode": "^1.5.4",
-    "stripe": "^17.0.0",
+    "stripe": "^22.2.1",
     "zod": "^4.1.13"
   },
   "devDependencies": {
