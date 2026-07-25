@@ -16,7 +16,7 @@
     "lru-cache": "^11.5.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.1.1",
     "tsx": "^4.22.3",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
