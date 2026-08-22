@@ -8,14 +8,14 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@noble/post-quantum": "^0.6.1",
+    "@noble/post-quantum": "^0.7.0",
     "@qrauth/api": "*",
     "@qrauth/shared": "*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "fast-check": "^3.23.2",
-    "tsx": "^4.22.3",
+    "tsx": "^4.23.12",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
   }
