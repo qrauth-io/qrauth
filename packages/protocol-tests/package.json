@@ -13,7 +13,7 @@
     "@qrauth/shared": "*"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.4.1",
     "fast-check": "^3.23.2",
     "tsx": "^4.22.3",
     "typescript": "^5.5.0",
