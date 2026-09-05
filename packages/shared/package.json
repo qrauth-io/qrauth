@@ -20,7 +20,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "zod": "^4.1.13"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "typescript": "^5.5.0"
