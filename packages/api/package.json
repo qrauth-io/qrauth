@@ -40,7 +40,7 @@
     "@noble/post-quantum": "^0.6.1",
     "@prisma/client": "^6.0.0",
     "@qrauth/shared": "*",
-    "@simplewebauthn/server": "^11.0.0",
+    "@simplewebauthn/server": "^14.0.1",
     "bullmq": "^5.76.10",
     "fastify": "^5.0.0",
     "fastify-plugin": "^5.0.0",
