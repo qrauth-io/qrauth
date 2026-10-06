@@ -1,0 +1,165 @@
+{
+  "protocolVersion": "qrva-v2",
+  "generatedAt": "2026-04-14T19:34:50.699Z",
+  "notes": [
+    "Cross-language test vectors for the QRVA unified canonical form (AUDIT-FINDING-011).",
+    "Core shape: algVersion|token|tenantId|destHash|geoHash|expiresAt",
+    "Merkle leaf: core | nonce",
+    "destHash is content-type aware via computeDestHash — URL QRs hash the URL, content QRs hash the contentHashHex.",
+    "geoHash is canonicalGeoHash(lat,lng,radius) with 7-decimal precision; unbound locations use the literal 'none'.",
+    "Non-expiring codes use the empty string '' for expiresAt.",
+    "Regenerate with: npx tsx packages/protocol-tests/scripts/generate-vectors.ts"
+  ],
+  "vectors": [
+    {
+      "name": "minimal_no_location",
+      "description": "Smallest valid payload — URL content, no location, far-future expiry",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "expected": {
+        "destHash": "f93bc6ce66ae2b0b634327085d296cb500c1ba9ef40750d55c5102e620d3f9bb",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|abc123|tnt_test|f93bc6ce66ae2b0b634327085d296cb500c1ba9ef40750d55c5102e620d3f9bb|none|2027-01-01T00:00:00.000Z",
+        "canonicalCoreSha3": "725f9db426e93dea274b0f83da091a776c97020eba99d60a7afb805e829e8e5d",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|abc123|tnt_test|f93bc6ce66ae2b0b634327085d296cb500c1ba9ef40750d55c5102e620d3f9bb|none|2027-01-01T00:00:00.000Z|deadbeef",
+        "leafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9"
+      }
+    },
+    {
+      "name": "url_with_location",
+      "description": "URL QR in NYC with a 100m radius",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "xK9m2pQ7",
+        "tenantId": "tnt_acme",
+        "contentType": "url",
+        "destinationUrl": "https://acme.example/promo",
+        "contentHashHex": "",
+        "lat": 40.7128,
+        "lng": -74.006,
+        "radiusM": 100,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "0000000000000000000000000000000000000000000000000000000000000001"
+      },
+      "expected": {
+        "destHash": "b226aafdc61d5b8325705f102f1c16e9eac78685f76aa204f47613a87212e8f7",
+        "geoHash": "0306c89b1cc00b7bcbf54cdbc38f6c01cd33aaa9f052c1d00a4342942758939a",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|xK9m2pQ7|tnt_acme|b226aafdc61d5b8325705f102f1c16e9eac78685f76aa204f47613a87212e8f7|0306c89b1cc00b7bcbf54cdbc38f6c01cd33aaa9f052c1d00a4342942758939a|2027-01-01T00:00:00.000Z",
+        "canonicalCoreSha3": "2229a5056047a04ef9a5230d61a7273f083848e46c47394f7b5af64584720b73",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|xK9m2pQ7|tnt_acme|b226aafdc61d5b8325705f102f1c16e9eac78685f76aa204f47613a87212e8f7|0306c89b1cc00b7bcbf54cdbc38f6c01cd33aaa9f052c1d00a4342942758939a|2027-01-01T00:00:00.000Z|0000000000000000000000000000000000000000000000000000000000000001",
+        "leafHash": "3b77da6d88bcbd5d7b98ee4c68cea913086c37207a6307c9c53b78769d274756"
+      }
+    },
+    {
+      "name": "non_expiring_empty_string_sentinel",
+      "description": "Non-expiring code — expiresAt uses the empty-string sentinel",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "perma01",
+        "tenantId": "tnt_perma",
+        "contentType": "url",
+        "destinationUrl": "https://perma.example/",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "00"
+      },
+      "expected": {
+        "destHash": "53fceb60e983ab9fa1378e386598864b02242fa077abb6bb22e57e544385beba",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|perma01|tnt_perma|53fceb60e983ab9fa1378e386598864b02242fa077abb6bb22e57e544385beba|none|",
+        "canonicalCoreSha3": "6009c81a4afba3ddb1ced75a0f4642167d9df6dc2b0a0d3f03a8ab95c104b5eb",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|perma01|tnt_perma|53fceb60e983ab9fa1378e386598864b02242fa077abb6bb22e57e544385beba|none||00",
+        "leafHash": "a43aaaf71b458be750c3a5fd23030e1a706d9666384b8231144a648c58b8574f"
+      }
+    },
+    {
+      "name": "vcard_content_qr",
+      "description": "Content QR (vCard) — destHash commits to the content hash, not the URL",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "expected": {
+        "destHash": "cd3459ea304980685363ee3a7397620f42920a3cc5ba712590c519739f0cea96",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|vcd_001|tnt_vcd|cd3459ea304980685363ee3a7397620f42920a3cc5ba712590c519739f0cea96|none|",
+        "canonicalCoreSha3": "9720206958cf62bc0b8ef22c5771fd89d84b6f19e1c468bc7dca84b54a809b02",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|vcd_001|tnt_vcd|cd3459ea304980685363ee3a7397620f42920a3cc5ba712590c519739f0cea96|none||feedface",
+        "leafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27"
+      }
+    },
+    {
+      "name": "southern_hemisphere_location",
+      "description": "Sydney coordinates, short expiry",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "tok_AU01",
+        "tenantId": "tnt_au",
+        "contentType": "url",
+        "destinationUrl": "https://example.au/welcome",
+        "contentHashHex": "",
+        "lat": -33.8688,
+        "lng": 151.2093,
+        "radiusM": 50,
+        "expiresAt": "2026-06-15T12:30:00.000Z",
+        "nonce": "cafebabecafebabe"
+      },
+      "expected": {
+        "destHash": "508579a12376567de746a94f0e127ee67e990f5fe98169148a7c738a2f960596",
+        "geoHash": "2c15e3f55ea547eaa0637c32b992d492a6524b3366a0162d885ab28d9488a9ea",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|tok_AU01|tnt_au|508579a12376567de746a94f0e127ee67e990f5fe98169148a7c738a2f960596|2c15e3f55ea547eaa0637c32b992d492a6524b3366a0162d885ab28d9488a9ea|2026-06-15T12:30:00.000Z",
+        "canonicalCoreSha3": "d5b21089553b08d15bf680e4215d2041b14897cdffb93ae7ad7f8c4fe32a48b8",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|tok_AU01|tnt_au|508579a12376567de746a94f0e127ee67e990f5fe98169148a7c738a2f960596|2c15e3f55ea547eaa0637c32b992d492a6524b3366a0162d885ab28d9488a9ea|2026-06-15T12:30:00.000Z|cafebabecafebabe",
+        "leafHash": "df9b56284271a873e010e1fa2e49a47184e5d71ee75fdbaf71a9c071c946f1e1"
+      }
+    },
+    {
+      "name": "decimal_precision_check",
+      "description": "Lat/lng at 7-decimal precision to lock in toFixed formatting",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "precise",
+        "tenantId": "tnt_pre",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/precise",
+        "contentHashHex": "",
+        "lat": 41.4123456,
+        "lng": 23.7654321,
+        "radiusM": 25,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeefcafebabe"
+      },
+      "expected": {
+        "destHash": "ee234c6b210e1791f4b8a5bf69b30ef8accfd859fdfd1218ee8c443c981df1ad",
+        "geoHash": "35ecaabe0822dfd1b7835750b5f75efc19eee8d0c6f301f9321f5c45d8c2dbc1",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|precise|tnt_pre|ee234c6b210e1791f4b8a5bf69b30ef8accfd859fdfd1218ee8c443c981df1ad|35ecaabe0822dfd1b7835750b5f75efc19eee8d0c6f301f9321f5c45d8c2dbc1|2027-01-01T00:00:00.000Z",
+        "canonicalCoreSha3": "ff7ec479b53ebbe85697f8f189631ba9ec3c9531c48c96e0b63b6035e15296eb",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|precise|tnt_pre|ee234c6b210e1791f4b8a5bf69b30ef8accfd859fdfd1218ee8c443c981df1ad|35ecaabe0822dfd1b7835750b5f75efc19eee8d0c6f301f9321f5c45d8c2dbc1|2027-01-01T00:00:00.000Z|deadbeefcafebabe",
+        "leafHash": "8da1374d6573bb284a821e0097c3859ab8145bd3af33e11e8b9fd0a8e1dbb14a"
+      }
+    }
+  ]
+}

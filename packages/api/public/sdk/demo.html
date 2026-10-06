@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRAuth SDK Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { color: #1B2A4A; }
+    p { color: #637381; }
+    .config {
+      text-align: left;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 24px 0;
+    }
+    .config label { display: block; font-size: 13px; font-weight: 600; color: #637381; margin-bottom: 4px; margin-top: 12px; }
+    .config input { width: 100%; padding: 8px 12px; border: 1px solid #dfe3e8; border-radius: 8px; font-size: 14px; font-family: monospace; box-sizing: border-box; }
+    #qrauth-login { margin: 32px 0; }
+    .result { margin-top: 24px; text-align: left; background: #E8F5E9; padding: 16px; border-radius: 8px; display: none; }
+    .result pre { font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+    code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>QRAuth SDK Demo</h1>
+  <p>Test QR-based authentication. Enter your app credentials below.</p>
+
+  <div class="config">
+    <label>Client ID</label>
+    <input id="clientId" placeholder="qrauth_app_xxx" />
+    <label>Client Secret</label>
+    <input id="clientSecret" type="password" placeholder="qrauth_secret_xxx" />
+    <br><br>
+    <button onclick="initAuth()" style="padding:8px 20px;background:#1B2A4A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+      Initialize SDK
+    </button>
+  </div>
+
+  <div id="qrauth-login"></div>
+
+  <div class="result" id="result">
+    <strong>Authentication Result:</strong>
+    <pre id="result-json"></pre>
+  </div>
+
+  <hr style="margin:32px 0;border:none;border-top:1px solid #eee;">
+
+  <h3>Web Component (Recommended)</h3>
+  <p>Drop-in authentication with a single HTML tag. No npm, no build step:</p>
+  <pre style="text-align:left;background:#1B2A4A;color:#e0e0e0;padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;">&lt;script src="https://qrauth.io/sdk/v1/components.js"&gt;&lt;/script&gt;
+&lt;qrauth-login
+  tenant="YOUR_CLIENT_ID"
+  theme="light"
+  on-auth="handleLogin"&gt;
+&lt;/qrauth-login&gt;
+&lt;script&gt;
+  function handleLogin(e) {
+    console.log('Authenticated:', e.detail);
+  }
+&lt;/script&gt;</pre>
+
+  <p style="font-size:13px;color:#637381;margin-top:8px;">
+    Or use as an ES module:
+    <code>&lt;script type="module" src="https://qrauth.io/sdk/v1/components.esm.js"&gt;&lt;/script&gt;</code>
+  </p>
+
+  <div id="wc-demo" style="margin:24px 0;padding:20px;background:#f8f9fa;border-radius:12px;">
+    <p style="font-size:13px;font-weight:600;color:#637381;">Web Component Preview</p>
+    <qrauth-login tenant="demo" theme="light" display="inline"></qrauth-login>
+  </div>
+
+  <hr style="margin:32px 0;border:none;border-top:1px solid #eee;">
+  <h3>JavaScript SDK (Legacy)</h3>
+  <p>Imperative API for full control:</p>
+  <pre style="text-align:left;background:#1B2A4A;color:#e0e0e0;padding:16px;border-radius:8px;font-size:12px;overflow-x:auto;">&lt;div id="qrauth-auth"&gt;&lt;/div&gt;
+&lt;script src="https://qrauth.io/sdk/qrauth-auth.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  new QRAuth({
+    clientId: 'YOUR_CLIENT_ID',
+    clientSecret: 'YOUR_CLIENT_SECRET',
+    element: '#qrauth-auth',
+    onSuccess: function(result) {
+      console.log('User:', result.user);
+      console.log('Signature:', result.signature);
+      // Send result to your server for verification
+    }
+  });
+&lt;/script&gt;</pre>
+
+  <script src="v1/components.js"></script>
+  <script src="qrauth-auth.js"></script>
+  <script>
+    function initAuth() {
+      var clientId = document.getElementById('clientId').value;
+      var clientSecret = document.getElementById('clientSecret').value;
+      if (!clientId || !clientSecret) {
+        alert('Enter your Client ID and Client Secret');
+        return;
+      }
+
+      new QRAuth({
+        clientId: clientId,
+        clientSecret: clientSecret,
+        element: '#qrauth-login',
+        scopes: ['identity', 'email'],
+        onSuccess: function (result) {
+          var el = document.getElementById('result');
+          el.style.display = 'block';
+          document.getElementById('result-json').textContent = JSON.stringify(result, null, 2);
+        },
+        onError: function (err) {
+          alert('Error: ' + err.message);
+        },
+        onScan: function () {
+          console.log('QR code scanned!');
+        },
+      });
+    }
+  </script>
+</body>
+</html>
