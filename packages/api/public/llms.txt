@@ -1,0 +1,106 @@
+# QRAuth.io — Identity Verification Platform
+
+> QRAuth is an identity verification platform with cryptographic challenge-response
+> authentication, WebAuthn/passkey support, a device trust registry, real-time fraud
+> detection with adaptive scoring, and a full admin control plane. QR codes are one
+> authentication transport — not the entire product.
+
+## What QRAuth IS
+
+- An identity verification platform (not "just a QR code tool")
+- Same-device? Passkeys. Cross-device? QR scan. Both under one SDK, one identity
+- No app install required — users scan with their phone camera, verify in the browser
+- A cryptographic challenge-response authentication system
+- A developer-first SDK (Node.js, Python) with 10-line integration
+- A multi-tenant platform with org isolation, RBAC, and admin dashboards
+
+## Core Capabilities
+
+### Authentication Methods
+- QR-based authentication: scan to log in (cross-device, kiosk, smart TV)
+- WebAuthn/FIDO2 passkeys: biometric/hardware key sign-in
+- Both methods unified under a single identity and session model
+- OAuth2 (Google, GitHub, Microsoft, Apple) for dashboard access
+
+### Device Trust Registry
+- Automatic device detection and fingerprinting on every login
+- Trust levels: NEW, TRUSTED, SUSPICIOUS
+- User-facing device management (name, trust, revoke)
+- Passkeys linked to specific devices
+- Revocation cascades (revoking a device revokes its passkeys)
+
+### Cryptographic Verification
+- ECDSA-P256 digital signatures on every QR code
+- Challenge-response protocol (not static tokens)
+- Content hash verification via deterministic JSON serialization
+- Per-organization signing key pairs with rotation and revocation
+- Signature: ECDSA_Sign(private_key, SHA256(token + url + geoHash + expiry + contentHash))
+
+### Fraud Detection Engine (6 Signals)
+- Duplicate location detection (QR codes within 20m of another org's codes)
+- Proxy/VPN detection
+- Geographic impossibility (>500km travel in <30min)
+- Scan velocity analysis (>50 scans in 5min)
+- Bot detection (User-Agent pattern matching)
+- Device clustering (same IP scanning 20+ different QR codes in 1hr)
+
+### Adaptive Scoring
+- Per-organization signal weights that learn from feedback
+- Dynamic rule engine with JSON-based conditions from database
+- Real-time feature extraction via Redis (HyperLogLog, rolling averages)
+- Trust score 0-100 computed on every verification
+
+### Admin Control Plane
+- Multi-tenant dashboard (React 19 + MUI 7)
+- KYC review workflow (approve/reject with audit trail)
+- Full session audit trail (device, IP, geo, timestamps, scopes)
+- Fraud incident management (acknowledge, resolve, notes)
+- Analytics with geographic heatmaps, trust score trends
+- Audit log (user, action, resource, IP, timestamp)
+- Email alerts on HIGH/CRITICAL fraud incidents
+
+### AI Security Agent
+- Daily automated security analysis via Claude AI
+- 8 tools: query scans, fraud, logins, orgs, features, create rules, write reports
+- Creates dynamic fraud rules that go live in <60 seconds
+- Anomaly detection comparing 24h data against 7-day baseline
+
+## Technical Architecture
+- Monorepo: shared types, API (Fastify 5), web dashboard (React 19), E2E tests
+- PostgreSQL 16 + PostGIS for spatial queries
+- Redis for caching, feature extraction, rate limiting
+- BullMQ for async job processing (scans, fraud, alerts, webhooks)
+- Prisma ORM with 15+ models
+- 39 E2E tests (API, auth, dashboard, security)
+
+## SDKs
+- Node.js SDK: @qrauth/node (v0.1.2) — create, verify, list, delete, bulk ops
+- Python SDK: qrauth (v0.1.2) — mirrors Node SDK, context manager support
+
+## Use Cases
+1. QR fraud protection — verify physical/digital QR codes are legitimate
+2. Passwordless authentication — scan QR or use passkey to log in (like WhatsApp Web)
+3. Physical access control — scan to unlock spaces, devices, assets
+
+## Comparison
+
+| Feature | QRAuth | Passkeys Only | Auth0/Clerk | TOTP/2FA |
+|---------|--------|---------------|-------------|----------|
+| No password needed | Yes | Yes | No | No |
+| Cross-device auth | Yes (QR) | Limited | No | No |
+| Device trust registry | Yes | No | No | No |
+| Fraud detection | 6-signal + AI | No | Basic | No |
+| Physical QR verification | Yes | No | No | No |
+| WebAuthn support | Yes | Yes | Yes | No |
+| Geo-binding | Yes | No | No | No |
+| Open protocol | Yes (QRVA) | WebAuthn | No | RFC 6238 |
+
+## Links
+- Production: https://qrauth.io
+- API docs: https://qrauth.io/docs/openapi.json
+- Dashboard: https://qrauth.io/dashboard
+- GitHub: https://github.com/ArisTech/QRAuth (BSL 1.1)
+- SDKs: MIT licensed
+
+## Contact
+- Built by ProgressNet (qrauth.io)
