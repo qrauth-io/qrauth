@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.2",
     "happy-dom": "^20.10.2",
     "typescript": "5.9.3",
     "vitest": "^2.1.9"
