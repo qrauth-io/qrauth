@@ -50,16 +50,16 @@
     "node": ">=20"
   },
   "dependencies": {
-    "commander": "^12.1.0",
+    "commander": "^15.0.0",
     "qrcode": "1.5.4"
   },
   "devDependencies": {
     "@qrauth/node": "*",
     "@qrauth/shared": "*",
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.5",
     "@types/qrcode": "^1.5.5",
-    "esbuild": "0.28.0",
-    "typescript": "5.9.3",
-    "vitest": "^2.0.0"
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "^5.0.5"
   }
 }
