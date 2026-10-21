@@ -1,0 +1,10 @@
+{
+  "accepted": [
+    {
+      "id": "GHSA-ggr8-5vv4-36mx",
+      "package": "deepmerge-ts",
+      "reason": "Stack exhaustion when merging recursive object graphs. Reached only through @prisma/config, which the Prisma CLI uses to merge the operator's own configuration at `prisma migrate deploy` / `prisma generate` time. No request, tenant or user input reaches it; the API runtime uses @prisma/client, which does not depend on it. The fix needs deepmerge-ts 8, which arrives with the Prisma 7 major upgrade.",
+      "reviewBy": "2027-01-15"
+    }
+  ]
+}

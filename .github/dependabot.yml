@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Version updates: monthly, one grouped PR per ecosystem, at most 2 open.
+  # Security updates are separate (repository setting) and are not affected
+  # by this schedule or grouping.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      npm:
+        applies-to: version-updates
+        patterns:
+          - "*"
+    ignore:
+      # Prisma 7 requires a full migration; handled manually.
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 2

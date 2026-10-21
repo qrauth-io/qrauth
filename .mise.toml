@@ -1,0 +1,6 @@
+# Match CI (.github/workflows/ci.yml NODE_VERSION: '22'). Also keeps global
+# npm packages installed under other node versions (e.g. typescript 6 under
+# node 24) out of this repo's toolchain — see
+# scripts/check-typescript-toolchain.mjs for the failure mode this prevents.
+[tools]
+node = "22"
