@@ -38,6 +38,6 @@
     "qrcode": "1.5.4"
   },
   "optionalDependencies": {
-    "canvaskit-wasm": "^0.41.1"
+    "canvaskit-wasm": "^0.42.0"
   }
 }
