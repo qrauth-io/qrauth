@@ -1,0 +1,1034 @@
+import { purgeExpiredOidcRows } from './oidc-cleanup.js';
+import { ABUSE_REPORT_RETENTION_DAYS, purgeAbuseReports } from './abuse-report-cleanup.js';
+import { Worker } from 'bullmq';
+import type { Job } from 'bullmq';
+import type { Prisma } from '@prisma/client';
+import {
+  createQueueConnection,
+  alertQueue,
+  fraudQueue,
+  webhookQueue,
+  cleanupQueue,
+  retireReconcileQueue,
+} from '../lib/queue.js';
+import { db } from '../lib/db.js';
+import { redis } from '../lib/cache.js';
+import { GeoService } from '../services/geo.js';
+import { AlertService } from '../services/alerts.js';
+import { FraudDetectionService } from '../services/fraud.js';
+import type { FraudAlertJobData } from '../services/alerts.js';
+import { FeatureExtractionService } from '../services/feature-extraction.js';
+import { DynamicRuleEngine } from '../services/dynamic-rules.js';
+import { recordRuleIncidents } from '../services/rule-incidents.js';
+import { WebhookService } from '../services/webhook.js';
+import type { WebhookJobData } from '../services/webhook.js';
+import {
+  SECURITY_WEBHOOK_JOB_NAME,
+  SECURITY_WEBHOOK_BACKOFF,
+  SECURITY_WEBHOOK_BACKOFF_MS,
+  SECURITY_WEBHOOK_USER_AGENT,
+  type SecurityWebhookJobData,
+} from '../services/security-webhook.js';
+import { checkAlgVersion, ALG_VERSION_POLICY } from '@qrauth/shared';
+import { SigningService } from '../services/signing.js';
+import { config } from '../lib/config.js';
+import { MacService } from '../services/mac.js';
+import {
+  rotateStaleSigningKeys,
+  revokeExpiredRotatedKeys,
+} from './signing-key-rotation.js';
+import { runSigningCanary } from './signing-canary.js';
+import { createWebRiskWorker } from './web-risk.js';
+import type { FastifyBaseLogger } from 'fastify';
+
+// ---------------------------------------------------------------------------
+// Scan job payload
+// ---------------------------------------------------------------------------
+
+export interface ScanJobData {
+  qrCodeId: string;
+  clientIpHash: string;
+  clientLat?: number;
+  clientLng?: number;
+  userAgent?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// Service instantiation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the FraudDetectionService with all its dependencies wired up.
+ * Each call returns a fresh set of service instances so workers that share
+ * no state cannot interfere with each other.
+ */
+function buildFraudService(): FraudDetectionService {
+  const geoService = new GeoService(db);
+  // The alertService used inside fraud analysis enqueues jobs; we give it the
+  // shared alertQueue rather than a dummy so real alerts are dispatched.
+  const alertService = new AlertService(db, alertQueue);
+  return new FraudDetectionService(db, geoService, alertService);
+}
+
+// ---------------------------------------------------------------------------
+// Worker: qrauth-scans
+// ---------------------------------------------------------------------------
+
+/**
+ * Records every QR-code scan to the database and triggers fraud analysis.
+ *
+ * 1. Insert a Scan row with the raw job data (trustScore defaults to 100).
+ * 2. Run FraudDetectionService.analyzeScan() to detect anomalies.
+ * 3. Patch the Scan row with the computed trustScore and proxyDetected flag.
+ */
+function createScanWorker(): Worker<ScanJobData> {
+  return new Worker<ScanJobData>(
+    'qrauth-scans',
+    async (job: Job<ScanJobData>) => {
+      const { qrCodeId, clientIpHash, clientLat, clientLng, userAgent, metadata } =
+        job.data;
+
+      // Step 1 – persist the scan record immediately so any downstream lookup
+      // (e.g. geo-impossibility check) can see it.
+      const scan = await db.scan.create({
+        data: {
+          qrCodeId,
+          clientIpHash,
+          clientLat: clientLat ?? null,
+          clientLng: clientLng ?? null,
+          userAgent: userAgent ?? null,
+          metadata: (metadata ?? undefined) as Prisma.InputJsonValue | undefined,
+          // trustScore and proxyDetected carry their schema defaults (100 / false)
+          // until the fraud analysis patches them below.
+        },
+      });
+
+      // Step 2 – run fraud analysis; this may create FraudIncident rows and
+      // enqueue alert jobs when severity is HIGH or CRITICAL.
+      const fraudService = buildFraudService();
+
+      let trustScore = 100;
+      let proxyDetected = false;
+      let fraudResult = { trustScore: 100, incidents: [] as any[] };
+
+      try {
+        fraudResult = await fraudService.analyzeScan({
+          qrCodeId,
+          scanId: scan.id,
+          clientIpHash,
+          clientLat,
+          clientLng,
+          userAgent: userAgent ?? undefined,
+          metadata,
+        });
+
+        trustScore = fraudResult.trustScore;
+        proxyDetected =
+          fraudResult.incidents.some((i: any) => i.type === 'PROXY_DETECTED');
+      } catch (err) {
+        // Fraud analysis failure must not block the scan record from being
+        // committed – log and proceed with default values.
+        console.error(
+          `[scan-worker] fraud analysis failed for scan ${scan.id}:`,
+          err,
+        );
+      }
+
+      // Step 3 – update the scan with the final trust score and proxy flag.
+      await db.scan.update({
+        where: { id: scan.id },
+        data: { trustScore, proxyDetected },
+      });
+
+      // Step 4 – enqueue feature extraction + dynamic rule evaluation (fire-and-forget).
+      const qrCode = await db.qRCode.findUnique({
+        where: { id: qrCodeId },
+        select: {
+          organizationId: true,
+          token: true,
+          algVersion: true,
+          merkleBatchId: true,
+        },
+      });
+
+      // Emit qr.scanned webhook (fire-and-forget).
+      //
+      // Webhook payloads now carry a `securityContext` block alongside
+      // the existing fraud signals. The block tells consumers which
+      // algorithm version the token was signed under and whether the
+      // PQC leg is protecting it — operators can filter their incident
+      // pipelines on `pqcProtected: false` to find tokens that still
+      // need re-issuance. The alg_version surfaces cleanly even for
+      // legacy ECDSA-only rows so the consumer never has to special-
+      // case a missing field.
+      if (qrCode?.organizationId) {
+        const algVersion = qrCode.algVersion;
+        const webhookService = new WebhookService(db);
+        webhookService.emit(qrCode.organizationId, {
+          event: 'qr.scanned',
+          data: {
+            qrCodeId,
+            scanId: scan.id,
+            token: qrCode.token,
+            trustScore,
+            proxyDetected,
+            securityContext: {
+              algVersion,
+              algVersionStatus: checkAlgVersion(algVersion),
+              // A hybrid row whose Merkle data is present. The scan path does
+              // not re-run verification; the verify response is authoritative.
+              pqcProtected:
+                algVersion === ALG_VERSION_POLICY.hybrid && qrCode.merkleBatchId != null,
+              merkleBatchId: qrCode.merkleBatchId ?? null,
+            },
+            payloadVersion: 'v2',
+          },
+        }).catch(() => {});
+      }
+
+      fraudQueue.add('extract-features', {
+        scanId: scan.id,
+        qrCodeId: job.data.qrCodeId,
+        orgId: qrCode?.organizationId,
+        clientIpHash: job.data.clientIpHash,
+        userAgent: job.data.userAgent,
+        trustScore: fraudResult.trustScore,
+      }).catch(() => {}); // fire-and-forget
+    },
+    {
+      connection: createQueueConnection(),
+      concurrency: 10,
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Worker: qrauth-fraud
+// ---------------------------------------------------------------------------
+
+/**
+ * Real-time feature extraction and dynamic rule evaluation worker.
+ *
+ * Receives jobs enqueued by the scan worker after inline fraud analysis.
+ * Extracts Redis-backed feature vectors and evaluates dynamic DB rules,
+ * creating additional FraudIncident rows for any newly fired rules.
+ */
+function createFraudWorker(): Worker {
+  return new Worker(
+    'qrauth-fraud',
+    async (job: Job) => {
+      const { scanId, qrCodeId, orgId, clientIpHash, userAgent, trustScore } = job.data;
+
+      const featureService = new FeatureExtractionService();
+      const ruleEngine = new DynamicRuleEngine(db);
+
+      // 1. Extract features
+      const features = await featureService.extractFeatures({
+        qrCodeId,
+        clientIpHash,
+        userAgent,
+        trustScore,
+      });
+
+      // 2. Evaluate dynamic rules
+      const firedRules = await ruleEngine.evaluate(features);
+
+      // 3. Create incidents for fired rules (SHADOW rules → shadow incidents)
+      await recordRuleIncidents(db, { qrCodeId, scanId, features }, firedRules);
+
+      // 4. Store features for batch flush
+      await featureService.storePendingFeatures(scanId || 'unknown', orgId || 'unknown', features);
+    },
+    {
+      connection: createQueueConnection(),
+      concurrency: 5,
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Worker: qrauth-alerts
+// ---------------------------------------------------------------------------
+
+/**
+ * Processes fraud alert jobs added by AlertService.sendFraudAlert().
+ * Delegates to AlertService.processAlertJob() which logs the incident and
+ * is designed to be replaced with real notification dispatch (email / SMS /
+ * webhook) without touching this wiring layer.
+ */
+function createAlertWorker(): Worker<FraudAlertJobData> {
+  return new Worker<FraudAlertJobData>(
+    'qrauth-alerts',
+    async (job: Job<FraudAlertJobData>) => {
+      // A fresh AlertService instance per job — alertQueue is only needed by
+      // sendFraudAlert(), which is not called from within processAlertJob().
+      // We pass alertQueue as a dummy to satisfy the constructor signature.
+      const alertService = new AlertService(db, alertQueue);
+      await alertService.processAlertJob(job);
+    },
+    {
+      connection: createQueueConnection(),
+      concurrency: 3,
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Worker: qrauth-webhooks
+// ---------------------------------------------------------------------------
+
+/**
+ * Delivers webhook payloads to third-party app endpoints.
+ *
+ * Each job carries a pre-signed payload. On success (2xx), the WebhookDelivery
+ * record is marked delivered. On failure the error is persisted and BullMQ
+ * retries with exponential backoff. After all retries are exhausted the record
+ * is marked permanently failed.
+ */
+function createWebhookWorker(): Worker<WebhookJobData | SecurityWebhookJobData> {
+  return new Worker<WebhookJobData | SecurityWebhookJobData>(
+    'qrauth-webhooks',
+    async (job: Job<WebhookJobData | SecurityWebhookJobData>) => {
+      // AUDIT-2 M-13: security-webhook deliveries live on the same
+      // queue as the app-level webhook fanout so operators only have
+      // one Redis surface to monitor. The two job shapes are
+      // discriminated by `job.name` — anything we didn't tag as a
+      // security delivery falls through to the legacy path below.
+      if (job.name === SECURITY_WEBHOOK_JOB_NAME) {
+        await deliverSecurityWebhook(job as Job<SecurityWebhookJobData>);
+        return;
+      }
+
+      const { deliveryId, url, payload, signature, appId } = job.data as WebhookJobData;
+
+      // SSRF protection (INJ-001 + INJ-005): safeFetch validates the URL and
+      // EVERY resolved address, then pins the connection to a validated IP so a
+      // rebinding DNS record can't swap in an internal target after the check.
+      // An unsafe URL/address throws SsrfBlockedError, handled in the catch
+      // below as a permanent failure (no retry).
+      const { safeFetch, SsrfBlockedError } = await import('../lib/safe-fetch.js');
+
+      // F-009 (audit 2026-05-17): per-destination outbound rate limit.
+      // Without this, a single org's webhook subscription can be used as
+      // an amplifier against a third-party endpoint. The sliding-window
+      // Redis counter caps deliveries at WEBHOOK_PER_DESTINATION_LIMIT
+      // per WEBHOOK_RATE_WINDOW_SEC per (org, destination origin). Over
+      // the cap, throw → BullMQ retries with exponential backoff,
+      // effectively spreading the deliveries out.
+      const WEBHOOK_PER_DESTINATION_LIMIT = 100;
+      const WEBHOOK_RATE_WINDOW_SEC = 60;
+      try {
+        const destinationOrigin = new URL(url).origin;
+        const rateLimitKey = `qrauth:webhook_rate:${(job.data as WebhookJobData).appId}:${destinationOrigin}`;
+        const currentCount = await redis.incr(rateLimitKey);
+        if (currentCount === 1) {
+          await redis.expire(rateLimitKey, WEBHOOK_RATE_WINDOW_SEC);
+        }
+        if (currentCount > WEBHOOK_PER_DESTINATION_LIMIT) {
+          await db.webhookDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              attempts: job.attemptsMade + 1,
+              lastAttemptAt: new Date(),
+              error: `Rate limit exceeded for ${destinationOrigin} (${currentCount}/${WEBHOOK_PER_DESTINATION_LIMIT}/${WEBHOOK_RATE_WINDOW_SEC}s)`,
+            },
+          });
+          throw new Error(
+            `Webhook rate limit exceeded for ${destinationOrigin}: ` +
+              `${currentCount}/${WEBHOOK_PER_DESTINATION_LIMIT} per ${WEBHOOK_RATE_WINDOW_SEC}s`,
+          );
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message.startsWith('Webhook rate limit exceeded')) {
+          throw err; // let BullMQ retry with backoff
+        }
+        // If Redis is unavailable, fail open (let the request through)
+        // rather than wedging the worker. The rate limit is defensive,
+        // not the auth boundary.
+        console.warn('[webhook] rate-limit redis check failed, allowing through:', err);
+      }
+
+      // Parse the event name from the stored payload for the header.
+      let eventName = 'unknown';
+      try {
+        eventName = (JSON.parse(payload) as { event: string }).event;
+      } catch {
+        // Leave as 'unknown' if parsing fails.
+      }
+
+      const now = new Date();
+      let statusCode: number | undefined;
+      let responseBody: string | undefined;
+
+      try {
+        // safeFetch pins to a validated IP, never follows redirects, and caps
+        // the response body (100KB) internally.
+        const res = await safeFetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-QRAuth-Signature': `sha256=${signature}`,
+            'X-QRAuth-Event': eventName,
+            'User-Agent': 'QRAuth-Webhooks/1.0',
+          },
+          body: payload,
+          timeoutMs: 10_000,
+          maxResponseBytes: 100_000,
+        });
+
+        statusCode = res.status;
+        responseBody = res.bodyText;
+
+        if (res.ok) {
+          // Success — mark delivered.
+          await db.webhookDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              statusCode,
+              responseBody: responseBody ?? null,
+              attempts: job.attemptsMade + 1,
+              lastAttemptAt: now,
+              deliveredAt: now,
+            },
+          });
+          return;
+        }
+
+        // Non-2xx — record the failure and let BullMQ retry.
+        await db.webhookDelivery.update({
+          where: { id: deliveryId },
+          data: {
+            statusCode,
+            responseBody: responseBody ?? null,
+            attempts: job.attemptsMade + 1,
+            lastAttemptAt: now,
+            error: `HTTP ${statusCode}`,
+            // Mark permanently failed only when this was the last attempt.
+            ...(job.attemptsMade + 1 >= (job.opts.attempts ?? 5)
+              ? { failedAt: now }
+              : {}),
+          },
+        });
+
+        throw new Error(`Webhook endpoint returned HTTP ${statusCode}`);
+      } catch (err) {
+        if (err instanceof SsrfBlockedError) {
+          // Unsafe URL or resolved address — permanent, do not retry.
+          await db.webhookDelivery.update({
+            where: { id: deliveryId },
+            data: {
+              attempts: job.attemptsMade + 1,
+              lastAttemptAt: now,
+              error: err.message, // "Blocked: <reason>"
+              failedAt: now,
+            },
+          });
+          return;
+        }
+        if (err instanceof Error && err.message.startsWith('Webhook endpoint returned')) {
+          throw err; // already persisted above — re-throw for BullMQ retry
+        }
+
+        // Network / timeout error.
+        const message = err instanceof Error ? err.message : String(err);
+
+        await db.webhookDelivery.update({
+          where: { id: deliveryId },
+          data: {
+            statusCode: statusCode ?? null,
+            attempts: job.attemptsMade + 1,
+            lastAttemptAt: now,
+            error: message,
+            ...(job.attemptsMade + 1 >= (job.opts.attempts ?? 5)
+              ? { failedAt: now }
+              : {}),
+          },
+        });
+
+        throw err; // re-throw so BullMQ schedules the next retry
+      }
+    },
+    {
+      connection: createQueueConnection(),
+      concurrency: 5,
+      settings: {
+        // AUDIT-2 M-13: custom backoff for security-webhook jobs so
+        // the plan-spec 1s / 5s / 30s retry ladder is hit exactly.
+        // Jobs with any other backoff type fall through to the
+        // BullMQ default (zero delay).
+        backoffStrategy: (attemptsMade: number, type?: string): number => {
+          if (type !== SECURITY_WEBHOOK_BACKOFF) return 0;
+          const delay = SECURITY_WEBHOOK_BACKOFF_MS[attemptsMade - 1];
+          return typeof delay === 'number' ? delay : -1;
+        },
+      },
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Security webhook delivery (AUDIT-2 M-13)
+// ---------------------------------------------------------------------------
+
+/**
+ * Delivers a `signing-key.created` security webhook to the org's
+ * configured endpoint. Runs on the shared `qrauth-webhooks` worker,
+ * discriminated by job name. On non-2xx or network failure the job is
+ * re-thrown so BullMQ schedules the next retry; the custom backoff
+ * strategy above produces 1s / 5s / 30s steps. Final failure is
+ * logged with a distinctive prefix so operator log pipelines can
+ * trigger on sustained delivery gaps.
+ *
+ * There is no `WebhookDelivery` row for these deliveries — the plan
+ * spec does not require one, and the existing `WebhookDelivery`
+ * model is tightly bound to `appId`, so reusing it would widen the
+ * schema change beyond M-13's Files list. Console-level logs are the
+ * authoritative record until a dedicated `SecurityWebhookDelivery`
+ * table lands in a follow-up.
+ */
+async function deliverSecurityWebhook(job: Job<SecurityWebhookJobData>): Promise<void> {
+  const { url, rawBody, signatureHeader, eventType, eventId, organizationId } = job.data;
+  const attempt = job.attemptsMade + 1;
+  const maxAttempts = job.opts.attempts ?? 1;
+
+  // SSRF protection: same defence the legacy webhook path uses. An
+  // integrator could (accidentally or deliberately) point their
+  // endpoint at 169.254.169.254, localhost, or a cloud-metadata
+  // service; refuse to reach out in that case.
+  //
+  // Narrow dev/test bypass: when the API runs under NODE_ENV !==
+  // 'production' AND the host is an explicit loopback literal, allow
+  // the delivery through so the E2E suite can capture the webhook on
+  // a local HTTP server. Production is still fail-closed — the
+  // bypass only exists on non-prod builds and does not widen the
+  // legacy webhook path.
+  // safeFetch (INJ-001 + INJ-005) validates the URL and every resolved address,
+  // then pins the connection to a validated IP. The non-prod loopback allowance
+  // keeps the E2E webhook-capture affordance; production stays fully fail-closed
+  // (allowLoopback=false). An unsafe URL/address throws SsrfBlockedError, caught
+  // below as a permanent failure (no retry).
+  const { safeFetch, SsrfBlockedError } = await import('../lib/safe-fetch.js');
+  const allowLoopback = process.env.NODE_ENV !== 'production';
+
+  // F-009 (audit 2026-05-17): per-destination rate limit for security
+  // webhooks too. Separate key prefix from the app-webhook path so the
+  // two surfaces have independent budgets. On over-limit, throw → BullMQ
+  // retry ladder (1s / 5s / 30s) spreads the deliveries out.
+  const SEC_WEBHOOK_PER_DESTINATION_LIMIT = 100;
+  const SEC_WEBHOOK_RATE_WINDOW_SEC = 60;
+  try {
+    const destinationOrigin = new URL(url).origin;
+    const rateLimitKey = `qrauth:sec_webhook_rate:${organizationId}:${destinationOrigin}`;
+    const currentCount = await redis.incr(rateLimitKey);
+    if (currentCount === 1) {
+      await redis.expire(rateLimitKey, SEC_WEBHOOK_RATE_WINDOW_SEC);
+    }
+    if (currentCount > SEC_WEBHOOK_PER_DESTINATION_LIMIT) {
+      console.warn(
+        `[security-webhook] rate-limited ${eventType} ${eventId} for org ` +
+          `${organizationId} → ${destinationOrigin} ` +
+          `(${currentCount}/${SEC_WEBHOOK_PER_DESTINATION_LIMIT}/${SEC_WEBHOOK_RATE_WINDOW_SEC}s).`,
+      );
+      throw new Error(
+        `security webhook rate limit exceeded for ${destinationOrigin}: ` +
+          `${currentCount}/${SEC_WEBHOOK_PER_DESTINATION_LIMIT} per ${SEC_WEBHOOK_RATE_WINDOW_SEC}s`,
+      );
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith('security webhook rate limit exceeded')) {
+      throw err;
+    }
+    console.warn('[security-webhook] rate-limit redis check failed, allowing through:', err);
+  }
+
+  let res;
+  try {
+    res = await safeFetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-QRAuth-Event': eventType,
+        'X-QRAuth-Signature': signatureHeader,
+        'User-Agent': SECURITY_WEBHOOK_USER_AGENT,
+      },
+      body: rawBody,
+      timeoutMs: 10_000,
+      allowLoopback,
+    });
+  } catch (err) {
+    if (err instanceof SsrfBlockedError) {
+      console.error(
+        `[security-webhook] ${eventType} ${eventId} blocked for org ` +
+          `${organizationId}: ${err.message}. No retry.`,
+      );
+      return; // Permanent — URL or a resolved address is unsafe.
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(
+      `[security-webhook] attempt ${attempt}/${maxAttempts} for ` +
+        `${eventType} ${eventId} (org ${organizationId}) failed: ${message}`,
+    );
+    if (attempt >= maxAttempts) {
+      console.error(
+        `[security-webhook] SUSTAINED FAILURE: ${eventType} ${eventId} ` +
+          `for org ${organizationId} exhausted ${maxAttempts} attempts ` +
+          `against ${url} — operator alert.`,
+      );
+      return; // Swallow after final retry so BullMQ marks the job as failed.
+    }
+    throw err; // Re-throw so BullMQ schedules the next retry.
+  }
+
+  if (res.ok) {
+    console.info(
+      `[security-webhook] delivered ${eventType} ${eventId} for org ` +
+        `${organizationId} → HTTP ${res.status} (attempt ${attempt}/${maxAttempts}).`,
+    );
+    return;
+  }
+
+  console.warn(
+    `[security-webhook] attempt ${attempt}/${maxAttempts} for ${eventType} ` +
+      `${eventId} (org ${organizationId}) got HTTP ${res.status}.`,
+  );
+  if (attempt >= maxAttempts) {
+    console.error(
+      `[security-webhook] SUSTAINED FAILURE: ${eventType} ${eventId} ` +
+        `for org ${organizationId} exhausted ${maxAttempts} attempts ` +
+        `against ${url} (last HTTP ${res.status}) — operator alert.`,
+    );
+    return;
+  }
+  throw new Error(`security webhook got HTTP ${res.status}`);
+}
+
+// ---------------------------------------------------------------------------
+// Worker: qrauth-cleanup
+// ---------------------------------------------------------------------------
+
+/**
+ * Runs periodic housekeeping tasks for data retention compliance.
+ *
+ * GDPR Art. 5(1)(e) / ISO 27001 A.8.10: Data should not be kept longer
+ * than necessary for its purpose.
+ *
+ * Retention schedule:
+ *   • AuthSession     — 24 hours after resolution/expiry
+ *   • RefreshToken     — immediately after expiry + revocation
+ *   • OIDC codes / access tokens / sessions — once expired (codes +1 hour)
+ *   • OIDC refresh tokens — family lifetime + 7 days
+ *   • LoginEvent       — 90 days (security monitoring window)
+ *   • Scan metadata    — 365 days (anonymise PII fields, keep aggregates)
+ *   • AuditLog         — 730 days / 2 years (SOC 2 requires ≥1 year)
+ *   • AbuseReport      — 730 days after resolution (RESOLVED/DISMISSED only;
+ *                        OPEN reports are never auto-deleted)
+ */
+function createCleanupWorker(): Worker {
+  return new Worker(
+    'qrauth-cleanup',
+    async () => {
+      // 1. Auth sessions — 24h after resolution
+      const sessionCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const { count: sessions } = await db.authSession.deleteMany({
+        where: {
+          OR: [
+            { status: 'EXPIRED',  expiresAt:   { lt: sessionCutoff } },
+            { status: { in: ['APPROVED', 'DENIED'] }, resolvedAt: { lt: sessionCutoff } },
+          ],
+        },
+      });
+      if (sessions > 0) {
+        console.log(`[cleanup] Deleted ${sessions} expired auth sessions`);
+      }
+
+      // 2. Expired + revoked refresh tokens — clean up immediately
+      const { count: tokens } = await db.refreshToken.deleteMany({
+        where: {
+          OR: [
+            { expiresAt: { lt: new Date() } },
+            { revokedAt: { not: null } },
+          ],
+        },
+      });
+      if (tokens > 0) {
+        console.log(`[cleanup] Deleted ${tokens} expired/revoked refresh tokens`);
+      }
+
+      // 2b. OpenID Provider rows that can no longer be presented (audit
+      // 2026-10 FINDING-020; retention rules in workers/oidc-cleanup.ts).
+      // Its own try: a failure here must not skip the retention steps below.
+      try {
+        const oidcPurged = await purgeExpiredOidcRows(db);
+        if (Object.values(oidcPurged).some((count) => count > 0)) {
+          console.log(
+            `[cleanup] OIDC: deleted ${oidcPurged.authCodes} auth codes, ${oidcPurged.accessTokens} access tokens, ` +
+              `${oidcPurged.sessions} sessions, ${oidcPurged.refreshTokens} refresh tokens`,
+          );
+        }
+      } catch (err) {
+        console.error('[cleanup] OIDC purge failed:', err);
+      }
+
+      // 3. Login events — delete after 90 days
+      const loginCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+      const { count: loginEvents } = await db.loginEvent.deleteMany({
+        where: { createdAt: { lt: loginCutoff } },
+      });
+      if (loginEvents > 0) {
+        console.log(`[cleanup] Deleted ${loginEvents} login events older than 90 days`);
+      }
+
+      // 4. Scan metadata — anonymise PII after 365 days
+      //    Keep the scan record for analytics, but strip IP hash and user agent.
+      const scanCutoff = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+      const { count: scans } = await db.scan.updateMany({
+        where: {
+          createdAt: { lt: scanCutoff },
+          clientIpHash: { not: 'anonymized' },
+        },
+        data: {
+          clientIpHash: 'anonymized',
+          userAgent: null,
+          metadata: undefined,
+        },
+      });
+      if (scans > 0) {
+        console.log(`[cleanup] Anonymised ${scans} scans older than 365 days`);
+      }
+
+      // 5. Audit logs — delete after 2 years (SOC 2 requires ≥1 year retention)
+      const auditCutoff = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000);
+      const { count: auditLogs } = await db.auditLog.deleteMany({
+        where: { createdAt: { lt: auditCutoff } },
+      });
+      if (auditLogs > 0) {
+        console.log(`[cleanup] Deleted ${auditLogs} audit logs older than 2 years`);
+      }
+
+      // 5b. Abuse reports — delete closed reports 2 years after resolution
+      //     (rules in workers/abuse-report-cleanup.ts). OPEN reports are kept.
+      const abuseReports = await purgeAbuseReports(db);
+      if (abuseReports > 0) {
+        console.log(
+          `[cleanup] Deleted ${abuseReports} closed abuse reports resolved more than ${ABUSE_REPORT_RETENTION_DAYS} days ago`,
+        );
+      }
+
+      // 6. Auto-revoke stale devices based on per-org DevicePolicy.autoRevokeAfterDays
+      const policiesWithAutoRevoke = await db.devicePolicy.findMany({
+        where: { autoRevokeAfterDays: { not: null } },
+        select: { organizationId: true, autoRevokeAfterDays: true },
+      });
+
+      for (const policy of policiesWithAutoRevoke) {
+        const cutoff = new Date(Date.now() - policy.autoRevokeAfterDays! * 24 * 60 * 60 * 1000);
+        const { count: revoked } = await db.trustedDevice.updateMany({
+          where: {
+            user: {
+              memberships: {
+                some: { organizationId: policy.organizationId },
+              },
+            },
+            trustLevel: { not: 'REVOKED' },
+            lastSeenAt: { lt: cutoff },
+          },
+          data: { trustLevel: 'REVOKED', revokedAt: new Date() },
+        });
+
+        if (revoked > 0) {
+          console.log(`[cleanup] Auto-revoked ${revoked} stale devices for org ${policy.organizationId} (policy: ${policy.autoRevokeAfterDays} days)`);
+        }
+      }
+
+      // 7. Signing-key lifecycle (ISO 27001 A.10.1.2;
+      //    docs/ops/signing-key-rotation-loop.md). Rotation interval and
+      //    revoke grace window come from config.signingKeys. Rotation is
+      //    per stale KEY (not per org) so the trigger condition always
+      //    clears; the grace-window step then prunes long-rotated keys out
+      //    of JWKS via a ROTATED -> REVOKED status transition (never a
+      //    delete — qr_codes.signingKeyId is ON DELETE RESTRICT).
+      {
+        // Backends follow config: with ECDSA_SIGNER=http both ECDSA and RSA
+        // (canary, RS256 rotation probe) sign through the signer, and with
+        // SIGNER_KEYGEN=signer new keys are generated there.
+        const signingService = new SigningService(db);
+        await rotateStaleSigningKeys(db, signingService);
+
+        const { count: revokedKeys } = await revokeExpiredRotatedKeys(db);
+        if (revokedKeys > 0) {
+          console.log(
+            `[cleanup] Revoked ${revokedKeys} signing keys past the ` +
+              `${config.signingKeys.revokeGraceDays}-day post-rotation grace window`,
+          );
+        }
+
+        // Signing canary (mechanism 2): runs every tick, and — because it
+        // runs AFTER the rotation step above — doubles as the post-rotation
+        // trigger for freshly-minted keys. A canary failure must never
+        // abort the cleanup tick: outcomes are recorded in Redis and
+        // surfaced through /health; only unexpected internal errors land
+        // here.
+        try {
+          await runSigningCanary(db, signingService, redis);
+        } catch (err) {
+          console.error('[signing-canary] run failed (state not recorded):', err);
+        }
+      }
+
+      // 8. MAC key lifecycle (ALGORITHM.md §10.3). Three transitions, each
+      //    age-gated:
+      //      ACTIVE   → ROTATED  after 90 days  (mints a fresh ACTIVE row)
+      //      ROTATED  → RETIRED  30 days after rotation (grace window over)
+      //      RETIRED  → deleted   7 days after retirement (purge)
+      //
+      //    Rotation grouped by organization since each org owns its own
+      //    versioned key ring. The 30-day grace window is long enough for
+      //    in-flight QRs signed under the previous key to still verify on
+      //    the fast path; after grace they fall through to the asymmetric
+      //    legs, which is the correct degradation.
+      const macRotationCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+      const staleMacKeys = await db.orgMacKey.findMany({
+        where: {
+          status: 'ACTIVE',
+          createdAt: { lt: macRotationCutoff },
+        },
+        select: { organizationId: true, version: true },
+      });
+
+      const macService = new MacService(db);
+      if (staleMacKeys.length > 0) {
+        const orgIds = [...new Set(staleMacKeys.map((k) => k.organizationId))];
+        for (const orgId of orgIds) {
+          try {
+            const next = await macService.rotateKey(orgId);
+            // Immediately re-MAC every live row under the new key. The verify
+            // route fails CLOSED on a MAC miss (AUDIT-FINDING-001), so a row
+            // left on the old version would permanently stop verifying once
+            // that version retires — fatal for printed QRs (incident
+            // 2026-09-03, token qV2zsVQM). The MAC lives only on the DB row,
+            // so this is invisible to codes already in circulation.
+            const { updated, flagged } = await macService.remacOrgRows(orgId);
+            const unverifiable = updated.filter((u) => u.oldMacCheck === 'key_unavailable').length;
+            console.log(
+              `[cleanup] Rotated MAC key for org ${orgId}: v${next.version} (re-MACed ${updated.length} rows, ${unverifiable} without old-key verification, ${flagged.length} flagged)`,
+            );
+            for (const f of flagged) {
+              console.error(
+                `[cleanup] MAC re-key flagged QR ${f.token} (org ${orgId}): stored MAC does not reproduce under key v${f.fromVersion}`,
+              );
+            }
+          } catch (err) {
+            console.error(`[cleanup] Failed to rotate MAC key for org ${orgId}:`, err);
+          }
+        }
+      }
+
+      // 9. Retire MAC keys whose 30-day grace window has elapsed. Once a key
+      //    is RETIRED it is no longer offered to MacService.verifyCanonical,
+      //    and the verify route fails closed on a MAC miss — so a version may
+      //    only retire when no ACTIVE row still references it. Rotation-time
+      //    re-MACing (step 8) normally guarantees that; this guard re-MACs
+      //    stragglers (rows minted mid-rotation, historical incidents) and
+      //    holds the key in ROTATED for another cycle if any remain.
+      const macRetirementCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const retirableMacKeys = await db.orgMacKey.findMany({
+        where: {
+          status: 'ROTATED',
+          rotatedAt: { lt: macRetirementCutoff },
+        },
+      });
+      let retiredMacKeys = 0;
+      for (const key of retirableMacKeys) {
+        try {
+          await macService.remacOrgRows(key.organizationId);
+          const dependents = await db.qRCode.count({
+            where: {
+              organizationId: key.organizationId,
+              status: 'ACTIVE',
+              macKeyVersion: key.version,
+            },
+          });
+          if (dependents > 0) {
+            console.error(
+              `[cleanup] NOT retiring MAC key v${key.version} for org ${key.organizationId}: ${dependents} ACTIVE rows still reference it`,
+            );
+            continue;
+          }
+          await db.orgMacKey.update({
+            where: { id: key.id },
+            data: { status: 'RETIRED', retiredAt: new Date() },
+          });
+          retiredMacKeys += 1;
+        } catch (err) {
+          console.error(
+            `[cleanup] Failed to retire MAC key v${key.version} for org ${key.organizationId}:`,
+            err,
+          );
+        }
+      }
+      if (retiredMacKeys > 0) {
+        console.log(`[cleanup] Retired ${retiredMacKeys} MAC keys past 30-day grace window`);
+      }
+
+      // 10. Purge RETIRED MAC keys whose secrets have been unused for 7 days.
+      //     Hard delete: the secret bytes are gone for good. By this point
+      //     no in-flight verify can possibly reach this version (any QR
+      //     scanned now would have fallen through 7+ days ago).
+      const macPurgeCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const { count: purgedMacKeys } = await db.orgMacKey.deleteMany({
+        where: {
+          status: 'RETIRED',
+          retiredAt: { lt: macPurgeCutoff },
+        },
+      });
+      if (purgedMacKeys > 0) {
+        console.log(`[cleanup] Purged ${purgedMacKeys} retired MAC keys (>7d past retirement)`);
+      }
+
+      // 11. Revoke orphaned CLI API keys (ADR-0002 revocation cascade — safety
+      //     net). The inline cascade on the membership-removal route handles the
+      //     common path; this sweep catches source='cli' keys whose minter no
+      //     longer has a membership in the key's org via any other route (bulk
+      //     deletes, historical rows, a future code path that misses the inline
+      //     hook). A CLI key is user-bound by construction, so a missing
+      //     membership means it must be revoked.
+      const activeCliKeys = await db.apiKey.findMany({
+        where: { source: 'cli', revokedAt: null, createdByUserId: { not: null } },
+        select: { id: true, organizationId: true, createdByUserId: true },
+      });
+      if (activeCliKeys.length > 0) {
+        const userIds = [...new Set(activeCliKeys.map((k) => k.createdByUserId!))];
+        const memberships = await db.membership.findMany({
+          where: { userId: { in: userIds } },
+          select: { userId: true, organizationId: true },
+        });
+        const livePairs = new Set(memberships.map((m) => `${m.userId}:${m.organizationId}`));
+        const orphanedIds = activeCliKeys
+          .filter((k) => !livePairs.has(`${k.createdByUserId}:${k.organizationId}`))
+          .map((k) => k.id);
+        if (orphanedIds.length > 0) {
+          const { count: revokedOrphans } = await db.apiKey.updateMany({
+            where: { id: { in: orphanedIds }, revokedAt: null },
+            data: { revokedAt: new Date() },
+          });
+          if (revokedOrphans > 0) {
+            console.log(`[cleanup] Revoked ${revokedOrphans} orphaned CLI API keys (minter no longer a member)`);
+          }
+        }
+      }
+    },
+    {
+      connection: createQueueConnection(),
+      concurrency: 1,
+    },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+let scanWorker: Worker<ScanJobData> | null = null;
+let fraudWorker: Worker | null = null;
+let alertWorker: Worker<FraudAlertJobData> | null = null;
+let webhookWorker: Worker<WebhookJobData | SecurityWebhookJobData> | null = null;
+let cleanupWorker: Worker | null = null;
+let webRiskWorker: Worker | null = null;
+
+/** Structured-ish console logger for workers that take a Fastify-style log. */
+const workerLog = {
+  info: (obj: unknown, msg?: string) => console.info(msg ?? '', obj),
+  warn: (obj: unknown, msg?: string) => console.warn(msg ?? '', obj),
+  error: (obj: unknown, msg?: string) => console.error(msg ?? '', obj),
+} as unknown as FastifyBaseLogger;
+
+/**
+ * Instantiate and start all BullMQ workers.
+ * Returns all worker instances so callers can attach event listeners
+ * or inspect their state if needed.
+ */
+export function registerWorkers(): {
+  scanWorker: Worker<ScanJobData>;
+  fraudWorker: Worker;
+  alertWorker: Worker<FraudAlertJobData>;
+  webhookWorker: Worker<WebhookJobData | SecurityWebhookJobData>;
+  cleanupWorker: Worker;
+} {
+  scanWorker = createScanWorker();
+  fraudWorker = createFraudWorker();
+  alertWorker = createAlertWorker();
+  webhookWorker = createWebhookWorker();
+  cleanupWorker = createCleanupWorker();
+
+  scanWorker.on('failed', (job, err) => {
+    console.error(`[scan-worker] job ${job?.id} failed:`, err.message);
+  });
+
+  fraudWorker.on('failed', (job, err) => {
+    console.error(`[fraud-worker] job ${job?.id} failed:`, err.message);
+  });
+
+  alertWorker.on('failed', (job, err) => {
+    console.error(`[alert-worker] job ${job?.id} failed:`, err.message);
+  });
+
+  webhookWorker.on('failed', (job, err) => {
+    console.error(`[webhook-worker] job ${job?.id} failed:`, err.message);
+  });
+
+  cleanupWorker.on('failed', (job, err) => {
+    console.error(`[cleanup-worker] job ${job?.id} failed:`, err.message);
+  });
+
+  // Schedule the hourly repeating cleanup job.  addJob is idempotent when the
+  // same jobId already exists, so restarting the process does not pile up
+  // duplicate schedules.
+  cleanupQueue
+    .add('cleanup', {}, {
+      repeat:  { every: 60 * 60 * 1000 },
+      jobId:   'session-cleanup',
+    })
+    .catch((err) => console.error('[cleanup] Failed to schedule cleanup job:', err));
+
+  // Destination screening re-checks and the daily re-scan: only when Web Risk
+  // is configured (lib/config.ts warns at boot otherwise).
+  if (config.webRisk.apiKey) {
+    webRiskWorker = createWebRiskWorker(db, workerLog);
+    webRiskWorker.on('failed', (job, err) => {
+      console.error(`[web-risk-worker] job ${job?.id} failed:`, err.message);
+    });
+  }
+
+  // The merkle reconciler is retired; drop its leftover repeat schedule.
+  retireReconcileQueue().catch((err) =>
+    console.error('[workers] Failed to retire the reconcile queue:', err),
+  );
+
+  console.info(`[workers] scan, fraud, alert, webhook, and cleanup workers registered${webRiskWorker ? ', plus web-risk' : ''}.`);
+
+  return { scanWorker, fraudWorker, alertWorker, webhookWorker, cleanupWorker };
+}
+
+/**
+ * Gracefully close all running workers.
+ * Waits for active jobs to finish before tearing down connections.
+ */
+export async function closeWorkers(): Promise<void> {
+  await Promise.all([
+    scanWorker?.close(),
+    fraudWorker?.close(),
+    alertWorker?.close(),
+    webhookWorker?.close(),
+    cleanupWorker?.close(),
+    webRiskWorker?.close(),
+  ]);
+
+  scanWorker = null;
+  fraudWorker = null;
+  alertWorker = null;
+  webhookWorker = null;
+  cleanupWorker = null;
+
+  console.info('[workers] all workers closed.');
+}
