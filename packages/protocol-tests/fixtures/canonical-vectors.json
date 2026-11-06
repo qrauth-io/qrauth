@@ -1,0 +1,674 @@
+{
+  "protocolVersion": "qrva-v2",
+  "generatedAt": "2026-10-20T14:56:01.578Z",
+  "notes": [
+    "Cross-language test vectors for the QRVA unified canonical form (AUDIT-FINDING-011).",
+    "Core shape: algVersion|token|tenantId|destHash|geoHash|expiresAt",
+    "Merkle leaf: core | nonce",
+    "destHash is content-type aware via computeDestHash — URL QRs hash the URL, content QRs hash the contentHashHex.",
+    "geoHash is canonicalGeoHash(lat,lng,radius) with 7-decimal precision; unbound locations use the literal 'none'.",
+    "Non-expiring codes use the empty string '' for expiresAt.",
+    "expiresAt is ISO 8601 in UTC with millisecond precision and a 'Z' suffix (Date.prototype.toISOString), whatever the host time zone.",
+    "leafBinding: the verifier recomputes SHA3-256(0x00 || core || '|' || nonce) from the row's current payload and stored nonce, and accepts only if it equals storedLeafHash. The proof is walked from the recomputed leaf.",
+    "Regenerate with: npx tsx packages/protocol-tests/scripts/generate-vectors.ts"
+  ],
+  "vectors": [
+    {
+      "name": "minimal_no_location",
+      "description": "Smallest valid payload — URL content, no location, far-future expiry",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "expected": {
+        "destHash": "f93bc6ce66ae2b0b634327085d296cb500c1ba9ef40750d55c5102e620d3f9bb",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|abc123|tnt_test|f93bc6ce66ae2b0b634327085d296cb500c1ba9ef40750d55c5102e620d3f9bb|none|2027-01-01T00:00:00.000Z",
+        "canonicalCoreSha3": "725f9db426e93dea274b0f83da091a776c97020eba99d60a7afb805e829e8e5d",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|abc123|tnt_test|f93bc6ce66ae2b0b634327085d296cb500c1ba9ef40750d55c5102e620d3f9bb|none|2027-01-01T00:00:00.000Z|deadbeef",
+        "leafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9"
+      }
+    },
+    {
+      "name": "url_with_location",
+      "description": "URL QR in NYC with a 100m radius",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "xK9m2pQ7",
+        "tenantId": "tnt_acme",
+        "contentType": "url",
+        "destinationUrl": "https://acme.example/promo",
+        "contentHashHex": "",
+        "lat": 40.7128,
+        "lng": -74.006,
+        "radiusM": 100,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "0000000000000000000000000000000000000000000000000000000000000001"
+      },
+      "expected": {
+        "destHash": "b226aafdc61d5b8325705f102f1c16e9eac78685f76aa204f47613a87212e8f7",
+        "geoHash": "0306c89b1cc00b7bcbf54cdbc38f6c01cd33aaa9f052c1d00a4342942758939a",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|xK9m2pQ7|tnt_acme|b226aafdc61d5b8325705f102f1c16e9eac78685f76aa204f47613a87212e8f7|0306c89b1cc00b7bcbf54cdbc38f6c01cd33aaa9f052c1d00a4342942758939a|2027-01-01T00:00:00.000Z",
+        "canonicalCoreSha3": "2229a5056047a04ef9a5230d61a7273f083848e46c47394f7b5af64584720b73",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|xK9m2pQ7|tnt_acme|b226aafdc61d5b8325705f102f1c16e9eac78685f76aa204f47613a87212e8f7|0306c89b1cc00b7bcbf54cdbc38f6c01cd33aaa9f052c1d00a4342942758939a|2027-01-01T00:00:00.000Z|0000000000000000000000000000000000000000000000000000000000000001",
+        "leafHash": "3b77da6d88bcbd5d7b98ee4c68cea913086c37207a6307c9c53b78769d274756"
+      }
+    },
+    {
+      "name": "non_expiring_empty_string_sentinel",
+      "description": "Non-expiring code — expiresAt uses the empty-string sentinel",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "perma01",
+        "tenantId": "tnt_perma",
+        "contentType": "url",
+        "destinationUrl": "https://perma.example/",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "00"
+      },
+      "expected": {
+        "destHash": "53fceb60e983ab9fa1378e386598864b02242fa077abb6bb22e57e544385beba",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|perma01|tnt_perma|53fceb60e983ab9fa1378e386598864b02242fa077abb6bb22e57e544385beba|none|",
+        "canonicalCoreSha3": "6009c81a4afba3ddb1ced75a0f4642167d9df6dc2b0a0d3f03a8ab95c104b5eb",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|perma01|tnt_perma|53fceb60e983ab9fa1378e386598864b02242fa077abb6bb22e57e544385beba|none||00",
+        "leafHash": "a43aaaf71b458be750c3a5fd23030e1a706d9666384b8231144a648c58b8574f"
+      }
+    },
+    {
+      "name": "vcard_content_qr",
+      "description": "Content QR (vCard) — destHash commits to the content hash, not the URL",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "expected": {
+        "destHash": "cd3459ea304980685363ee3a7397620f42920a3cc5ba712590c519739f0cea96",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|vcd_001|tnt_vcd|cd3459ea304980685363ee3a7397620f42920a3cc5ba712590c519739f0cea96|none|",
+        "canonicalCoreSha3": "9720206958cf62bc0b8ef22c5771fd89d84b6f19e1c468bc7dca84b54a809b02",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|vcd_001|tnt_vcd|cd3459ea304980685363ee3a7397620f42920a3cc5ba712590c519739f0cea96|none||feedface",
+        "leafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27"
+      }
+    },
+    {
+      "name": "southern_hemisphere_location",
+      "description": "Sydney coordinates, short expiry",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "tok_AU01",
+        "tenantId": "tnt_au",
+        "contentType": "url",
+        "destinationUrl": "https://example.au/welcome",
+        "contentHashHex": "",
+        "lat": -33.8688,
+        "lng": 151.2093,
+        "radiusM": 50,
+        "expiresAt": "2026-06-15T12:30:00.000Z",
+        "nonce": "cafebabecafebabe"
+      },
+      "expected": {
+        "destHash": "508579a12376567de746a94f0e127ee67e990f5fe98169148a7c738a2f960596",
+        "geoHash": "2c15e3f55ea547eaa0637c32b992d492a6524b3366a0162d885ab28d9488a9ea",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|tok_AU01|tnt_au|508579a12376567de746a94f0e127ee67e990f5fe98169148a7c738a2f960596|2c15e3f55ea547eaa0637c32b992d492a6524b3366a0162d885ab28d9488a9ea|2026-06-15T12:30:00.000Z",
+        "canonicalCoreSha3": "d5b21089553b08d15bf680e4215d2041b14897cdffb93ae7ad7f8c4fe32a48b8",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|tok_AU01|tnt_au|508579a12376567de746a94f0e127ee67e990f5fe98169148a7c738a2f960596|2c15e3f55ea547eaa0637c32b992d492a6524b3366a0162d885ab28d9488a9ea|2026-06-15T12:30:00.000Z|cafebabecafebabe",
+        "leafHash": "df9b56284271a873e010e1fa2e49a47184e5d71ee75fdbaf71a9c071c946f1e1"
+      }
+    },
+    {
+      "name": "decimal_precision_check",
+      "description": "Lat/lng at 7-decimal precision to lock in toFixed formatting",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "precise",
+        "tenantId": "tnt_pre",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/precise",
+        "contentHashHex": "",
+        "lat": 41.4123456,
+        "lng": 23.7654321,
+        "radiusM": 25,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeefcafebabe"
+      },
+      "expected": {
+        "destHash": "ee234c6b210e1791f4b8a5bf69b30ef8accfd859fdfd1218ee8c443c981df1ad",
+        "geoHash": "35ecaabe0822dfd1b7835750b5f75efc19eee8d0c6f301f9321f5c45d8c2dbc1",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|precise|tnt_pre|ee234c6b210e1791f4b8a5bf69b30ef8accfd859fdfd1218ee8c443c981df1ad|35ecaabe0822dfd1b7835750b5f75efc19eee8d0c6f301f9321f5c45d8c2dbc1|2027-01-01T00:00:00.000Z",
+        "canonicalCoreSha3": "ff7ec479b53ebbe85697f8f189631ba9ec3c9531c48c96e0b63b6035e15296eb",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|precise|tnt_pre|ee234c6b210e1791f4b8a5bf69b30ef8accfd859fdfd1218ee8c443c981df1ad|35ecaabe0822dfd1b7835750b5f75efc19eee8d0c6f301f9321f5c45d8c2dbc1|2027-01-01T00:00:00.000Z|deadbeefcafebabe",
+        "leafHash": "8da1374d6573bb284a821e0097c3859ab8145bd3af33e11e8b9fd0a8e1dbb14a"
+      }
+    },
+    {
+      "name": "expiry_near_midnight_utc",
+      "description": "Expiry one millisecond before midnight UTC — pins ISO 8601 UTC serialization independent of the host time zone",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "expected": {
+        "destHash": "633382aae0c621ade31bf7c7d2ec6d5014397db7195d7e7dff51dcebb5a3a865",
+        "geoHash": "none",
+        "canonicalCore": "hybrid-ecdsa-slhdsa-v1|mid_001|tnt_mid|633382aae0c621ade31bf7c7d2ec6d5014397db7195d7e7dff51dcebb5a3a865|none|2026-12-31T23:59:59.999Z",
+        "canonicalCoreSha3": "3caca456b59b588e173c2dbd03bc42491c03f8abb80c321f2f0ad6bf4272e0f5",
+        "merkleLeaf": "hybrid-ecdsa-slhdsa-v1|mid_001|tnt_mid|633382aae0c621ade31bf7c7d2ec6d5014397db7195d7e7dff51dcebb5a3a865|none|2026-12-31T23:59:59.999Z|0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "leafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2"
+      }
+    }
+  ],
+  "leafBinding": [
+    {
+      "name": "minimal_no_location__unchanged",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "expect": "accept"
+    },
+    {
+      "name": "minimal_no_location__destination_changed",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://other.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "a765b6c4fb0a489d0efdb5ad44fef4407a9249dac9dac091083397e1f6d76f57",
+      "expect": "reject"
+    },
+    {
+      "name": "minimal_no_location__content_hash_changed",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "0000000000000000000000000000000000000000000000000000000000000000",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "expect": "accept"
+    },
+    {
+      "name": "minimal_no_location__tenant_changed",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_other",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "3e74e2bd1c127d7bf1c2a27aba9fcb340a9fff2aa1725dfd9b46f1178f96226a",
+      "expect": "reject"
+    },
+    {
+      "name": "minimal_no_location__expiry_changed",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2099-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "8f79b9a5b3caa927fe7761c947356eea178426f840233accf17146b345358d93",
+      "expect": "reject"
+    },
+    {
+      "name": "minimal_no_location__location_added",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": 40.6401,
+        "lng": 22.9444,
+        "radiusM": 50,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "ebf10393ff80caeb8684d545ee185b87c0f08194c42ac40de719341ab38219d5",
+      "expect": "reject"
+    },
+    {
+      "name": "minimal_no_location__nonce_changed",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "cafebabe"
+      },
+      "recomputedLeafHash": "7a51525ef3d03b1b1e97e40c32109841eba220926bfbf92229f15157e3b6f035",
+      "expect": "reject"
+    },
+    {
+      "name": "minimal_no_location__alg_version_changed",
+      "base": "minimal_no_location",
+      "storedLeafHash": "2dae226585fea54b132a7838ea582140cb02d6852400f60228b7b8e08fd4beb9",
+      "payload": {
+        "algVersion": "ecdsa-pending-slhdsa-v1",
+        "token": "abc123",
+        "tenantId": "tnt_test",
+        "contentType": "url",
+        "destinationUrl": "https://example.com/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2027-01-01T00:00:00.000Z",
+        "nonce": "deadbeef"
+      },
+      "recomputedLeafHash": "959eeb0c838d3d8ffc9e3e2c24cdb4fc0646ac5764afde5242000ec4a1f28509",
+      "expect": "reject"
+    },
+    {
+      "name": "vcard_content_qr__unchanged",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "expect": "accept"
+    },
+    {
+      "name": "vcard_content_qr__destination_changed",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://other.example/x",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "expect": "accept"
+    },
+    {
+      "name": "vcard_content_qr__content_hash_changed",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "0000000000000000000000000000000000000000000000000000000000000000",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "aa89e3b246c6d0ac10930bcd3a400882dccb39cb4493e9014cbeaf3ee898d4d3",
+      "expect": "reject"
+    },
+    {
+      "name": "vcard_content_qr__tenant_changed",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_other",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "c2a550817754c578b500d9ded30059a203e6733cd1b6f931a9ab082a0eff8347",
+      "expect": "reject"
+    },
+    {
+      "name": "vcard_content_qr__expiry_changed",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2099-01-01T00:00:00.000Z",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "62dc974afec68d8f1b99c8f4e60b64577c86d54bf7c5db9e816513e0b597a44b",
+      "expect": "reject"
+    },
+    {
+      "name": "vcard_content_qr__location_added",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": 40.6401,
+        "lng": 22.9444,
+        "radiusM": 50,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "22b1f026900c5bf181ce32bc3fc4d74ce683995aa0c95151ce0ceb10202538d6",
+      "expect": "reject"
+    },
+    {
+      "name": "vcard_content_qr__nonce_changed",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "cafebabe"
+      },
+      "recomputedLeafHash": "d5123a0340452b401ab0c14508e799ffa0b385501f3e72dc3d4795f62c22d2c8",
+      "expect": "reject"
+    },
+    {
+      "name": "vcard_content_qr__alg_version_changed",
+      "base": "vcard_content_qr",
+      "storedLeafHash": "c0ebd66c8020a6466e4311a2f3776a33eaecaffe71bb55d8c8b35fdf1f637e27",
+      "payload": {
+        "algVersion": "ecdsa-pending-slhdsa-v1",
+        "token": "vcd_001",
+        "tenantId": "tnt_vcd",
+        "contentType": "vcard",
+        "destinationUrl": "https://qrauth.io/v/vcd_001",
+        "contentHashHex": "3b5f2a1c7d9e4f80112233445566778899aabbccddeeff00112233445566aabb",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "",
+        "nonce": "feedface"
+      },
+      "recomputedLeafHash": "e19f51806a0d2b88d9bb510291b65e89d41bb53b8480ec8bf74aa04b70b10209",
+      "expect": "reject"
+    },
+    {
+      "name": "expiry_near_midnight_utc__unchanged",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "expect": "accept"
+    },
+    {
+      "name": "expiry_near_midnight_utc__destination_changed",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://other.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "fcfd2e177799cdb792059bd167cb0799706c3b933ff5f18b32ee36972020f1b8",
+      "expect": "reject"
+    },
+    {
+      "name": "expiry_near_midnight_utc__content_hash_changed",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "0000000000000000000000000000000000000000000000000000000000000000",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "expect": "accept"
+    },
+    {
+      "name": "expiry_near_midnight_utc__tenant_changed",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_other",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "0ead65eedcb08886821d54aa0fb5a6fb01b9c593456afafaafc044a605bcbe28",
+      "expect": "reject"
+    },
+    {
+      "name": "expiry_near_midnight_utc__expiry_changed",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2099-01-01T00:00:00.000Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "a861825bc06e23294d0c351fb3b74abf65a9b019ce1ceafe10935d657e7821c1",
+      "expect": "reject"
+    },
+    {
+      "name": "expiry_near_midnight_utc__location_added",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": 40.6401,
+        "lng": 22.9444,
+        "radiusM": 50,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "fe3f011ef9f5e22a0edc78eec1b76e45dc0d5374a533fc73af8dff75e4b21f89",
+      "expect": "reject"
+    },
+    {
+      "name": "expiry_near_midnight_utc__nonce_changed",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "hybrid-ecdsa-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "cafebabe"
+      },
+      "recomputedLeafHash": "6c39afa24edaad26aaef644f1986d96e2e5eb50ce2feb704d4ef9b28ae0781a9",
+      "expect": "reject"
+    },
+    {
+      "name": "expiry_near_midnight_utc__alg_version_changed",
+      "base": "expiry_near_midnight_utc",
+      "storedLeafHash": "77ad7705b39a153a1efd23db6e7a912a1525c201cb5369bc0d24b23ba25f1ec2",
+      "payload": {
+        "algVersion": "ecdsa-pending-slhdsa-v1",
+        "token": "mid_001",
+        "tenantId": "tnt_mid",
+        "contentType": "url",
+        "destinationUrl": "https://midnight.example/x",
+        "contentHashHex": "",
+        "lat": null,
+        "lng": null,
+        "radiusM": null,
+        "expiresAt": "2026-12-31T23:59:59.999Z",
+        "nonce": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      },
+      "recomputedLeafHash": "81bdb9d3147a0c995cbd8158e16e5c93cecf8ca1ce26e4caf2f05bd5e81c5c9f",
+      "expect": "reject"
+    }
+  ]
+}

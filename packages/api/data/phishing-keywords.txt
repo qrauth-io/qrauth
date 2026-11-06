@@ -1,0 +1,87 @@
+# Phishing keywords for the brand-in-host lookalike rules (ADR-0007 D11).
+#
+# Two tiers:
+#
+# [credential] words that ask for a login, a secret or a verification
+#   step. They match anywhere in a token, also inside a longer word
+#   (paypallogin, eurobank-eisodos, mysignin). Credential words shorter
+#   than 4 characters (kyc, 2fa) match a whole token only.
+# [general] words phishing pages use around accounts, payments and alerts,
+#   which are also ordinary words. They match only as a whole token
+#   (paypal-secure, paypal + secure in paypalsecure), never inside a longer
+#   word (accountants, alerts, authentic, updates pass).
+#
+# Where each tier counts:
+# - a short (under 4 characters) or wordlike strict brand as a hyphen token
+#   (visa-login.com): a credential word in another token; a general word
+#   is not enough (visa-support.gr, schengen-visa-update.com pass);
+# - a protected domain in hyphen form (eurobank-gr-login.com): either tier;
+# - a strict brand run together with a word in one token (paypalsecure.com):
+#   either tier, see D11.
+#
+# Format: a tier header, then one word per line, lowercase, 3+ characters;
+# Greek words both transliterated and in Greek script. Comparison is on
+# UTS #39 skeletons, with the digits phishing uses for letters read as
+# letters (0 → o, 3 → e, 5 → s; 1, i and l count as one letter), so
+# confusable spellings (l0gin, s1gnin, pa55word) match too.
+#
+# Policy: a word is a credential word only when it is rare inside ordinary
+# words; otherwise it is general. No word may be a common part of ordinary
+# names (no "pay", "bank", "app", "online", "gr"). Add a word when phishing
+# uses it; remove one or move it between tiers only with a reason in the
+# commit message, after checking the false-positive tests.
+
+[credential]
+login
+logon
+signin
+signon
+password
+passcode
+verify
+verification
+kyc
+2fa
+wallet
+seedphrase
+# Greek, transliterated and in Greek script: είσοδος, σύνδεση, επαλήθευση
+eisodos
+syndesi
+epalitheusi
+epalithefsi
+είσοδος
+σύνδεση
+επαλήθευση
+
+[general]
+auth
+otp
+unlock
+secure
+security
+validate
+confirm
+alert
+suspended
+account
+update
+support
+helpdesk
+recovery
+service
+billing
+payment
+refund
+invoice
+# Greek, transliterated and in Greek script: λογαριασμός, πληρωμή,
+# επιβεβαίωση, ενημέρωση, επιστροφή
+logariasmos
+pliromi
+epivevaiosi
+enimerosi
+epistrofi
+λογαριασμός
+πληρωμή
+επιβεβαίωση
+ενημέρωση
+επιστροφή

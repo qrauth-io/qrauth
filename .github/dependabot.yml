@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Version updates: monthly, one grouped PR for minor and patch versions,
+  # at most 2 open. Major versions are ignored for now and upgraded by hand
+  # (each needs its own migration, e.g. Prisma 7, vitest majors).
+  # Security alerts stay on; automated security-fix PRs are off.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      npm:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 2
