@@ -1,0 +1,93 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`app-link renderer > matches the snapshot (desktop, neutral issuer, Google Play flagged) 1`] = `
+"
+    <style nonce="TESTNONCE">
+      .ql-title { font-size: 20px; font-weight: 800; color: #0A0A0A; margin-bottom: 6px; word-break: break-word; }
+      .ql-desc { font-size: 14px; color: #525252; line-height: 1.6; margin-bottom: 16px; word-break: break-word; }
+      .ql-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+      .ql-link { display: block; padding: 14px 16px; border-radius: 12px; text-decoration: none; background: #FFFFFF; border: 1px solid rgba(15,15,15,0.12); color: #0A0A0A; }
+      .ql-link.ql-primary { background: #047857; border-color: #047857; color: #FFFFFF; }
+      .ql-label { display: block; font-size: 16px; font-weight: 700; word-break: break-word; }
+      .ql-host { display: block; font-size: 13px; opacity: 0.75; margin-top: 2px; word-break: break-all; }
+      .ql-tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-left: 6px; opacity: 0.85; }
+      .ql-warn { display: block; font-size: 12px; font-weight: 600; color: #B91C1C; margin-top: 6px; }
+      .ql-removed { padding: 12px 14px; border-radius: 10px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 13px; font-weight: 600; margin-top: 12px; }
+      .ql-stop { padding: 14px; border-radius: 12px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 14px; }
+    </style>
+    <div class="ql-title">Get the Acme app</div>
+    <div class="ql-desc">Choose where to get the app.</div>
+    
+    <ul class="ql-list"><li><a class="ql-link" href="https://acme.example/app" rel="noopener noreferrer nofollow"><span class="ql-label">Website</span><span class="ql-host">acme.example</span></a></li><li><a class="ql-link" href="https://apps.apple.com/app/id123" rel="noopener noreferrer nofollow"><span class="ql-label">App Store</span><span class="ql-host">apps.apple.com</span></a></li></ul>
+    <div class="ql-removed" role="note">The Google Play link was removed: Google Web Risk lists it as dangerous.</div>
+  "
+`;
+
+exports[`app-link renderer > matches the snapshot (iOS, VERIFIED) 1`] = `
+"
+    <style nonce="TESTNONCE">
+      .ql-title { font-size: 20px; font-weight: 800; color: #0A0A0A; margin-bottom: 6px; word-break: break-word; }
+      .ql-desc { font-size: 14px; color: #525252; line-height: 1.6; margin-bottom: 16px; word-break: break-word; }
+      .ql-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+      .ql-link { display: block; padding: 14px 16px; border-radius: 12px; text-decoration: none; background: #FFFFFF; border: 1px solid rgba(15,15,15,0.12); color: #0A0A0A; }
+      .ql-link.ql-primary { background: #047857; border-color: #047857; color: #FFFFFF; }
+      .ql-label { display: block; font-size: 16px; font-weight: 700; word-break: break-word; }
+      .ql-host { display: block; font-size: 13px; opacity: 0.75; margin-top: 2px; word-break: break-all; }
+      .ql-tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-left: 6px; opacity: 0.85; }
+      .ql-warn { display: block; font-size: 12px; font-weight: 600; color: #B91C1C; margin-top: 6px; }
+      .ql-removed { padding: 12px 14px; border-radius: 10px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 13px; font-weight: 600; margin-top: 12px; }
+      .ql-stop { padding: 14px; border-radius: 12px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 14px; }
+    </style>
+    <div class="ql-title">Get the Acme app</div>
+    <div class="ql-desc">Choose where to get the app.</div>
+    
+    <ul class="ql-list"><li><a class="ql-link ql-primary" href="https://apps.apple.com/app/id123" rel="noopener noreferrer nofollow"><span class="ql-label">App Store<span class="ql-tag">For your device</span></span><span class="ql-host">apps.apple.com</span></a></li><li><a class="ql-link" href="https://play.google.com/store/apps/details?id=com.acme&amp;hl=en" rel="noopener noreferrer nofollow"><span class="ql-label">Google Play</span><span class="ql-host">play.google.com</span></a></li><li><a class="ql-link" href="https://acme.example/app" rel="noopener noreferrer nofollow"><span class="ql-label">Website</span><span class="ql-host">acme.example</span></a></li></ul>
+    
+  "
+`;
+
+exports[`link-list renderer > matches the snapshot (UNTRUSTED, one flagged, one lookalike) 1`] = `
+"
+    <style nonce="TESTNONCE">
+      .ql-title { font-size: 20px; font-weight: 800; color: #0A0A0A; margin-bottom: 6px; word-break: break-word; }
+      .ql-desc { font-size: 14px; color: #525252; line-height: 1.6; margin-bottom: 16px; word-break: break-word; }
+      .ql-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+      .ql-link { display: block; padding: 14px 16px; border-radius: 12px; text-decoration: none; background: #FFFFFF; border: 1px solid rgba(15,15,15,0.12); color: #0A0A0A; }
+      .ql-link.ql-primary { background: #047857; border-color: #047857; color: #FFFFFF; }
+      .ql-label { display: block; font-size: 16px; font-weight: 700; word-break: break-word; }
+      .ql-host { display: block; font-size: 13px; opacity: 0.75; margin-top: 2px; word-break: break-all; }
+      .ql-tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-left: 6px; opacity: 0.85; }
+      .ql-warn { display: block; font-size: 12px; font-weight: 600; color: #B91C1C; margin-top: 6px; }
+      .ql-removed { padding: 12px 14px; border-radius: 10px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 13px; font-weight: 600; margin-top: 12px; }
+      .ql-stop { padding: 14px; border-radius: 12px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 14px; }
+    </style>
+    <div class="ql-title">Acme links</div>
+    <div class="ql-desc">Menu and booking</div>
+    <div class="ql-stop">Do not proceed - this QR code is not verified</div>
+    <ul class="ql-list"><li><a class="ql-link" href="https://acme.example/menu" rel="noopener noreferrer nofollow"><span class="ql-label">Menu</span><span class="ql-host">acme.example</span><span class="ql-warn">Looks like acme.com (Acme Corp)</span></a></li></ul>
+    <div class="ql-removed" role="note">1 link was removed: Google Web Risk lists it as dangerous.</div>
+  "
+`;
+
+exports[`link-list renderer > matches the snapshot 1`] = `
+"
+    <style nonce="TESTNONCE">
+      .ql-title { font-size: 20px; font-weight: 800; color: #0A0A0A; margin-bottom: 6px; word-break: break-word; }
+      .ql-desc { font-size: 14px; color: #525252; line-height: 1.6; margin-bottom: 16px; word-break: break-word; }
+      .ql-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+      .ql-link { display: block; padding: 14px 16px; border-radius: 12px; text-decoration: none; background: #FFFFFF; border: 1px solid rgba(15,15,15,0.12); color: #0A0A0A; }
+      .ql-link.ql-primary { background: #047857; border-color: #047857; color: #FFFFFF; }
+      .ql-label { display: block; font-size: 16px; font-weight: 700; word-break: break-word; }
+      .ql-host { display: block; font-size: 13px; opacity: 0.75; margin-top: 2px; word-break: break-all; }
+      .ql-tag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-left: 6px; opacity: 0.85; }
+      .ql-warn { display: block; font-size: 12px; font-weight: 600; color: #B91C1C; margin-top: 6px; }
+      .ql-removed { padding: 12px 14px; border-radius: 10px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 13px; font-weight: 600; margin-top: 12px; }
+      .ql-stop { padding: 14px; border-radius: 12px; background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.22); color: #B91C1C; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 14px; }
+    </style>
+    <div class="ql-title">Acme links</div>
+    <div class="ql-desc">Menu and booking</div>
+    
+    <ul class="ql-list"><li><a class="ql-link" href="https://acme.example/menu" rel="noopener noreferrer nofollow"><span class="ql-label">Menu</span><span class="ql-host">acme.example</span></a></li><li><a class="ql-link" href="https://book.example/acme" rel="noopener noreferrer nofollow"><span class="ql-label">Book a table</span><span class="ql-host">book.example</span></a></li></ul>
+    
+  "
+`;
