@@ -1,0 +1,1250 @@
+[
+ {
+  "file": "0/empty-root.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "0/happy-path.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "0/leafIdx-XOR-@2.json",
+  "leafIdx": 2,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "leafIdx XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "0/leafIdx-plus-@1.json",
+  "leafIdx": 1,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "leafIdx plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "0/leafIdx-sub-@1.json",
+  "leafIdx": 18446744073709551615,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "leafIdx sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "0/preceding-garbage.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   ""
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "0/preceding-root.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+  ],
+  "desc": "preceding root",
+  "wantErr": true
+ },
+ {
+  "file": "0/random-root.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "random root",
+  "wantErr": true
+ },
+ {
+  "file": "0/trailing-garbage.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "0/trailing-root.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+  ],
+  "desc": "trailing root",
+  "wantErr": true
+ },
+ {
+  "file": "0/treeSize-div-@2.json",
+  "leafIdx": 0,
+  "treeSize": 0,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "treeSize div @2",
+  "wantErr": true
+ },
+ {
+  "file": "0/treeSize-mul-@2.json",
+  "leafIdx": 0,
+  "treeSize": 2,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "treeSize mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "0/wrong-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "leafHash": "57726f6e674c656166",
+  "proof": null,
+  "desc": "wrong leaf",
+  "wantErr": true
+ },
+ {
+  "file": "1/empty-root.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "1/happy-path.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "1/inserted-component.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "abacaba000000000000000000000000000000000000000000060061e00123456",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "inserted component",
+  "wantErr": true
+ },
+ {
+  "file": "1/leafIdx-XOR-@2.json",
+  "leafIdx": 2,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "leafIdx XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "1/leafIdx-plus-@1.json",
+  "leafIdx": 1,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "leafIdx plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "1/leafIdx-sub-@1.json",
+  "leafIdx": 18446744073709551615,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "leafIdx sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "1/modified-proof[0]-bit-@3.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "9ea296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "modified proof[0] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "1/modified-proof[1]-bit-@3.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "57083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "modified proof[1] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "1/modified-proof[2]-bit-@3.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6347aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "modified proof[2] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "1/preceding-garbage.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "",
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "1/preceding-root.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "preceding root",
+  "wantErr": true
+ },
+ {
+  "file": "1/random-root.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "random root",
+  "wantErr": true
+ },
+ {
+  "file": "1/removed-component.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e"
+  ],
+  "desc": "removed component",
+  "wantErr": true
+ },
+ {
+  "file": "1/trailing-garbage.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "1/trailing-root.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+  ],
+  "desc": "trailing root",
+  "wantErr": true
+ },
+ {
+  "file": "1/treeSize-div-@2.json",
+  "leafIdx": 0,
+  "treeSize": 4,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "treeSize div @2",
+  "wantErr": true
+ },
+ {
+  "file": "1/treeSize-mul-@2.json",
+  "leafIdx": 0,
+  "treeSize": 16,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "treeSize mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "1/wrong-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "57726f6e674c656166",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "wrong leaf",
+  "wantErr": true
+ },
+ {
+  "file": "2/empty-root.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "2/happy-path.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "2/inserted-component.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "abacaba000000000000000000000000000000000000000000060061e00123456",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "inserted component",
+  "wantErr": true
+ },
+ {
+  "file": "2/leafIdx-XOR-@2.json",
+  "leafIdx": 7,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "leafIdx XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "2/leafIdx-plus-@1.json",
+  "leafIdx": 6,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "leafIdx plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "2/leafIdx-sub-@1.json",
+  "leafIdx": 4,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "leafIdx sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "2/modified-proof[0]-bit-@3.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "b41a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof[0] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "2/modified-proof[1]-bit-@3.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "c2854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof[1] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "2/modified-proof[2]-bit-@3.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "db7ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof[2] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "2/preceding-garbage.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "2/preceding-root.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding root",
+  "wantErr": true
+ },
+ {
+  "file": "2/random-root.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "random root",
+  "wantErr": true
+ },
+ {
+  "file": "2/removed-component.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0"
+  ],
+  "desc": "removed component",
+  "wantErr": true
+ },
+ {
+  "file": "2/trailing-garbage.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "2/trailing-root.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+  ],
+  "desc": "trailing root",
+  "wantErr": true
+ },
+ {
+  "file": "2/treeSize-div-@2.json",
+  "leafIdx": 5,
+  "treeSize": 4,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "treeSize div @2",
+  "wantErr": true
+ },
+ {
+  "file": "2/treeSize-mul-@2.json",
+  "leafIdx": 5,
+  "treeSize": 16,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "treeSize mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "2/wrong-leaf.json",
+  "leafIdx": 5,
+  "treeSize": 8,
+  "root": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "leafHash": "57726f6e674c656166",
+  "proof": [
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "wrong leaf",
+  "wantErr": true
+ },
+ {
+  "file": "3/empty-root.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "3/happy-path.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "3/leafIdx-XOR-@2.json",
+  "leafIdx": 0,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "leafIdx XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "3/leafIdx-plus-@1.json",
+  "leafIdx": 3,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "leafIdx plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "3/leafIdx-sub-@1.json",
+  "leafIdx": 1,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "leafIdx sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "3/modified-proof[0]-bit-@3.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "f2c54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "modified proof[0] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "3/preceding-garbage.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "",
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "3/preceding-root.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "preceding root",
+  "wantErr": true
+ },
+ {
+  "file": "3/random-root.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "random root",
+  "wantErr": true
+ },
+ {
+  "file": "3/removed-component.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [],
+  "desc": "removed component",
+  "wantErr": true
+ },
+ {
+  "file": "3/trailing-garbage.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "3/trailing-root.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+   "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77"
+  ],
+  "desc": "trailing root",
+  "wantErr": true
+ },
+ {
+  "file": "3/treeSize-div-@2.json",
+  "leafIdx": 2,
+  "treeSize": 1,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "treeSize div @2",
+  "wantErr": true
+ },
+ {
+  "file": "3/treeSize-mul-@2.json",
+  "leafIdx": 2,
+  "treeSize": 6,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "treeSize mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "3/wrong-leaf.json",
+  "leafIdx": 2,
+  "treeSize": 3,
+  "root": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+  "leafHash": "57726f6e674c656166",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "wrong leaf",
+  "wantErr": true
+ },
+ {
+  "file": "4/empty-root.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "4/happy-path.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "4/inserted-component.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "abacaba000000000000000000000000000000000000000000060061e00123456",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "inserted component",
+  "wantErr": true
+ },
+ {
+  "file": "4/leafIdx-XOR-@2.json",
+  "leafIdx": 3,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "leafIdx XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "4/leafIdx-plus-@1.json",
+  "leafIdx": 2,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "leafIdx plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "4/leafIdx-sub-@1.json",
+  "leafIdx": 0,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "leafIdx sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "4/modified-proof[0]-bit-@3.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "66340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "modified proof[0] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "4/modified-proof[1]-bit-@3.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "57083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "modified proof[1] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "4/modified-proof[2]-bit-@3.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "b41a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "modified proof[2] bit @3",
+  "wantErr": true
+ },
+ {
+  "file": "4/preceding-garbage.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "",
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "4/preceding-root.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "preceding root",
+  "wantErr": true
+ },
+ {
+  "file": "4/random-root.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "random root",
+  "wantErr": true
+ },
+ {
+  "file": "4/removed-component.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e"
+  ],
+  "desc": "removed component",
+  "wantErr": true
+ },
+ {
+  "file": "4/trailing-garbage.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "4/trailing-root.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4"
+  ],
+  "desc": "trailing root",
+  "wantErr": true
+ },
+ {
+  "file": "4/treeSize-div-@2.json",
+  "leafIdx": 1,
+  "treeSize": 2,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "treeSize div @2",
+  "wantErr": true
+ },
+ {
+  "file": "4/treeSize-mul-@2.json",
+  "leafIdx": 1,
+  "treeSize": 10,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "treeSize mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "4/wrong-leaf.json",
+  "leafIdx": 1,
+  "treeSize": 5,
+  "root": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "leafHash": "57726f6e674c656166",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "wrong leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/0/empty-root-and-random-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 0,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "empty root and random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/0/empty-root.json",
+  "leafIdx": 0,
+  "treeSize": 0,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "",
+  "proof": [],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "additional/0/random-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 0,
+  "root": "",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/1/empty-root-and-random-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "empty root and random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/1/empty-root.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "",
+  "proof": [],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "additional/1/random-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/2/empty-root-and-random-leaf.json",
+  "leafIdx": 1,
+  "treeSize": 0,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "empty root and random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/2/empty-root.json",
+  "leafIdx": 1,
+  "treeSize": 0,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "",
+  "proof": [],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "additional/2/random-leaf.json",
+  "leafIdx": 1,
+  "treeSize": 0,
+  "root": "",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/3/empty-root-and-random-leaf.json",
+  "leafIdx": 2,
+  "treeSize": 1,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "empty root and random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "additional/3/empty-root.json",
+  "leafIdx": 2,
+  "treeSize": 1,
+  "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "leafHash": "",
+  "proof": [],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "additional/3/random-leaf.json",
+  "leafIdx": 2,
+  "treeSize": 1,
+  "root": "",
+  "leafHash": "abacaba000000000000000000000000000000000000000000060061e00123456",
+  "proof": [],
+  "desc": "random leaf",
+  "wantErr": true
+ },
+ {
+  "file": "single-entry/empty-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+  "leafHash": "",
+  "proof": [],
+  "desc": "empty leaf",
+  "wantErr": true
+ },
+ {
+  "file": "single-entry/empty-root-and-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "",
+  "leafHash": "",
+  "proof": [],
+  "desc": "empty root and leaf",
+  "wantErr": true
+ },
+ {
+  "file": "single-entry/empty-root.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "",
+  "leafHash": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+  "proof": [],
+  "desc": "empty root",
+  "wantErr": true
+ },
+ {
+  "file": "single-entry/matching-root-and-leaf.json",
+  "leafIdx": 0,
+  "treeSize": 1,
+  "root": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+  "leafHash": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+  "proof": [],
+  "desc": "matching root and leaf",
+  "wantErr": false
+ }
+]

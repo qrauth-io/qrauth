@@ -1,0 +1,47 @@
+{
+  "name": "@qrauth/shared",
+  "version": "0.1.2",
+  "author": {
+    "name": "Gernard Cerma",
+    "email": "aris@progressnet.gr",
+    "url": "https://github.com/aristech"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./qr-render": {
+      "import": "./dist/qr-render/index.js",
+      "types": "./dist/qr-render/index.d.ts"
+    },
+    "./qr-render/core": {
+      "import": "./dist/qr-render/core.js",
+      "types": "./dist/qr-render/core.d.ts"
+    },
+    "./qr-render/font": {
+      "import": "./dist/qr-render/font.js",
+      "types": "./dist/qr-render/font.d.ts"
+    },
+    "./assets/qrauth-logo.png": "./assets/qrauth-logo.png",
+    "./assets/fonts/NotoSans-SemiBold-frames.ttf": "./assets/fonts/NotoSans-SemiBold-frames.ttf",
+    "./assets/fonts/OFL.txt": "./assets/fonts/OFL.txt"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "opentype.js": "2.0.0",
+    "qrcode": "1.5.4",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "^4.1.12"
+  }
+}

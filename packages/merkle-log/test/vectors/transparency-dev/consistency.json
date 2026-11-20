@@ -1,0 +1,1309 @@
+[
+ {
+  "file": "0/happy-path.json",
+  "size1": 1,
+  "size2": 1,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": null,
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "1/empty-proof.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [],
+  "desc": "empty proof",
+  "wantErr": true
+ },
+ {
+  "file": "1/happy-path.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "1/modified-proof@0-bit-@4.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "86a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "modified proof@0 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "1/modified-proof@1-bit-@4.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "4f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "modified proof@1 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "1/modified-proof@2-bit-@4.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "7b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "modified proof@2 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "1/preceding-garbage.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "",
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "1/preceding-proof-@0.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "preceding proof @0",
+  "wantErr": true
+ },
+ {
+  "file": "1/preceding-root1.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "preceding root1",
+  "wantErr": true
+ },
+ {
+  "file": "1/preceding-root2.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "preceding root2",
+  "wantErr": true
+ },
+ {
+  "file": "1/size1-XOR-@2.json",
+  "size1": 3,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "size1 XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "1/size1-plus-@1.json",
+  "size1": 2,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "size1 plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "1/size1-sub-@1.json",
+  "size1": 0,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "size1 sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "1/size2-div-@2.json",
+  "size1": 1,
+  "size2": 4,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "size2 div @2",
+  "wantErr": true
+ },
+ {
+  "file": "1/size2-mul-@2.json",
+  "size1": 1,
+  "size2": 16,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "size2 mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "1/swapped-roots.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "root2": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "swapped roots",
+  "wantErr": true
+ },
+ {
+  "file": "1/trailing-garbage.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "1/trailing-root1.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+  ],
+  "desc": "trailing root1",
+  "wantErr": true
+ },
+ {
+  "file": "1/trailing-root2.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+  ],
+  "desc": "trailing root2",
+  "wantErr": true
+ },
+ {
+  "file": "1/truncated-proof.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e"
+  ],
+  "desc": "truncated proof",
+  "wantErr": true
+ },
+ {
+  "file": "1/wrong-root1.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "57726f6e67526f6f74",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "wrong root1",
+  "wantErr": true
+ },
+ {
+  "file": "1/wrong-root2.json",
+  "size1": 1,
+  "size2": 8,
+  "root1": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+  "root2": "57726f6e67526f6f74",
+  "proof": [
+   "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+  ],
+  "desc": "wrong root2",
+  "wantErr": true
+ },
+ {
+  "file": "2/empty-proof.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [],
+  "desc": "empty proof",
+  "wantErr": true
+ },
+ {
+  "file": "2/happy-path.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "2/modified-proof@0-bit-@4.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "1ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof@0 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "2/modified-proof@1-bit-@4.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "da854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof@1 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "2/modified-proof@2-bit-@4.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "c37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof@2 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "2/preceding-garbage.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "2/preceding-proof-@0.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding proof @0",
+  "wantErr": true
+ },
+ {
+  "file": "2/preceding-root1.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding root1",
+  "wantErr": true
+ },
+ {
+  "file": "2/preceding-root2.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding root2",
+  "wantErr": true
+ },
+ {
+  "file": "2/size1-XOR-@2.json",
+  "size1": 4,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size1 XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "2/size1-plus-@1.json",
+  "size1": 7,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size1 plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "2/size1-sub-@1.json",
+  "size1": 5,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size1 sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "2/size2-div-@2.json",
+  "size1": 6,
+  "size2": 4,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size2 div @2",
+  "wantErr": true
+ },
+ {
+  "file": "2/size2-mul-@2.json",
+  "size1": 6,
+  "size2": 16,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size2 mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "2/swapped-roots.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "root2": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "swapped roots",
+  "wantErr": true
+ },
+ {
+  "file": "2/trailing-garbage.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "2/trailing-root1.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef"
+  ],
+  "desc": "trailing root1",
+  "wantErr": true
+ },
+ {
+  "file": "2/trailing-root2.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+  ],
+  "desc": "trailing root2",
+  "wantErr": true
+ },
+ {
+  "file": "2/truncated-proof.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0"
+  ],
+  "desc": "truncated proof",
+  "wantErr": true
+ },
+ {
+  "file": "2/wrong-root1.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "57726f6e67526f6f74",
+  "root2": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "wrong root1",
+  "wantErr": true
+ },
+ {
+  "file": "2/wrong-root2.json",
+  "size1": 6,
+  "size2": 8,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "57726f6e67526f6f74",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "wrong root2",
+  "wantErr": true
+ },
+ {
+  "file": "3/empty-proof.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [],
+  "desc": "empty proof",
+  "wantErr": true
+ },
+ {
+  "file": "3/happy-path.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "3/modified-proof@0-bit-@4.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "4f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "modified proof@0 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "3/modified-proof@1-bit-@4.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "ac1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "modified proof@1 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "3/preceding-garbage.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "3/preceding-proof-@0.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "preceding proof @0",
+  "wantErr": true
+ },
+ {
+  "file": "3/preceding-root1.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "preceding root1",
+  "wantErr": true
+ },
+ {
+  "file": "3/preceding-root2.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "preceding root2",
+  "wantErr": true
+ },
+ {
+  "file": "3/size1-XOR-@2.json",
+  "size1": 0,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "size1 XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "3/size1-plus-@1.json",
+  "size1": 3,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "size1 plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "3/size1-sub-@1.json",
+  "size1": 1,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "size1 sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "3/size2-div-@2.json",
+  "size1": 2,
+  "size2": 2,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "size2 div @2",
+  "wantErr": true
+ },
+ {
+  "file": "3/size2-mul-@2.json",
+  "size1": 2,
+  "size2": 10,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "size2 mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "3/swapped-roots.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "root2": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "swapped roots",
+  "wantErr": true
+ },
+ {
+  "file": "3/trailing-garbage.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "3/trailing-root1.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+  ],
+  "desc": "trailing root1",
+  "wantErr": true
+ },
+ {
+  "file": "3/trailing-root2.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+   "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4"
+  ],
+  "desc": "trailing root2",
+  "wantErr": true
+ },
+ {
+  "file": "3/truncated-proof.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e"
+  ],
+  "desc": "truncated proof",
+  "wantErr": true
+ },
+ {
+  "file": "3/wrong-root1.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "57726f6e67526f6f74",
+  "root2": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "wrong root1",
+  "wantErr": true
+ },
+ {
+  "file": "3/wrong-root2.json",
+  "size1": 2,
+  "size2": 5,
+  "root1": "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+  "root2": "57726f6e67526f6f74",
+  "proof": [
+   "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+   "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+  ],
+  "desc": "wrong root2",
+  "wantErr": true
+ },
+ {
+  "file": "4/empty-proof.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [],
+  "desc": "empty proof",
+  "wantErr": true
+ },
+ {
+  "file": "4/happy-path.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "happy path",
+  "wantErr": false
+ },
+ {
+  "file": "4/modified-proof@0-bit-@4.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "1ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof@0 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "4/modified-proof@1-bit-@4.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "a08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof@1 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "4/modified-proof@2-bit-@4.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "c37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "modified proof@2 bit @4",
+  "wantErr": true
+ },
+ {
+  "file": "4/preceding-garbage.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding garbage",
+  "wantErr": true
+ },
+ {
+  "file": "4/preceding-proof-@0.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding proof @0",
+  "wantErr": true
+ },
+ {
+  "file": "4/preceding-root1.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding root1",
+  "wantErr": true
+ },
+ {
+  "file": "4/preceding-root2.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "preceding root2",
+  "wantErr": true
+ },
+ {
+  "file": "4/size1-XOR-@2.json",
+  "size1": 4,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size1 XOR @2",
+  "wantErr": true
+ },
+ {
+  "file": "4/size1-plus-@1.json",
+  "size1": 7,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size1 plus @1",
+  "wantErr": true
+ },
+ {
+  "file": "4/size1-sub-@1.json",
+  "size1": 5,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size1 sub @1",
+  "wantErr": true
+ },
+ {
+  "file": "4/size2-div-@2.json",
+  "size1": 6,
+  "size2": 3,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size2 div @2",
+  "wantErr": true
+ },
+ {
+  "file": "4/size2-mul-@2.json",
+  "size1": 6,
+  "size2": 14,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "size2 mul @2",
+  "wantErr": true
+ },
+ {
+  "file": "4/swapped-roots.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "root2": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "swapped roots",
+  "wantErr": true
+ },
+ {
+  "file": "4/trailing-garbage.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   ""
+  ],
+  "desc": "trailing garbage",
+  "wantErr": true
+ },
+ {
+  "file": "4/trailing-root1.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef"
+  ],
+  "desc": "trailing root1",
+  "wantErr": true
+ },
+ {
+  "file": "4/trailing-root2.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+   "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c"
+  ],
+  "desc": "trailing root2",
+  "wantErr": true
+ },
+ {
+  "file": "4/truncated-proof.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f"
+  ],
+  "desc": "truncated proof",
+  "wantErr": true
+ },
+ {
+  "file": "4/wrong-root1.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "57726f6e67526f6f74",
+  "root2": "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "wrong root1",
+  "wantErr": true
+ },
+ {
+  "file": "4/wrong-root2.json",
+  "size1": 6,
+  "size2": 7,
+  "root1": "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+  "root2": "57726f6e67526f6f74",
+  "proof": [
+   "0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+   "b08693ec2e721597130641e8211e7eedccb4c26413963eee6c1e2ed16ffb1a5f",
+   "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+  ],
+  "desc": "wrong root2",
+  "wantErr": true
+ },
+ {
+  "file": "additional/consistency-check-on-empty-tree-size1-is-zero-is-useless.json",
+  "size1": 0,
+  "size2": 1,
+  "root1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root2": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "proof": [
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "desc": "consistency check on empty tree (size1 is zero) is useless",
+  "wantErr": true
+ },
+ {
+  "file": "additional/roots-do-not-match-and-sizes-are-zero.json",
+  "size1": 0,
+  "size2": 0,
+  "root1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "roots do not match and sizes are zero",
+  "wantErr": true
+ },
+ {
+  "file": "additional/roots-do-not-not-match-and-sizes-are-one.json",
+  "size1": 1,
+  "size2": 1,
+  "root1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "roots do not not match and sizes are one",
+  "wantErr": true
+ },
+ {
+  "file": "additional/size1-is-greater-than-size2-again.json",
+  "size1": 2,
+  "size2": 1,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "size1 is greater than size2 again",
+  "wantErr": true
+ },
+ {
+  "file": "additional/size1-is-greater-than-size2.json",
+  "size1": 1,
+  "size2": 0,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "size1 is greater than size2",
+  "wantErr": true
+ },
+ {
+  "file": "additional/size1-is-zero-and-does-not-equal-size2.json",
+  "size1": 0,
+  "size2": 1,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "size1 is zero and does not equal size2",
+  "wantErr": true
+ },
+ {
+  "file": "additional/size1-is-zero-and-size2-is-not-zero.json",
+  "size1": 0,
+  "size2": 1,
+  "root1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "size1 is zero and size2 is not zero",
+  "wantErr": true
+ },
+ {
+  "file": "additional/sizes-are-equal-one-and-proof-is-empty.json",
+  "size1": 1,
+  "size2": 1,
+  "root1": "646f6e277420636172652032",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "sizes are equal (one) and proof is empty",
+  "wantErr": false
+ },
+ {
+  "file": "additional/sizes-are-equal-one-but-roots-are-not.json",
+  "size1": 1,
+  "size2": 1,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "sizes are equal (one) but roots are not",
+  "wantErr": true
+ },
+ {
+  "file": "additional/sizes-are-equal-zero-and-proof-is-empty.json",
+  "size1": 0,
+  "size2": 0,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652031",
+  "proof": [],
+  "desc": "sizes are equal (zero) and proof is empty",
+  "wantErr": true
+ },
+ {
+  "file": "additional/sizes-are-equal-zero-but-roots-are-not.json",
+  "size1": 0,
+  "size2": 0,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "sizes are equal (zero) but roots are not",
+  "wantErr": true
+ },
+ {
+  "file": "additional/sizes-do-not-watch-and-proof-is-empty.json",
+  "size1": 1,
+  "size2": 2,
+  "root1": "646f6e277420636172652031",
+  "root2": "646f6e277420636172652032",
+  "proof": [],
+  "desc": "sizes do not watch and proof is empty",
+  "wantErr": true
+ },
+ {
+  "file": "additional/sizes-match-but-proof-is-not-empty-and-sizes-are-one.json",
+  "size1": 1,
+  "size2": 1,
+  "root1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root2": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "proof": [
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "desc": "sizes match but proof is not empty and sizes are one",
+  "wantErr": true
+ },
+ {
+  "file": "additional/sizes-match-but-proof-is-not-empty-and-sizes-are-zero.json",
+  "size1": 0,
+  "size2": 0,
+  "root1": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root2": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "proof": [
+   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "desc": "sizes match but proof is not empty and sizes are zero",
+  "wantErr": true
+ }
+]

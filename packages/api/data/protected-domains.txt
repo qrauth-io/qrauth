@@ -1,0 +1,205 @@
+# Protected domains for the lookalike check (ADR-0007).
+#
+# A QR destination or link whose host is confusable with one of these
+# (UTS #39 skeleton) or close to it (edit distance on skeletons) gets the
+# lookalike warning: a warning on create, UNTRUSTED with no auto-continue on
+# scan. The listed domains themselves and their subdomains are exempt.
+#
+# Format: one brand per line, `Display name: domain domain ...`. List every
+# official domain of the brand on its line (country domains included): they
+# are all exempt for that brand, so a brand's own sites are never flagged as
+# lookalikes of each other. Domains are lowercase ASCII (punycode for IDN).
+#
+# Strict brands, marked `[strict]` after the name: the brand's exact name
+# on a TLD that is not listed on its line is a lookalike too (aade.com,
+# paypal.xyz). Use it for banks, public services, payment and identity
+# providers whose name is distinctive, and list the brand's real country
+# domains. Leave names that are ordinary words (wise, chase, alpha, viva,
+# crypto, ledger) non-strict: an unrelated site may own them elsewhere.
+#
+# Wordlike strict brands, marked `[strict wordlike]`: a strict brand whose
+# name is also an ordinary word or place (visa, kraken, stripe, santander;
+# astynomia, ktimatologio in Greek). They stay strict on other TLDs
+# (visa.xyz is a lookalike), but the name as a hyphen token counts only next
+# to a phishing keyword (visa-login.com is a lookalike, visa-team.com and
+# kraken-games.com are not). Mark a strict brand wordlike when its name
+# reads as a word in English or Greek, or names a place.
+#
+# Multi-tenant domains, where customers choose the subdomain
+# (contoso.sharepoint.com), are marked with `@`: only the domain itself (and
+# any host listed separately) is the brand's own; a tenant label is checked
+# like any registered name, so paypa1.sharepoint.com is a lookalike of
+# PayPal. Mark every domain that hands out customer-chosen subdomains.
+#
+# Policy: brands and services that QR phishing in Greece and the EU imitates
+# (Greek banks and public services, payments, logins of the large platforms,
+# parcel carriers). Add an entry when a brand is targeted; remove one only
+# with a reason in the commit message. Verified QRAuth organizations are
+# protected automatically and need no entry here.
+
+# Greek public services
+Hellenic Government (gov.gr) [strict]: gov.gr
+GSIS / TaxisNet [strict]: gsis.gr
+AADE [strict]: aade.gr
+e-EFKA [strict]: efka.gov.gr e-efka.gov.gr
+DYPA [strict]: dypa.gov.gr oaed.gr
+Hellenic Police [strict wordlike]: astynomia.gr
+Hellenic Fire Service [strict wordlike]: fireservice.gr
+Bank of Greece [strict]: bankofgreece.gr
+Hellenic Capital Market Commission [strict]: hcmc.gr
+Hellenic Cadastre [strict wordlike]: ktimatologio.gr
+Hellenic Parliament [strict]: hellenicparliament.gr
+Ministry of Finance [strict]: minfin.gov.gr
+OPEKEPE [strict]: opekepe.gr
+ELTA Hellenic Post [strict]: elta.gr elta-courier.gr
+Hellenic Coast Guard [strict]: hcg.gr
+EOPYY [strict]: eopyy.gov.gr
+Greek National Tourism Organisation: visitgreece.gr
+Athens International Airport: aia.gr
+
+# Greek banks and payments
+National Bank of Greece [strict]: nbg.gr
+Piraeus Bank [strict]: piraeusbank.gr winbank.gr
+Eurobank [strict]: eurobank.gr eurobank.cy
+Alpha Bank [strict]: alphabank.gr
+Alpha Bank: alpha.gr
+Optima bank [strict]: optimabank.gr
+Attica Bank [strict]: atticabank.gr
+Pancreta Bank [strict]: pancretabank.gr
+Chania Bank [strict]: chaniabank.gr
+Viva Wallet [strict]: vivawallet.com
+Viva Wallet: viva.com
+Nexi Greece [strict]: nexi.gr nexi.it nexigroup.com
+Cardlink [strict]: cardlink.gr
+Everypay [strict]: everypay.gr
+IRIS Payments [strict]: irispayments.gr
+DIAS: dias.com.gr
+
+# Greek utilities, telecoms, retail and carriers
+PPC (DEI): dei.gr
+HEDNO: deddie.gr
+EYDAP: eydap.gr
+EYATH: eyath.gr
+Cosmote: cosmote.gr
+Vodafone Greece: vodafone.gr
+Nova: nova.gr
+Skroutz: skroutz.gr
+Public: public.gr
+Kotsovolos: kotsovolos.gr
+efood: e-food.gr efood.gr
+Plaisio: plaisio.gr
+ACS Courier: acscourier.net
+Geniki Taxydromiki: taxydromiki.com
+Speedex: speedex.gr
+BOX NOW: boxnow.gr
+Aegean Airlines: aegeanair.com
+Hellenic Train: hellenictrain.gr
+OASA: oasa.gr
+
+# Logins of the large platforms
+Google: google.com google.gr gmail.com youtube.com @googleusercontent.com google.co.uk google.de @blogspot.com
+Apple ID [strict]: icloud.com
+Apple: apple.com me.com
+Microsoft sign-in [strict]: microsoft.com microsoftonline.com
+Microsoft: live.com outlook.com office.com office365.com hotmail.com msn.com xbox.com skype.com bing.com azure.com @sharepoint.com onedrive.com
+Meta: facebook.com fb.com instagram.com whatsapp.com messenger.com meta.com
+X (Twitter): twitter.com x.com
+LinkedIn: linkedin.com
+GitHub: github.com @github.io
+Amazon: amazon.com amazon.de amazon.co.uk amazon.fr amazon.it amazon.es aws.amazon.com
+Yahoo: yahoo.com
+Proton: proton.me protonmail.com
+Zoom: @zoom.us
+Dropbox: dropbox.com
+Adobe: adobe.com
+DocuSign: docusign.com @docusign.net
+Slack: @slack.com
+Okta [strict]: @okta.com
+Salesforce: salesforce.com @my.salesforce.com
+Atlassian: atlassian.com @atlassian.net
+Cloudflare: cloudflare.com
+
+# Payments, cards and crypto
+PayPal [strict]: paypal.com paypal.me paypal-community.com paypal-prepagata.com paypal.gr paypal.de paypal.fr paypal.it paypal.es paypal.co.uk paypal.at paypal.nl paypal.be paypal.ch paypal.pl paypal.com.au paypal.ca
+Stripe [strict wordlike]: stripe.com
+Visa [strict wordlike]: visa.com visa.gr visa.co.uk visa.de visa.fr visa.it visa.es visa.com.cy
+Mastercard [strict]: mastercard.com mastercard.gr mastercard.co.uk mastercard.de mastercard.fr mastercard.it mastercard.es
+American Express [strict]: americanexpress.com
+Revolut [strict]: revolut.com
+Wise: wise.com
+N26 [strict]: n26.com
+Klarna [strict]: klarna.com klarna.de klarna.se
+Skrill [strict]: skrill.com
+Payoneer [strict]: payoneer.com
+Western Union [strict]: westernunion.com
+MoneyGram [strict]: moneygram.com
+Coinbase [strict]: coinbase.com
+Binance [strict]: binance.com
+Kraken [strict wordlike]: kraken.com
+Crypto.com: crypto.com
+MetaMask [strict]: metamask.io
+Ledger: ledger.com
+Trezor [strict wordlike]: trezor.io
+
+# European and global banks
+HSBC [strict]: hsbc.com hsbc.co.uk hsbc.fr
+Barclays [strict]: barclays.co.uk barclays.com
+Santander [strict wordlike]: santander.com santander.co.uk santander.es santander.de santander.pt
+BBVA [strict]: bbva.com
+ING [strict]: ing.com ing.de ing.nl ing.be ing.es ing.it ing.ro ing.pl
+BNP Paribas [strict]: bnpparibas.com
+Deutsche Bank [strict]: deutsche-bank.de db.com
+Commerzbank [strict]: commerzbank.de
+UniCredit [strict]: unicredit.it unicreditgroup.eu
+Intesa Sanpaolo [strict]: intesasanpaolo.com
+Chase: chase.com
+Bank of America [strict]: bankofamerica.com
+Wells Fargo [strict]: wellsfargo.com
+Citi: citi.com
+Bank of Cyprus [strict]: bankofcyprus.com
+Hellenic Bank [strict]: hellenicbank.com
+
+# Shopping, travel and delivery
+eBay: ebay.com
+AliExpress: aliexpress.com alibaba.com
+Temu: temu.com
+Shein: shein.com
+IKEA: ikea.com ikea.gr
+Booking.com: booking.com
+Airbnb: airbnb.com airbnb.gr
+Expedia: expedia.com
+Uber: uber.com
+Bolt: bolt.eu
+Wolt: wolt.com
+DHL: dhl.com dhl.gr
+FedEx: fedex.com
+UPS: ups.com
+USPS: usps.com
+Royal Mail: royalmail.com
+Ryanair: ryanair.com
+easyJet: easyjet.com
+
+# Media, messaging and games
+Netflix: netflix.com
+Spotify: spotify.com
+Disney+: disneyplus.com
+Telegram: telegram.org
+Signal: signal.org
+Viber: viber.com
+Discord: discord.com
+TikTok: tiktok.com
+Snapchat: snapchat.com
+Reddit: reddit.com
+Steam: steampowered.com steamcommunity.com
+Epic Games: epicgames.com
+PlayStation: playstation.com
+Roblox: roblox.com
+
+# Public bodies outside Greece
+European Union: europa.eu
+UK Government: gov.uk
+US IRS: irs.gov
+
+# QRAuth itself
+QRAuth: qrauth.io
+ProgressNet: progressnet.gr

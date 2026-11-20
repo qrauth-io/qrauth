@@ -1,0 +1,37 @@
+{
+  "name": "@qrauth/merkle-log",
+  "version": "0.1.0",
+  "description": "RFC 9162 Merkle tree hash, inclusion and consistency proofs for QRAuth Trust Records",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@typescript-eslint/parser": "^8.72.1",
+    "eslint": "^9.39.2",
+    "fast-check": "^3.23.2",
+    "typescript": "5.9.3",
+    "vitest": "^4.1.12"
+  }
+}

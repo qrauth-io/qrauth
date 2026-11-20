@@ -1,0 +1,11 @@
+{
+  // Type-checks the sources and the tests without emitting. tsconfig.json
+  // builds src only.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}
